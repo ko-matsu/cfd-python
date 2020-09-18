@@ -64,7 +64,40 @@ pipenv install -d
 
 ---
 
+## pip install / uninstall
+
+### install from GitHub
+
+```
+pip install --user git+https://github.com/cryptogarageinc/cfd-python@master
+```
+
+### install from source code
+
+Using unpack source code:
+```Shell
+pip install --user .
+```
+
+### install from wheel
+
+1. get releases asset. (ex. https://github.com/cryptogarageinc/cfd-python/releases/download/v0.0.1/cfd-0.0.1-cp38-cp38-win_amd64.whl )
+2. install pip
+   ```
+   pip install --user cfd-0.0.1-cp38-cp38-win_amd64.whl
+   ```
+
+### uninstall
+
+```
+pip uninstall -y cfd
+```
+
+---
+
 ## Build native library on local
+
+### build
 
 use python:
 ```
@@ -80,29 +113,26 @@ pipenv run build
 (ubuntu 18.04) pipenv run build3
 ```
 
----
-
-## install / uninstall
-
-### from GitHub
+### cleanup
 
 ```
-pip install --user git+https://github.com/cryptogarageinc/cfd-python@master
+rm -rf cmake_build
+  or
+pipenv run cleanup
 ```
 
-### from sdist (source code)
+## packaging
 
-Using unpack source code:
-```Shell
-pip install --user .
+### sdist file
+
+```
+python ./setup.py sdist
 ```
 
-### from wheel
+### wheel file
 
-1. get releases asset. (ex. https://github.com/cryptogarageinc/cfd-python/releases/download/v0.0.1/cfd-0.0.1-cp38-cp38-win_amd64.whl )
-2. install pip
 ```
-pip install --user cfd-0.0.1-cp38-cp38-win_amd64.whl
+pip wheel .
 ```
 
 ---
@@ -213,72 +243,13 @@ set CFD_CMAKE_GIT_SKIP_UPDATE=1
 export CFD_CMAKE_GIT_SKIP_UPDATE=1
 ```
 
+### Precautions when creating a wheel file
 
-
-
-
-
-
-
-
-
-
-# cfd-python
-(WIP)
-
-
-## install pipenv
-pip install pipenv
-
-## install from Pipfile
-pipenv install --dev
-
-## 
-pipenv install --dev autopep8 flake8
-
-## cleanup
-pipenv run cleanup
-
-## packaging wheel file
-
-pip wheel
-packaging: python ./setup.py bdist_wheel
-
-
-If it does not work properly, discard the wheel on the python2 side and set PYTHONPATH.
+(May not be needed if using pip wheel)
+If it does not work properly, discard the wheel on the python2 side and set PYTHONPATH:
 ```
 export PYTHONPATH=$PYTHONPATH:~/.local/lib/python3.6/site-packages/wheel
 ```
 
-```
-On linux you need to be aware of PYTHONPATH.
-```
-
-### linked issue
+If you are using WSL, you also need to set the access permissions on the Windows side. Check out the following issues:
 - https://github.com/pypa/packaging-problems/issues/258
-
-
-## packaging sdist file
-packaging: python ./setup.py sdist
-
-## install/uninstall
-install:
-python setup.py install --user
-python setup.py install
-
-new install:
-pip install --user .
-
-wheel install:
-pip install (whl file)
-
-git direct install:
-pip install (git url)
-
-uninstall:
-pip uninstall cfd
-
-### attention
-
-Do not run setup.py install related commands in pipenv scripts.
-If you run install with the pipenv script, it will be installed under virtual-env.
