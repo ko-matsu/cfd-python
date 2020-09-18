@@ -138,3 +138,7 @@ external/*
 cmake_build/
 .vscode/
 
+/doc/html*
+/doc/latex
+/**/*_localdebug.bat
+/*.whl

@@ -1,29 +1,24 @@
 """setuptools configuration for cfd """
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext as build_ext_orig
-# from distutils.dist import Distribution
 from os.path import isfile, abspath
 import multiprocessing
 import subprocess
 import platform
 import os
 import shutil
-# import distutils.command.build_py
-# import distutils
-CFD_VERSION = '0.0.1'
+
+# definition
 CFD_LIB_LIST = ['cfd', 'cfdcore', 'univalue', 'wally']
 CFD_SINGLE_LIB_LIST = ['cfd']
 CFD_BUILD_DIR = 'cmake_build'
 CFD_CONFIGURE_COMMAND = 'cmake -S . -B ' + CFD_BUILD_DIR
-CFD_ALL_SHARED_OPTION = [
-    '-DENABLE_SHARED=on',
-]
+CFD_ALL_SHARED_OPTION = ['-DENABLE_SHARED=on']
 CFD_SINGLE_SHARED_OPTION = [
     '-DENABLE_SHARED=off',
     '-DCFD_SHARED=on',
 ]
 CFD_CONFIGURE_OPTIONS = [
-    '{}',
     '-DENABLE_JS_WRAPPER=off',
     '-DENABLE_CAPI=on',
     '-DENABLE_TESTS=off',
@@ -57,13 +52,11 @@ class _build_ext(build_ext_orig):
     ]
 
     def initialize_options(self):
-        # distutils.command.build_py.build_py.initialize_options(self)
         super().initialize_options()
         self.cleanup = 'True'
         self.use_installed_lib = 'False'
 
     def finalize_options(self):
-        # distutils.command.build_py.build_py.finalize_options(self)
         super().finalize_options()
         assert self.cleanup in (
             'True', 'False'), 'Invalid cleanup option!'
@@ -84,7 +77,6 @@ class _build_ext(build_ext_orig):
             self.use_installed_lib, False)
         self.has_win = platform.system() == 'Windows'
         self.has_mac = platform.system() == 'Darwin'
-        # separator = '\\' if has_win else '/'
         self.current_dir = os.path.dirname(abspath(__file__)) + '/'
 
     def call_cmd(self, cmd):
@@ -130,12 +122,10 @@ class _build_ext(build_ext_orig):
             return False
 
     def build_cpp_library(self):
-        # Cleanup
         if os.path.exists(CFD_BUILD_DIR) and self.cleanup:
             shutil.rmtree(CFD_BUILD_DIR, ignore_errors=True)
 
         # make output dir
-        # distutils.dir_util.mkpath(self.build_lib)
         out_dir = self.build_lib + '/cfd'
         os.makedirs(out_dir, exist_ok=True)
         print('output dir: ' + out_dir)
@@ -147,8 +137,9 @@ class _build_ext(build_ext_orig):
         shared_opt = ' '.join(shared_opts)
         rpath = './' if self.has_win else abspath(out_dir)
         rpath += ';' + ';'.join(CFD_RPATH_LISTS)
-        option = ' '.join(CFD_CONFIGURE_OPTIONS).format(shared_opt, rpath)
-        config_cmd = CFD_CONFIGURE_COMMAND + ' ' + option.format(rpath)
+        option = ' '.join(CFD_CONFIGURE_OPTIONS).format(rpath)
+        config_cmd = '{} {} {}'.format(
+            CFD_CONFIGURE_COMMAND, shared_opt, option)
         self.call_cmd(config_cmd)
         self.call_cmd(CFD_BUILD_COMMAND.format(multiprocessing.cpu_count()))
 
@@ -160,20 +151,18 @@ class _build_ext(build_ext_orig):
             so_name = '{}{}.{}'.format(so_prefix, lib_name, so_ext)
             src_so = os.path.join(CFD_BUILD_DIR, 'Release', so_name)
             dest_so = os.path.join(out_dir, so_name)
-            # distutils.file_util.copy_file(src_so, dest_so)
             shutil.copyfile(src_so, dest_so)
             print('copy to: ' + dest_so)
 
     def run(self):
-        # Override build_py.
+        # Override build_ext.
         self.initialize_build_options()
         success = False
         if self.use_installed_lib:
             success = self.link_installed_library()
         if not success:
             self.build_cpp_library()
-        # distutils.command.build_ext.build_ext.run(self)
-        self.skip_build = True
+        # skip
         # super().run()
 
 
