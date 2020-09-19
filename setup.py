@@ -28,7 +28,7 @@ CFD_CONFIGURE_OPTIONS = [
 CFD_RPATH_LISTS = [
     '../',
     '@executable_path',
-    '../../' + CFD_BUILD_DIR + '/Release',
+    '../' + CFD_BUILD_DIR + '/Release',
     './' + CFD_BUILD_DIR + '/Release',
     '/usr/local/lib',
     '/usr/local/lib64',

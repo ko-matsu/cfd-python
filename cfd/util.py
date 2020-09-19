@@ -119,7 +119,16 @@ class CfdUtil:
         self._func_map = {}
 
         root_dir, lib_path = self._collect_lib_path()
-        self._cfd = CDLL(root_dir + lib_path)
+        try:
+            # TODO: python 3.7 or lower for windows is used dll 
+            # on the current dir only or under.
+            self._cfd = CDLL(root_dir + lib_path)
+        except OSError as e:
+            print('OSError: dll path = ' + root_dir + lib_path)
+            raise e
+        except FileNotFoundError as e:
+            print('FileNotFoundError: dll path = ' + root_dir + lib_path)
+            raise e
 
         free_func = self._cfd.CfdFreeStringBuffer
         free_func.restype, free_func.argtypes = c_int, [c_char_p]
@@ -146,7 +155,7 @@ class CfdUtil:
                     break
 
         if not is_find:
-            lib_path = 'cmake_build/Release/' + lib_path
+            lib_path = os.path.join('cmake_build', 'Release', lib_path)
             for depth in [0, 1, 2]:
                 root_dir = abs_path + '../' * depth
                 if isfile(root_dir + lib_path):
@@ -162,8 +171,8 @@ class CfdUtil:
                         fs = os.listdir(path)
                         for f in fs:
                             if f == 'lib' and isfile(
-                                    path + '\\lib\\' + lib_name):
-                                root_dir = path + '\\lib\\'
+                                    os.path.join(path, 'lib', lib_name)):
+                                root_dir = os.path.join(path, 'lib')
                     except WindowsError:
                         pass
             else:
@@ -174,6 +183,8 @@ class CfdUtil:
 
         if has_mac:
             root_dir = abspath(root_dir) + '/'
+        elif has_win:
+            root_dir = root_dir.replace('/', '\\')
         return root_dir, lib_path
 
     def _load_functions(self):
