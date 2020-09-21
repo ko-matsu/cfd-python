@@ -1,8 +1,19 @@
+# -*- coding: utf-8 -*-
+##
+# @file hdwallet.py
+# @brief hdwallet function implements file.
+# @note Copyright 2020 CryptoGarage
 from .util import get_util, JobHandle
 
+##
+# mnemonic's free function name.
 FREE_FUNC_NAME = 'CfdFreeMnemonicWordList'
 
 
+##
+# @brief get mnemonic word list.
+# @param[in] lang       language
+# @retval word_list     mnemonic word list
 def get_mnemonic_word_list(lang):
     util = get_util()
     word_list = []

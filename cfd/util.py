@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+##
+# @file util.py
+# @brief internal utility file.
+# @note Copyright 2020 CryptoGarage
 from ctypes import c_int, c_void_p, c_char_p, c_int32, c_int64,\
     c_uint32, c_uint64, c_bool, CDLL, byref, POINTER
 from os.path import isfile, abspath
@@ -5,92 +10,210 @@ import platform
 import os
 
 
+##
+# @class CVoidPP
+# @brief void double pointer class.
 class CVoidPP(object):
     pass
 
 
+##
+# @class CCharPP
+# @brief char double pointer class.
 class CCharPP(object):
     pass
 
 
+##
+# @class CBoolP
+# @brief bool pointer class.
 class CBoolP(object):
     pass
 
 
-class CUint32P(object):
-    pass
-
-
+##
+# @class CIntP
+# @brief int pointer class.
 class CIntP(object):
     pass
 
 
+##
+# @class CUint32P
+# @brief uint32 pointer class.
+class CUint32P(object):
+    pass
+
+
+##
+# @class CInt32P
+# @brief int32 pointer class.
 class CInt32P(object):
     pass
 
 
+##
+# @class CUint64P
+# @brief uint64 pointer class.
 class CUint64P(object):
     pass
 
 
+##
+# @class CInt64P
+# @brief int64 pointer class.
 class CInt64P(object):
     pass
 
 
+##
+# @brief void double pointer.
 c_void_p_p = CVoidPP()
+##
+# @brief char double pointer.
 c_char_p_p = CCharPP()
+##
+# @brief bool pointer.
 c_bool_p = CBoolP()
+##
+# @brief int pointer.
 c_int_p = CIntP()
+##
+# @brief uint32 pointer.
 c_uint32_p = CUint32P()
+##
+# @brief int32 pointer.
 c_int32_p = CInt32P()
+##
+# @brief uint64 pointer.
 c_uint64_p = CUint64P()
+##
+# @brief int64 pointer.
 c_int64_p = CInt64P()
 
 
+##
+# @class CfdError
+# @brief cfd custom error class.
 class CfdError(Exception):
+    ##
+    # @var error_code
+    # error code
+    ##
+    # @var message
+    # error message
+
+    ##
+    # @brief constructor.
+    # @param[in] error_code     error code
+    # @param[in] message        error message
     def __init__(self, error_code=-1, message=''):
         self.error_code = error_code
         self.message = message
 
+    ##
+    # @brief get error information.
+    # @return error information.
     def __str__(self):
         return 'code={}, msg={}'.format(self.error_code, self.message)
 
 
+##
+# @class CfdHandle
+# @brief cfd handle class.
 class CfdHandle:
+    ##
+    # @var _handle
+    # handle pointer
+
+    ##
+    # @brief constructor.
+    # @param[in] handle     handle
     def __init__(self, handle):
         self._handle = handle
 
+    ##
+    # @brief get handle.
+    # @retval _handle  handle.
     def get_handle(self):
         return self._handle
 
+    ##
+    # @brief enter method.
+    # @retval self  object.
     def __enter__(self):
         return self
 
+    ##
+    # @brief exit method.
+    # @param[in] type       type
+    # @param[in] value      value
+    # @param[in] traceback  traceback
+    # @return void
     def __exit__(self, type, value, traceback):
         get_util().free_handle(self._handle)
 
 
+##
+# @class JobHandle
+# @brief cfd job handle class.
 class JobHandle:
+    ##
+    # @var _handle
+    # cfd handle.
+    ##
+    # @var _job_handle
+    # job handle.
+    ##
+    # @var _close_func
+    # close function name.
+
+    ##
+    # @brief constructor.
+    # @param[in] handle         handle
+    # @param[in] job_handle     job handle
+    # @param[in] close_function_name    close func name.
     def __init__(self, handle, job_handle, close_function_name):
         self._handle = handle
         self._job_handle = job_handle
         self._close_func = close_function_name
 
+    ##
+    # @brief get job handle.
+    # @retval _job_handle  handle.
     def get_handle(self):
         return self._job_handle
 
+    ##
+    # @brief enter method.
+    # @retval self  object.
     def __enter__(self):
         return self
 
+    ##
+    # @brief exit method.
+    # @param[in] type       type
+    # @param[in] value      value
+    # @param[in] traceback  traceback
+    # @return void
     def __exit__(self, type, value, traceback):
         get_util().call_func(
             self._close_func,
             self._handle.get_handle(),
-            self._job_handle)
+            self._job_handle0)
 
 
+##
+# @class CfdUtil
+# @brief cfd utility class.
 class CfdUtil:
-    FUNC_LIST = [
+    ##
+    # @var _instance
+    # singleton instance.
+
+    ##
+    # function map list
+    _FUNC_LIST = [
         ('CfdCreateSimpleHandle', c_int, [c_void_p_p]),
         ('CfdFreeHandle', c_int, [c_void_p]),
         ('CfdFreeBuffer', c_int, [c_void_p]),
@@ -109,25 +232,43 @@ class CfdUtil:
         ('CfdFreeMnemonicWordList', c_int, [c_void_p, c_void_p]),
     ]
 
+    ##
+    # @brief get instance.
+    # @return utility instance.
     @classmethod
     def get_instance(cls):
         if not hasattr(cls, "_instance"):
             cls._instance = cls()
         return cls._instance
 
+    ##
+    # @var free_str_func
+    # free native string buffer function.
+    ##
+    # @var _cfd
+    # cfd dll object.
+    ##
+    # @var _func_map
+    # cfd function map.
+
+    ##
+    # @brief constructor.
+    # @return utility instance.
     def __init__(self):
         self._func_map = {}
 
-        root_dir, lib_path = self._collect_lib_path()
+        lib_path = self._collect_lib_path()
         try:
-            # TODO: python 3.7 or lower for windows is used dll 
-            # on the current dir only or under.
-            self._cfd = CDLL(root_dir + lib_path)
+            """
+            TODO: python 3.7 or lower for windows is used dll
+            on the current dir only or under.
+            """
+            self._cfd = CDLL(lib_path)
         except OSError as e:
-            print('OSError: dll path = ' + root_dir + lib_path)
+            print('OSError: dll path = ' + lib_path)
             raise e
         except FileNotFoundError as e:
-            print('FileNotFoundError: dll path = ' + root_dir + lib_path)
+            print('FileNotFoundError: dll path = ' + lib_path)
             raise e
 
         free_func = self._cfd.CfdFreeStringBuffer
@@ -135,6 +276,9 @@ class CfdUtil:
         self.free_str_func = free_func
         self._load_functions()
 
+    ##
+    # @brief collect library path.
+    # @return cfd library path.
     def _collect_lib_path(self):
         has_win = platform.system() == 'Windows'
         has_mac = platform.system() == 'Darwin'
@@ -185,8 +329,11 @@ class CfdUtil:
             root_dir = abspath(root_dir) + '/'
         elif has_win:
             root_dir = root_dir.replace('/', '\\')
-        return root_dir, lib_path
+        return root_dir + lib_path
 
+    ##
+    # @brief load cfd functions.
+    # @return void
     def _load_functions(self):
         def bind_fn(name, res, args):
             fn = getattr(self._cfd, name)
@@ -248,7 +395,7 @@ class CfdUtil:
         def make_input_str_fn(fn, pos):
             return lambda *args: in_string_fn_wrapper(fn, pos, *args)
 
-        for func_info in CfdUtil.FUNC_LIST:
+        for func_info in CfdUtil._FUNC_LIST:
             name, restype, argtypes = func_info
 
             in_str_pos = [i for (i, t) in enumerate(argtypes) if t == c_char_p]
@@ -307,6 +454,12 @@ class CfdUtil:
                     fn = make_input_str_fn(fn, pos)
             self._func_map[name] = fn
 
+    ##
+    # @brief call cfd function.
+    # @param[in] name       function name.
+    # @param[in] *args      function arguments.
+    # @return response data.
+    # @throw CfdError   occurred error.
     def call_func(self, name, *args):
         # print('call: {}{}'.format(name, args))
         ret = self._func_map[name](*args)
@@ -333,6 +486,10 @@ class CfdUtil:
         else:
             return ret[1:]
 
+    ##
+    # @brief create cfd handle.
+    # @return cfd handle
+    # @throw CfdError   occurred error.
     def create_handle(self):
         ret, handle = self._func_map['CfdCreateSimpleHandle']()
         if ret != 0:
@@ -341,9 +498,16 @@ class CfdUtil:
                 message='Error: CfdCreateSimpleHandle')
         return CfdHandle(handle)
 
+    ##
+    # @brief free cfd handle.
+    # @param[in] handle     cfd handle
+    # @return result
     def free_handle(self, handle):
         return self._func_map['CfdFreeHandle'](handle)
 
 
+##
+# @brief get utility object.
+# @return utility object.
 def get_util():
     return CfdUtil.get_instance()
