@@ -66,6 +66,8 @@ pipenv install -d
 
 ## pip install / uninstall
 
+attention: [using python 3.7 or lower on windows](#using-python-37-or-lower-on-windows)
+
 ### install from GitHub
 
 ```
@@ -81,10 +83,10 @@ pip install --user .
 
 ### install from wheel
 
-1. get releases asset. (ex. https://github.com/cryptogarageinc/cfd-python/releases/download/v0.0.1/cfd-0.0.1-cp38-cp38-win_amd64.whl )
+1. get releases asset. (ex. https://github.com/cryptogarageinc/cfd-python/releases/download/v0.0.1/cfd-0.0.1-py3-none-win_amd64.whl )
 2. install pip
    ```
-   pip install --user cfd-0.0.1-cp38-cp38-win_amd64.whl
+   pip install --user cfd-0.0.1-py3-none-win_amd64.whl
    ```
 
 ### uninstall
@@ -195,6 +197,15 @@ pipenv run test
 ---
 
 ## Note
+
+### using python 3.7 or lower on windows
+
+When using Python 3.7 or lower on Windows, it is necessary to add the install destination to the environment variable PATH. (Must be persistent.)
+
+The path to add must specify where to install cfd, as in the following example:
+```
+C:\Users\DummyUser\AppData\Local\Programs\Python\Python37\Lib\site-packages\cfd
+```
 
 ### Git connection:
 
