@@ -200,7 +200,7 @@ class JobHandle:
         get_util().call_func(
             self._close_func,
             self._handle.get_handle(),
-            self._job_handle0)
+            self._job_handle)
 
 
 ##

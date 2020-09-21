@@ -4,11 +4,12 @@ on:
   push:
     branches:
     - features/sprint*
-    - feature/initial-commit
+    paths-ignore:
+    - '.github/workflows/create_release-and-upload.yml'
+    - 'README.md'
   pull_request:
     branches:
     - features/sprint*
-    - feature/initial-commit
 
 jobs:
   build-and-test:
@@ -49,14 +50,14 @@ jobs:
     - name: test
       run: python -m unittest discover -v tests
 
-#  doxygen-ubuntu:
-#    name: doxygen-ubuntu
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: install_doxygen
-#      run: sudo apt install doxygen graphviz
-#    - name: doxygen_check
-#      run: |
-#        cd doc
-#        doxygen Doxyfile_quiet_all
+  doxygen-ubuntu:
+    name: doxygen-ubuntu
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: install_doxygen
+      run: sudo apt install doxygen graphviz
+    - name: doxygen_check
+      run: |
+        cd doc
+        doxygen Doxyfile_quiet_all
