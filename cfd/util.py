@@ -4,10 +4,54 @@
 # @brief internal utility file.
 # @note Copyright 2020 CryptoGarage
 from ctypes import c_int, c_void_p, c_char_p, c_int32, c_int64,\
-    c_uint32, c_uint64, c_bool, CDLL, byref, POINTER
+    c_uint32, c_uint64, c_bool, c_double, c_ubyte, CDLL, byref, POINTER
 from os.path import isfile, abspath
 import platform
 import os
+
+################
+# Public class #
+################
+
+
+##
+# @class CfdError
+# @brief cfd custom error class.
+class CfdError(Exception):
+    ##
+    # @var error_code
+    # error code
+    ##
+    # @var message
+    # error message
+
+    ##
+    # @brief constructor.
+    # @param[in] error_code     error code
+    # @param[in] message        error message
+    def __init__(self, error_code=-1, message=''):
+        self.error_code = error_code
+        self.message = message
+
+    ##
+    # @brief get error information.
+    # @return error information.
+    def __str__(self):
+        return 'code={}, msg={}'.format(self.error_code, self.message)
+
+
+def to_hex_string(value):
+    if (isinstance(value, bytes)):
+        return value.hex()
+    elif (isinstance(value, list)):
+        return "".join("%02x" % b for b in value)
+    else:
+        return str(value)
+
+
+##################
+# Internal class #
+##################
 
 
 ##
@@ -90,32 +134,6 @@ c_uint64_p = CUint64P()
 ##
 # @brief int64 pointer.
 c_int64_p = CInt64P()
-
-
-##
-# @class CfdError
-# @brief cfd custom error class.
-class CfdError(Exception):
-    ##
-    # @var error_code
-    # error code
-    ##
-    # @var message
-    # error message
-
-    ##
-    # @brief constructor.
-    # @param[in] error_code     error code
-    # @param[in] message        error message
-    def __init__(self, error_code=-1, message=''):
-        self.error_code = error_code
-        self.message = message
-
-    ##
-    # @brief get error information.
-    # @return error information.
-    def __str__(self):
-        return 'code={}, msg={}'.format(self.error_code, self.message)
 
 
 ##
@@ -214,22 +232,203 @@ class CfdUtil:
     ##
     # function map list
     _FUNC_LIST = [
-        ('CfdCreateSimpleHandle', c_int, [c_void_p_p]),
-        ('CfdFreeHandle', c_int, [c_void_p]),
-        ('CfdFreeBuffer', c_int, [c_void_p]),
-        ('CfdGetLastErrorCode', c_int, [c_void_p]),
-        ('CfdGetLastErrorMessage', c_int, [c_void_p, c_char_p_p]),
-        ('CfdRequestExecuteJson', c_int,
-            [c_void_p, c_char_p, c_char_p, c_char_p_p]),
-        ('CfdSerializeByteData', c_int, [c_void_p, c_char_p, c_char_p_p]),
-        ('CfdCreateAddress', c_int, [
-            c_void_p, c_int, c_char_p, c_char_p,
-            c_int, c_char_p_p, c_char_p_p, c_char_p_p]),
-        ('CfdInitializeMnemonicWordList', c_int,
-            [c_void_p, c_char_p, c_void_p_p, c_uint32_p]),
-        ('CfdGetMnemonicWord', c_int,
-            [c_void_p, c_void_p, c_uint32, c_char_p_p]),
-        ('CfdFreeMnemonicWordList', c_int, [c_void_p, c_void_p]),
+        ("CfdCreateAddress", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_int, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdInitializeMultisigScript", c_int, [c_void_p, c_int, c_int, c_void_p_p]),  # noqa: E501
+        ("CfdAddMultisigScriptData", c_int, [c_void_p, c_void_p, c_char_p]),  # noqa: E501
+        ("CfdFinalizeMultisigScript", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdFreeMultisigScriptHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdParseDescriptor", c_int, [c_void_p, c_char_p, c_int, c_char_p, c_void_p_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetDescriptorData", c_int, [c_void_p, c_void_p, c_uint32, c_uint32_p, c_uint32_p, c_int_p, c_char_p_p, c_char_p_p, c_int_p, c_char_p_p, c_int_p, c_char_p_p, c_char_p_p, c_char_p_p, c_bool_p, c_uint32_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetDescriptorMultisigKey", c_int, [c_void_p, c_void_p, c_uint32, c_int_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdFreeDescriptorHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdGetDescriptorChecksum", c_int, [c_void_p, c_int, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetAddressesFromMultisig", c_int, [c_void_p, c_char_p, c_int, c_int, c_void_p_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetAddressFromMultisigKey", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdFreeAddressesMultisigHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdGetAddressFromLockingScript", c_int, [c_void_p, c_char_p, c_int, c_char_p_p]),  # noqa: E501
+        ("CfdGetAddressInfo", c_int, [c_void_p, c_char_p, c_int_p, c_int_p, c_int_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdInitializeCoinSelection", c_int, [c_void_p, c_uint32, c_uint32, c_char_p, c_int64, c_double, c_double, c_double, c_int64, c_void_p_p]),  # noqa: E501
+        ("CfdAddCoinSelectionUtxo", c_int, [c_void_p, c_void_p, c_int32, c_char_p, c_uint32, c_int64, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddCoinSelectionUtxoTemplate", c_int, [c_void_p, c_void_p, c_int32, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddCoinSelectionAmount", c_int, [c_void_p, c_void_p, c_uint32, c_int64, c_char_p]),  # noqa: E501
+        ("CfdSetOptionCoinSelection", c_int, [c_void_p, c_void_p, c_int, c_int64, c_double, c_bool]),  # noqa: E501
+        ("CfdFinalizeCoinSelection", c_int, [c_void_p, c_void_p, c_int64_p]),  # noqa: E501
+        ("CfdGetSelectedCoinIndex", c_int, [c_void_p, c_void_p, c_uint32, c_int32_p]),  # noqa: E501
+        ("CfdGetSelectedCoinAssetAmount", c_int, [c_void_p, c_void_p, c_uint32, c_int64_p]),  # noqa: E501
+        ("CfdFreeCoinSelectionHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdInitializeEstimateFee", c_int, [c_void_p, c_void_p_p, c_bool]),  # noqa: E501
+        ("CfdAddTxInForEstimateFee", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_uint32, c_char_p]),  # noqa: E501
+        ("CfdAddTxInTemplateForEstimateFee", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_uint32, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdSetOptionEstimateFee", c_int, [c_void_p, c_void_p, c_int, c_int64, c_double, c_bool]),  # noqa: E501
+        ("CfdFinalizeEstimateFee", c_int, [c_void_p, c_void_p, c_char_p, c_char_p, c_int64_p, c_int64_p, c_bool, c_double]),  # noqa: E501
+        ("CfdFreeEstimateFeeHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdGetSupportedFunction", c_int, [c_uint64_p]),  # noqa: E501
+        ("CfdInitialize", c_int, []),  # noqa: E501
+        ("CfdFinalize", c_int, [c_bool]),  # noqa: E501
+        ("CfdCreateHandle", c_int, [c_void_p_p]),  # noqa: E501
+        ("CfdCreateSimpleHandle", c_int, [c_void_p_p]),  # noqa: E501
+        ("CfdCloneHandle", c_int, [c_void_p, c_void_p_p]),  # noqa: E501
+        ("CfdCopyErrorState", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdFreeHandle", c_int, [c_void_p]),  # noqa: E501
+        ("CfdFreeBuffer", c_int, [c_void_p]),  # noqa: E501
+        ("CfdFreeStringBuffer", c_int, [c_char_p]),  # noqa: E501
+        ("CfdGetLastErrorCode", c_int, [c_void_p]),  # noqa: E501
+        ("CfdGetLastErrorMessage", c_int, [c_void_p, c_char_p_p]),  # noqa: E501
+        ("CfdRequestExecuteJson", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdSerializeByteData", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdCreateConfidentialAddress", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdParseConfidentialAddress", c_int, [c_void_p, c_char_p, c_char_p_p, c_char_p_p, c_int_p]),  # noqa: E501
+        ("CfdInitializeConfidentialTx", c_int, [c_void_p, c_uint32, c_uint32, c_char_p_p]),  # noqa: E501
+        ("CfdAddConfidentialTxIn", c_int, [c_void_p, c_char_p, c_char_p, c_uint32, c_uint32, c_char_p_p]),  # noqa: E501
+        ("CfdAddConfidentialTxOut", c_int, [c_void_p, c_char_p, c_char_p, c_int64, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdUpdateConfidentialTxOut", c_int, [c_void_p, c_char_p, c_uint32, c_char_p, c_int64, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetConfidentialTxInfo", c_int, [c_void_p, c_char_p, c_char_p_p, c_char_p_p, c_char_p_p, c_uint32_p, c_uint32_p, c_uint32_p, c_uint32_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetConfidentialTxIn", c_int, [c_void_p, c_char_p, c_uint32, c_char_p_p, c_uint32_p, c_uint32_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetConfidentialTxInWitness", c_int, [c_void_p, c_char_p, c_uint32, c_uint32, c_char_p_p]),  # noqa: E501
+        ("CfdGetConfidentialTxInPeginWitness", c_int, [c_void_p, c_char_p, c_uint32, c_uint32, c_char_p_p]),  # noqa: E501
+        ("CfdGetTxInIssuanceInfo", c_int, [c_void_p, c_char_p, c_uint32, c_char_p_p, c_char_p_p, c_int64_p, c_char_p_p, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetConfidentialTxOut", c_int, [c_void_p, c_char_p, c_uint32, c_char_p_p, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetConfidentialTxInCount", c_int, [c_void_p, c_char_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetConfidentialTxInWitnessCount", c_int, [c_void_p, c_char_p, c_uint32, c_uint32_p]),  # noqa: E501
+        ("CfdGetConfidentialTxInPeginWitnessCount", c_int, [c_void_p, c_char_p, c_uint32, c_uint32_p]),  # noqa: E501
+        ("CfdGetConfidentialTxOutCount", c_int, [c_void_p, c_char_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetConfidentialTxInIndex", c_int, [c_void_p, c_char_p, c_char_p, c_uint32, c_uint32_p]),  # noqa: E501
+        ("CfdGetConfidentialTxOutIndex", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetConfidentialTxInfoByHandle", c_int, [c_void_p, c_void_p, c_char_p_p, c_char_p_p, c_char_p_p, c_uint32_p, c_uint32_p, c_uint32_p, c_uint32_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetTxInIssuanceInfoByHandle", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_char_p_p, c_int64_p, c_char_p_p, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetConfidentialTxOutSimpleByHandle", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetConfidentialTxOutByHandle", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdSetRawReissueAsset", c_int, [c_void_p, c_char_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetIssuanceBlindingKey", c_int, [c_void_p, c_char_p, c_char_p, c_uint32, c_char_p_p]),  # noqa: E501
+        ("CfdGetDefaultBlindingKey", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdInitializeBlindTx", c_int, [c_void_p, c_void_p_p]),  # noqa: E501
+        ("CfdSetBlindTxOption", c_int, [c_void_p, c_void_p, c_int, c_int64]),  # noqa: E501
+        ("CfdAddBlindTxInData", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_char_p, c_int64, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddBlindTxOutData", c_int, [c_void_p, c_void_p, c_uint32, c_char_p]),  # noqa: E501
+        ("CfdAddBlindTxOutByAddress", c_int, [c_void_p, c_void_p, c_char_p]),  # noqa: E501
+        ("CfdFinalizeBlindTx", c_int, [c_void_p, c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdFreeBlindHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdAddConfidentialTxSign", c_int, [c_void_p, c_char_p, c_char_p, c_uint32, c_bool, c_char_p, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdAddConfidentialTxDerSign", c_int, [c_void_p, c_char_p, c_char_p, c_uint32, c_bool, c_char_p, c_int, c_bool, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdFinalizeElementsMultisigSign", c_int, [c_void_p, c_void_p, c_char_p, c_char_p, c_uint32, c_int, c_char_p, c_char_p, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdAddConfidentialTxSignWithPrivkeySimple", c_int, [c_void_p, c_char_p, c_char_p, c_uint32, c_int, c_char_p, c_char_p, c_int64, c_char_p, c_int, c_bool, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdCreateConfidentialSighash", c_int, [c_void_p, c_char_p, c_char_p, c_uint32, c_int, c_char_p, c_char_p, c_int64, c_char_p, c_int, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdUnblindTxOut", c_int, [c_void_p, c_char_p, c_uint32, c_char_p, c_char_p_p, c_int64_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdUnblindIssuance", c_int, [c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_char_p_p, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p, c_int64_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdVerifyConfidentialTxSignature", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p, c_uint32, c_int, c_bool, c_int64, c_char_p, c_int]),  # noqa: E501
+        ("CfdVerifyConfidentialTxSign", c_int, [c_void_p, c_char_p, c_char_p, c_uint32, c_char_p, c_int, c_char_p, c_int64, c_char_p]),  # noqa: E501
+        ("CfdGetConfidentialValueHex", c_int, [c_void_p, c_int64, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdGetAssetCommitment", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetValueCommitment", c_int, [c_void_p, c_int64, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdAddConfidentialTxOutput", c_int, [c_void_p, c_void_p, c_int64, c_char_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdCalculateEcSignature", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_int, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdVerifyEcSignature", c_int, [c_void_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdSignEcdsaAdaptor", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdAdaptEcdsaAdaptor", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdExtractEcdsaAdaptorSecret", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdVerifyEcdsaAdaptor", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdSignSchnorr", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdSignSchnorrWithNonce", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdComputeSchnorrSigPoint", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdVerifySchnorr", c_int, [c_void_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdSplitSchnorrSignature", c_int, [c_void_p, c_char_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdEncodeSignatureByDer", c_int, [c_void_p, c_char_p, c_int, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdDecodeSignatureFromDer", c_int, [c_void_p, c_char_p, c_char_p_p, c_int_p, c_bool_p]),  # noqa: E501
+        ("CfdNormalizeSignature", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdCreateKeyPair", c_int, [c_void_p, c_bool, c_int, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetPrivkeyFromWif", c_int, [c_void_p, c_char_p, c_int, c_char_p_p]),  # noqa: E501
+        ("CfdGetPrivkeyWif", c_int, [c_void_p, c_char_p, c_int, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdParsePrivkeyWif", c_int, [c_void_p, c_char_p, c_char_p_p, c_int_p, c_bool_p]),  # noqa: E501
+        ("CfdGetPubkeyFromPrivkey", c_int, [c_void_p, c_char_p, c_char_p, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdCompressPubkey", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdUncompressPubkey", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdInitializeCombinePubkey", c_int, [c_void_p, c_void_p_p]),  # noqa: E501
+        ("CfdAddCombinePubkey", c_int, [c_void_p, c_void_p, c_char_p]),  # noqa: E501
+        ("CfdFinalizeCombinePubkey", c_int, [c_void_p, c_void_p, c_char_p_p]),  # noqa: E501
+        ("CfdFreeCombinePubkeyHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdPubkeyTweakAdd", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdPubkeyTweakMul", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdNegatePubkey", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdPrivkeyTweakAdd", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdPrivkeyTweakMul", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdNegatePrivkey", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdCreateExtkeyFromSeed", c_int, [c_void_p, c_char_p, c_int, c_int, c_char_p_p]),  # noqa: E501
+        ("CfdCreateExtkey", c_int, [c_void_p, c_int, c_int, c_char_p, c_char_p, c_char_p, c_char_p, c_ubyte, c_uint32, c_char_p_p]),  # noqa: E501
+        ("CfdCreateExtkeyFromParent", c_int, [c_void_p, c_char_p, c_uint32, c_bool, c_int, c_int, c_char_p_p]),  # noqa: E501
+        ("CfdCreateExtkeyFromParentPath", c_int, [c_void_p, c_char_p, c_char_p, c_int, c_int, c_char_p_p]),  # noqa: E501
+        ("CfdCreateExtPubkey", c_int, [c_void_p, c_char_p, c_int, c_char_p_p]),  # noqa: E501
+        ("CfdGetPrivkeyFromExtkey", c_int, [c_void_p, c_char_p, c_int, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetPubkeyFromExtkey", c_int, [c_void_p, c_char_p, c_int, c_char_p_p]),  # noqa: E501
+        ("CfdGetParentExtkeyPathData", c_int, [c_void_p, c_char_p, c_char_p, c_int, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetExtkeyInformation", c_int, [c_void_p, c_char_p, c_char_p_p, c_char_p_p, c_char_p_p, c_uint32_p, c_uint32_p]),  # noqa: E501
+        ("CfdInitializeMnemonicWordList", c_int, [c_void_p, c_char_p, c_void_p_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetMnemonicWord", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p]),  # noqa: E501
+        ("CfdFreeMnemonicWordList", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdConvertMnemonicToSeed", c_int, [c_void_p, c_char_p, c_char_p, c_bool, c_char_p, c_bool, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdConvertEntropyToMnemonic", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdInitializeTxSerializeForLedger", c_int, [c_void_p, c_void_p_p]),  # noqa: E501
+        ("CfdAddTxOutMetaDataForLedger", c_int, [c_void_p, c_void_p, c_uint32, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdFinalizeTxSerializeForLedger", c_int, [c_void_p, c_void_p, c_int, c_char_p, c_bool, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdFinalizeTxSerializeHashForLedger", c_int, [c_void_p, c_void_p, c_int, c_char_p, c_bool, c_bool, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdFreeTxSerializeForLedger", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdParseScript", c_int, [c_void_p, c_char_p, c_void_p_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetScriptItem", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p]),  # noqa: E501
+        ("CfdFreeScriptItemHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdConvertScriptAsmToHex", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdInitializeMultisigScriptSig", c_int, [c_void_p, c_void_p_p]),  # noqa: E501
+        ("CfdAddMultisigScriptSigData", c_int, [c_void_p, c_void_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddMultisigScriptSigDataToDer", c_int, [c_void_p, c_void_p, c_char_p, c_int, c_bool, c_char_p]),  # noqa: E501
+        ("CfdFinalizeMultisigScriptSig", c_int, [c_void_p, c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdFreeMultisigScriptSigHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdInitializeTransaction", c_int, [c_void_p, c_int, c_uint32, c_uint32, c_char_p, c_void_p_p]),  # noqa: E501
+        ("CfdAddTransactionInput", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_uint32]),  # noqa: E501
+        ("CfdAddTransactionOutput", c_int, [c_void_p, c_void_p, c_int64, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdFinalizeTransaction", c_int, [c_void_p, c_void_p, c_char_p_p]),  # noqa: E501
+        ("CfdFreeTransactionHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdUpdateTxOutAmount", c_int, [c_void_p, c_int, c_char_p, c_uint32, c_int64, c_char_p_p]),  # noqa: E501
+        ("CfdAddTxSign", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_uint32, c_int, c_char_p, c_bool, c_int, c_bool, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdAddPubkeyHashSign", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_uint32, c_int, c_char_p, c_char_p, c_bool, c_int, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdAddScriptHashSign", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_uint32, c_int, c_char_p, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdAddSignWithPrivkeySimple", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_uint32, c_int, c_char_p, c_char_p, c_int64, c_int, c_bool, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdInitializeMultisigSign", c_int, [c_void_p, c_void_p_p]),  # noqa: E501
+        ("CfdAddMultisigSignData", c_int, [c_void_p, c_void_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddMultisigSignDataToDer", c_int, [c_void_p, c_void_p, c_char_p, c_int, c_bool, c_char_p]),  # noqa: E501
+        ("CfdFinalizeMultisigSign", c_int, [c_void_p, c_void_p, c_int, c_char_p, c_char_p, c_uint32, c_int, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdFreeMultisigSignHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdVerifySignature", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_int, c_char_p, c_char_p, c_char_p, c_uint32, c_int, c_bool, c_int64, c_char_p]),  # noqa: E501
+        ("CfdVerifyTxSign", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_uint32, c_char_p, c_int, c_char_p, c_int64, c_char_p]),  # noqa: E501
+        ("CfdCreateSighash", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_uint32, c_int, c_char_p, c_char_p, c_int64, c_int, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdGetTxInfo", c_int, [c_void_p, c_int, c_char_p, c_char_p_p, c_char_p_p, c_uint32_p, c_uint32_p, c_uint32_p, c_uint32_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetTxIn", c_int, [c_void_p, c_int, c_char_p, c_uint32, c_char_p_p, c_uint32_p, c_uint32_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetTxInWitness", c_int, [c_void_p, c_int, c_char_p, c_uint32, c_uint32, c_char_p_p]),  # noqa: E501
+        ("CfdGetTxOut", c_int, [c_void_p, c_int, c_char_p, c_uint32, c_int64_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetTxInCount", c_int, [c_void_p, c_int, c_char_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetTxInWitnessCount", c_int, [c_void_p, c_int, c_char_p, c_uint32, c_uint32_p]),  # noqa: E501
+        ("CfdGetTxOutCount", c_int, [c_void_p, c_int, c_char_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetTxInIndex", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_uint32, c_uint32_p]),  # noqa: E501
+        ("CfdGetTxOutIndex", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_char_p, c_uint32_p]),  # noqa: E501
+        ("CfdInitializeTxDataHandle", c_int, [c_void_p, c_int, c_char_p, c_void_p_p]),  # noqa: E501
+        ("CfdFreeTxDataHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdGetModifiedTxByHandle", c_int, [c_void_p, c_void_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetTxInfoByHandle", c_int, [c_void_p, c_void_p, c_char_p_p, c_char_p_p, c_uint32_p, c_uint32_p, c_uint32_p, c_uint32_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetTxInByHandle", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_uint32_p, c_uint32_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetTxInWitnessByHandle", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_uint32, c_char_p_p]),  # noqa: E501
+        ("CfdGetTxOutByHandle", c_int, [c_void_p, c_void_p, c_uint32, c_int64_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetTxInCountByHandle", c_int, [c_void_p, c_void_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetTxInWitnessCountByHandle", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_uint32_p]),  # noqa: E501
+        ("CfdGetTxOutCountByHandle", c_int, [c_void_p, c_void_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetTxInIndexByHandle", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_uint32_p]),  # noqa: E501
+        ("CfdGetTxOutIndexByHandle", c_int, [c_void_p, c_void_p, c_char_p, c_char_p, c_uint32_p]),  # noqa: E501
+        ("CfdInitializeFundRawTx", c_int, [c_void_p, c_int, c_uint32, c_char_p, c_void_p_p]),  # noqa: E501
+        ("CfdAddTxInForFundRawTx", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_uint32, c_char_p]),  # noqa: E501
+        ("CfdAddTxInTemplateForFundRawTx", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_uint32, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddUtxoForFundRawTx", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddUtxoTemplateForFundRawTx", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddTargetAmountForFundRawTx", c_int, [c_void_p, c_void_p, c_uint32, c_int64, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdSetOptionFundRawTx", c_int, [c_void_p, c_void_p, c_int, c_int64, c_double, c_bool]),  # noqa: E501
+        ("CfdFinalizeFundRawTx", c_int, [c_void_p, c_void_p, c_char_p, c_double, c_int64_p, c_uint32_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetAppendTxOutFundRawTx", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p]),  # noqa: E501
+        ("CfdFreeFundRawTxHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
     ]
 
     ##
@@ -316,7 +515,7 @@ class CfdUtil:
                         for f in fs:
                             if f == 'lib' and isfile(
                                     os.path.join(path, 'lib', lib_name)):
-                                root_dir = os.path.join(path, 'lib')
+                                root_dir = os.path.join(path, 'lib') + '/'
                     except WindowsError:
                         pass
             else:
@@ -336,8 +535,18 @@ class CfdUtil:
     # @return void
     def _load_functions(self):
         def bind_fn(name, res, args):
-            fn = getattr(self._cfd, name)
-            fn.restype, fn.argtypes = res, args
+            try:
+                fn = getattr(self._cfd, name)
+                if args:
+                    fn.restype, fn.argtypes = res, args
+                else:
+                    fn.restype = res
+            except Exception as err:
+                print('Exception: ' + str(err))
+                print('name: ' + name)
+                print('response: ' + res)
+                print('parameters: ' + args)
+                raise err
             # print('bind: {}, {}, {}'.format(name, res, args))
             return fn
 
