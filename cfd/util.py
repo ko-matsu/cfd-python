@@ -4,7 +4,8 @@
 # @brief internal utility file.
 # @note Copyright 2020 CryptoGarage
 from ctypes import c_int, c_void_p, c_char_p, c_int32, c_int64,\
-    c_uint32, c_uint64, c_bool, c_double, c_ubyte, CDLL, byref, POINTER
+    c_uint32, c_uint64, c_bool, c_double, c_ubyte, \
+    CDLL, byref, POINTER, ArgumentError
 from os.path import isfile, abspath
 import platform
 import os
@@ -558,16 +559,22 @@ class CfdUtil:
             return fn(*args)
 
         def string_fn_wrapper(fn, *args):
-            # Return output string parameters directly without leaking
-            p = c_char_p()
-            new_args = [a for a in args] + [byref(p)]
-            ret = fn(*new_args)
-            ret_str = None if p.value is None else p.value.decode('utf-8')
-            self.free_str_func(p)
-            if isinstance(ret, tuple):
-                return [ret_str, ((ret[0],) + (ret_str,) + ret[1:])][True]
-            else:
-                return [ret_str, (ret, ret_str)][True]
+            try:
+                # Return output string parameters directly without leaking
+                p = c_char_p()
+                new_args = [a for a in args] + [byref(p)]
+                ret = fn(*new_args)
+                ret_str = None if p.value is None else p.value.decode('utf-8')
+                self.free_str_func(p)
+                if isinstance(ret, tuple):
+                    return [ret_str, ((ret[0],) + (ret_str,) + ret[1:])][True]
+                else:
+                    return [ret_str, (ret, ret_str)][True]
+            except ArgumentError as err:
+                print('Exception: ' + str(err))
+                print('name: ' + str(fn))
+                print('new_args: {}'.format(new_args))
+                raise err
 
         def value_fn_wrapper(p, fn, *args):
             new_args = [a for a in args] + [byref(p)]

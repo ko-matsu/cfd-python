@@ -4,55 +4,86 @@
 # @brief address function implements file.
 # @note Copyright 2020 CryptoGarage
 from .util import get_util
-from enum import Enum
+from .key import NetworkType, get_network_type, Pubkey
+from .script import HashType, get_hash_type, Script
 
 
-##
-# @class NetworkType
-# @brief Network Type
-class NetworkType(Enum):
+class Address:
+    def __init__(
+            self,
+            address,
+            locking_script,
+            hash_type=HashType.P2SH,
+            network=NetworkType.MAINNET,
+            pubkey='',
+            redeem_script='',
+            p2sh_wrapped_script=''):
+        self.address = address
+        self.locking_script = locking_script
+        self.pubkey = pubkey
+        self.redeem_script = redeem_script
+        self.p2sh_wrapped_script = p2sh_wrapped_script
+        self.hash_type = hash_type
+        self.network = network
+
     ##
-    # Network: Bitcoin Mainnet
-    MAINNET = 0
-    ##
-    # Network: Bitcoin Testnet
-    TESTNET = 1
-    ##
-    # Network: Bitcoin Regtest
-    REGTEST = 2
-    ##
-    # Network: Liquid LiquidV1
-    LIQUID_V1 = 10
-    ##
-    # Network: Liquid ElementsRegtest
-    ELEMENTS_REGTEST = 11
-    ##
-    # Network: Liquid custom chain
-    CUSTOM_CHAIN = 12
+    # @brief get string.
+    # @return address.
+    def __repr__(self):
+        return self.address
 
 
-##
-# @class HashType
-# @brief Hash Type
-class HashType(Enum):
-    ##
-    # HashType: p2sh
-    P2SH = 1
-    ##
-    # HashType: p2pkh
-    P2PKH = 2
-    ##
-    # HashType: p2wsh
-    P2WSH = 3
-    ##
-    # HashType: p2wpkh
-    P2WPKH = 4
-    ##
-    # HashType: p2sh-p2wsh
-    P2SH_P2WSH = 5
-    ##
-    # HashType: p2sh-p2wpkh
-    P2SH_P2WPKH = 6
+class AddressUtil:
+    @classmethod
+    def p2wpkh(cls, pubkey, network=NetworkType.MAINNET):
+        return cls.from_pubkey_hash(
+            pubkey, HashType.P2WPKH, network)
+
+    @classmethod
+    def from_pubkey_hash(
+            cls,
+            pubkey,
+            hash_type,
+            network=NetworkType.MAINNET):
+        _pubkey = str(pubkey)
+        _hash_type = get_hash_type(hash_type)
+        _network = get_network_type(network)
+        util = get_util()
+        with util.create_handle() as handle:
+            addr, locking_script, segwit_locking_script = util.call_func(
+                'CfdCreateAddress',
+                handle.get_handle(), _hash_type.value, _pubkey,
+                '', _network.value)
+            return Address(
+                addr,
+                locking_script,
+                hash_type=_hash_type,
+                network=_network,
+                pubkey=Pubkey(_pubkey),
+                p2sh_wrapped_script=segwit_locking_script)
+
+    @classmethod
+    def from_script_hash(
+            cls,
+            redeem_script,
+            hash_type,
+            network=NetworkType.MAINNET):
+        _script = str(redeem_script)
+        _hash_type = get_hash_type(hash_type)
+        _network = get_network_type(network)
+        util = get_util()
+        with util.create_handle() as handle:
+            addr, locking_script, segwit_locking_script = util.call_func(
+                'CfdCreateAddress',
+                handle.get_handle(), _hash_type.value, '',
+                _script, _network.value)
+            return Address(
+                addr,
+                locking_script,
+                hash_type=_hash_type,
+                network=_network,
+                redeem_script=Script(_script),
+                p2sh_wrapped_script=segwit_locking_script)
 
 
 ##
@@ -61,13 +92,7 @@ class HashType(Enum):
 # @retval addr              address
 # @retval locking_script    locking script
 def create_p2pkh_address(pubkey):
-    util = get_util()
-    # handle = util.create_handle()
-    addr, locking_script = '', ''
-    with util.create_handle() as handle:
-        if isinstance(pubkey, str):
-            addr, locking_script, segwit_locking_script = util.call_func(
-                'CfdCreateAddress',
-                handle.get_handle(), HashType.P2PKH.value, pubkey,
-                '', NetworkType.MAINNET.value)
-    return addr, locking_script
+    addr = AddressUtil.from_pubkey_hash(
+        pubkey,
+        hash_type='p2pkh')
+    return str(addr), addr.locking_script
