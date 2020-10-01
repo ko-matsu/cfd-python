@@ -3,9 +3,9 @@
 # @file address.py
 # @brief address function implements file.
 # @note Copyright 2020 CryptoGarage
-from .util import get_util
-from .key import NetworkType, get_network_type, Pubkey
-from .script import HashType, get_hash_type, Script
+from .util import get_util, CfdError, JobHandle, to_hex_string
+from .key import Network, Pubkey
+from .script import HashType, Script
 
 
 class Address:
@@ -14,7 +14,7 @@ class Address:
             address,
             locking_script,
             hash_type=HashType.P2SH,
-            network=NetworkType.MAINNET,
+            network=Network.MAINNET,
             pubkey='',
             redeem_script='',
             p2sh_wrapped_script=''):
@@ -35,19 +35,66 @@ class Address:
 
 class AddressUtil:
     @classmethod
-    def p2wpkh(cls, pubkey, network=NetworkType.MAINNET):
+    def parse(cls, address, hash_type=HashType.P2WPKH):
+        util = get_util()
+        with util.create_handle() as handle:
+            network, _hash_type, witness_version,\
+                locking_script, _ = util.call_func(
+                    'CfdGetAddressInfo', handle.get_handle(), str(address))
+            _hash_type = HashType.get(_hash_type)
+            try:
+                if _hash_type == HashType.P2SH:
+                    tmp_hash_type = HashType.get(hash_type)
+                    if tmp_hash_type in {
+                            HashType.P2SH_P2WPKH, HashType.P2SH_P2WSH}:
+                        _hash_type = tmp_hash_type
+            except CfdError:
+                pass
+            return Address(
+                str(address),
+                locking_script,
+                hash_type=_hash_type,
+                network=Network.get(network))
+
+    @classmethod
+    def p2pkh(cls, pubkey, network=Network.MAINNET):
+        return cls.from_pubkey_hash(
+            pubkey, HashType.P2PKH, network)
+
+    @classmethod
+    def p2wpkh(cls, pubkey, network=Network.MAINNET):
         return cls.from_pubkey_hash(
             pubkey, HashType.P2WPKH, network)
+
+    @classmethod
+    def p2sh_p2wpkh(cls, pubkey, network=Network.MAINNET):
+        return cls.from_pubkey_hash(
+            pubkey, HashType.P2SH_P2WPKH, network)
+
+    @classmethod
+    def p2sh(cls, redeem_script, network=Network.MAINNET):
+        return cls.from_script_hash(
+            redeem_script, HashType.P2SH, network)
+
+    @classmethod
+    def p2wsh(cls, redeem_script, network=Network.MAINNET):
+        return cls.from_script_hash(
+            redeem_script, HashType.P2WSH, network)
+
+    @classmethod
+    def p2sh_p2wsh(cls, redeem_script, network=Network.MAINNET):
+        return cls.from_script_hash(
+            redeem_script, HashType.P2SH_P2WSH, network)
 
     @classmethod
     def from_pubkey_hash(
             cls,
             pubkey,
             hash_type,
-            network=NetworkType.MAINNET):
+            network=Network.MAINNET):
         _pubkey = str(pubkey)
-        _hash_type = get_hash_type(hash_type)
-        _network = get_network_type(network)
+        _hash_type = HashType.get(hash_type)
+        _network = Network.get(network)
         util = get_util()
         with util.create_handle() as handle:
             addr, locking_script, segwit_locking_script = util.call_func(
@@ -67,10 +114,10 @@ class AddressUtil:
             cls,
             redeem_script,
             hash_type,
-            network=NetworkType.MAINNET):
+            network=Network.MAINNET):
         _script = str(redeem_script)
-        _hash_type = get_hash_type(hash_type)
-        _network = get_network_type(network)
+        _hash_type = HashType.get(hash_type)
+        _network = Network.get(network)
         util = get_util()
         with util.create_handle() as handle:
             addr, locking_script, segwit_locking_script = util.call_func(
@@ -85,14 +132,92 @@ class AddressUtil:
                 redeem_script=Script(_script),
                 p2sh_wrapped_script=segwit_locking_script)
 
+    @classmethod
+    def multisig(
+            cls,
+            require_num,
+            pubkey_list,
+            hash_type,
+            network=Network.MAINNET):
+        if isinstance(require_num, int) is False:
+            raise CfdError(
+                error_code=1, message='Error: Invalid require_num type.')
+        if (isinstance(pubkey_list, list) is False) or (
+                len(pubkey_list) == 0):
+            raise CfdError(
+                error_code=1, message='Error: Invalid pubkey_list.')
+        _hash_type = HashType.get(hash_type)
+        _network = Network.get(network)
+        util = get_util()
+        with util.create_handle() as handle:
+            word_handle, max_index = util.call_func(
+                'CfdInitializeMultisigScript', handle.get_handle(),
+                _network.value, _hash_type.value)
+            with JobHandle(
+                    handle,
+                    word_handle,
+                    'CfdFreeMultisigScriptHandle') as addr_handle:
+                for pubkey in pubkey_list:
+                    util.call_func(
+                        'CfdAddMultisigScriptData',
+                        handle.get_handle(), addr_handle.get_handle(),
+                        to_hex_string(pubkey))
 
-##
-# @brief create address for p2pkh.
-# @param[in] pubkey      public key
-# @retval addr              address
-# @retval locking_script    locking script
-def create_p2pkh_address(pubkey):
-    addr = AddressUtil.from_pubkey_hash(
-        pubkey,
-        hash_type='p2pkh')
-    return str(addr), addr.locking_script
+                addr, redeem_script, witness_script = util.call_func(
+                    'CfdFinalizeMultisigScript',
+                    handle.get_handle(), addr_handle.get_handle(),
+                    require_num)
+                if _hash_type == HashType.P2SH:
+                    witness_script = redeem_script
+                    redeem_script = ''
+
+                addr_obj = AddressUtil.parse(addr)
+                return Address(
+                    addr,
+                    addr_obj.locking_script,
+                    hash_type=_hash_type,
+                    network=_network,
+                    redeem_script=Script(witness_script),
+                    p2sh_wrapped_script=redeem_script)
+
+    @classmethod
+    def from_locking_script(
+            cls,
+            locking_script,
+            network=Network.MAINNET):
+        _script = str(locking_script)
+        _network = Network.get(network)
+        util = get_util()
+        with util.create_handle() as handle:
+            addr = util.call_func(
+                'CfdGetAddressFromLockingScript',
+                handle.get_handle(), _script, _network.value)
+            return cls.parse(addr)
+
+    @classmethod
+    def get_multisig_address_list(
+            cls,
+            redeem_script,
+            hash_type,
+            network=Network.MAINNET):
+        _script = str(redeem_script)
+        _hash_type = HashType.get(hash_type)
+        _network = Network.get(network)
+        util = get_util()
+        addr_list = []
+        with util.create_handle() as handle:
+            word_handle, max_index = util.call_func(
+                'CfdGetAddressesFromMultisig', handle.get_handle(),
+                _script, _network.value, _hash_type.value)
+            with JobHandle(
+                    handle,
+                    word_handle,
+                    'CfdFreeAddressesMultisigHandle') as addr_handle:
+                for i in range(max_index):
+                    addr, pubkey = util.call_func(
+                        'CfdGetAddressFromMultisigKey',
+                        handle.get_handle(), addr_handle.get_handle(), i)
+                    _addr = cls.parse(addr)
+                    _addr.pubkey = pubkey
+                    addr_list.append(_addr)
+        return addr_list

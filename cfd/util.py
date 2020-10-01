@@ -7,12 +7,28 @@ from ctypes import c_int, c_void_p, c_char_p, c_int32, c_int64,\
     c_uint32, c_uint64, c_bool, c_double, c_ubyte, \
     CDLL, byref, POINTER, ArgumentError
 from os.path import isfile, abspath
+from enum import Enum
 import platform
 import os
+import re
 
 ################
 # Public class #
 ################
+
+
+class CfdErrorCode(Enum):
+    SUCCESS = 0
+    UNKNOWN = -1
+    INTERNAL = -2
+    MEMORY_FULL = -3
+    ILLEGAL_ARGUMENT = 1
+    ILLEGAL_STATE = 2
+    OUT_OF_RANGE = 3
+    INVALID_SETTING = 4
+    CONNECTION_ERROR = 5
+    DISK_ACCESS_ERROR = 6
+    SIGN_VERIFICATION = 7
 
 
 ##
@@ -30,7 +46,7 @@ class CfdError(Exception):
     # @brief constructor.
     # @param[in] error_code     error code
     # @param[in] message        error message
-    def __init__(self, error_code=-1, message=''):
+    def __init__(self, error_code=CfdErrorCode.UNKNOWN.value, message=''):
         self.error_code = error_code
         self.message = message
 
@@ -41,13 +57,81 @@ class CfdError(Exception):
         return 'code={}, msg={}'.format(self.error_code, self.message)
 
 
+class ByteData:
+    def __init__(self, data):
+        if isinstance(data, bytes) or isinstance(data, bytearray):
+            self.hex = data.hex()
+        elif isinstance(data, list):
+            self.hex = ''.join("%02x" % b for b in data)
+        else:
+            self.hex = str(data).lower()
+            bytes.fromhex(self.hex)  # check hex
+
+    ##
+    # @brief get string.
+    # @return hex.
+    def __repr__(self):
+        return self.hex
+
+    def as_bytes(self):
+        return bytes.fromhex(self.hex)
+
+    def as_array(self):
+        _hex_list = re.split('(..)', self.hex)[1::2]
+        return [int('0x' + s, 16) for s in _hex_list]
+
+    def serialize(self):
+        util = get_util()
+        with util.create_handle() as handle:
+            _serialized = util.call_func(
+                'CfdSerializeByteData', handle.get_handle(), self.hex)
+            return _serialized
+
+
+class ReverseByteData:
+    def __init__(self, data):
+        if isinstance(data, bytes) or isinstance(data, bytearray):
+            _data = data.hex()
+            _list = re.split('(..)', _data)[1::2]
+            new_list = _list[::-1]
+            self.hex = ''.join(new_list)
+        elif isinstance(data, list):
+            new_list = data[::-1]
+            self.hex = ''.join("%02x" % b for b in new_list)
+        else:
+            self.hex = str(data).lower()
+            if self.hex != '':
+                bytes.fromhex(self.hex)  # check hex
+
+    ##
+    # @brief get string.
+    # @return hex.
+    def __repr__(self):
+        return self.hex
+
+    def as_bytes(self):
+        _hex_list = re.split('(..)', self.hex)[1::2]
+        _hex_list = _hex_list[::-1]
+        return bytes.fromhex(''.join(_hex_list))
+
+    def as_array(self):
+        _hex_list = re.split('(..)', self.hex)[1::2]
+        _hex_list = _hex_list[::-1]
+        return [int('0x' + s, 16) for s in _hex_list]
+
+
 def to_hex_string(value):
-    if (isinstance(value, bytes)):
+    if isinstance(value, bytes):
         return value.hex()
-    elif (isinstance(value, list)):
+    elif isinstance(value, bytearray):
+        return value.hex()
+    elif isinstance(value, list):
         return "".join("%02x" % b for b in value)
     else:
-        return str(value)
+        _hex = str(value)
+        if _hex != '':
+            bytes.fromhex(_hex)
+        return _hex
 
 
 ##################
@@ -328,6 +412,7 @@ class CfdUtil:
         ("CfdAdaptEcdsaAdaptor", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdExtractEcdsaAdaptorSecret", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdVerifyEcdsaAdaptor", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdGetSchnorrPubkeyFromPrivkey", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdSignSchnorr", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdSignSchnorrWithNonce", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdComputeSchnorrSigPoint", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
@@ -692,7 +777,7 @@ class CfdUtil:
                     args[0])
                 if temp_ret == 0:
                     message = err_msg
-            raise CfdError(error_code=ret, message=message)
+            raise CfdError(error_code=err_code, message=message)
         if isinstance(ret, tuple) is False:
             return
         elif len(ret) == 1:
