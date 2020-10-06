@@ -80,11 +80,11 @@
             {
                 "case": "lang:en",
                 "request": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "en"
                 },
                 "expect": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "en"
                 },
                 "error": false
@@ -92,11 +92,11 @@
             {
                 "case": "lang:jp",
                 "request": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "jp"
                 },
                 "expect": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "jp"
                 },
                 "error": false
@@ -109,11 +109,11 @@
             {
                 "case": "lang:en",
                 "request": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "en"
                 },
                 "expect": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "en"
                 },
                 "error": false
@@ -121,11 +121,11 @@
             {
                 "case": "lang:jp",
                 "request": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "jp"
                 },
                 "expect": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "jp"
                 },
                 "error": false
@@ -138,11 +138,11 @@
             {
                 "case": "lang:en",
                 "request": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "en"
                 },
                 "expect": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "en"
                 },
                 "error": false
@@ -150,11 +150,11 @@
             {
                 "case": "lang:jp",
                 "request": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "jp"
                 },
                 "expect": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "jp"
                 },
                 "error": false
@@ -167,11 +167,11 @@
             {
                 "case": "lang:en",
                 "request": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "en"
                 },
                 "expect": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "en"
                 },
                 "error": false
@@ -179,12 +179,57 @@
             {
                 "case": "lang:jp",
                 "request": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "jp"
                 },
                 "expect": {
-                    "file": "test_vector.json",
+                    "file": "bip39/test_vector.json",
                     "language": "jp"
+                },
+                "error": false
+            }
+        ]
+    },
+    {
+        "name": "GetExtPubkeyFromSeed",
+        "cases": [
+            {
+                "case": "normal",
+                "request": {
+                    "file": "bip32/test_vector.json"
+                },
+                "expect": {
+                    "file": "bip32/test_vector.json"
+                },
+                "error": false
+            }
+        ]
+    },
+    {
+        "name": "DerivePrivkeyFromSeed",
+        "cases": [
+            {
+                "case": "normal",
+                "request": {
+                    "file": "bip32/test_vector.json"
+                },
+                "expect": {
+                    "file": "bip32/test_vector.json"
+                },
+                "error": false
+            }
+        ]
+    },
+    {
+        "name": "DerivePubkeyFromSeed",
+        "cases": [
+            {
+                "case": "normal",
+                "request": {
+                    "file": "bip32/test_vector.json"
+                },
+                "expect": {
+                    "file": "bip32/test_vector.json"
                 },
                 "error": false
             }

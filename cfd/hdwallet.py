@@ -89,7 +89,7 @@ class ExtPrivkey(Extkey):
             _extkey = util.call_func(
                 'CfdCreateExtkeyFromSeed', handle.get_handle(),
                 _seed, _network.value, ExtKeyType.EXT_PRIVKEY.value)
-        return _extkey
+        return ExtPrivkey(_extkey)
 
     @classmethod
     def create(
