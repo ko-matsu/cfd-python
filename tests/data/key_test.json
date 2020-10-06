@@ -1,0 +1,313 @@
+[
+    {
+        "name": "Privkey",
+        "cases": [
+            {
+                "case": "wif test",
+                "request": {
+                    "wif": "KwiaU5gXTSAfKf6SZtYSg3XGmbvNgjTS3Tdo3ZeQbb5xJrd19uYf",
+                    "hex": "",
+                    "network": "mainnet",
+                    "is_compressed": true
+                },
+                "expect": {
+                    "privkey": "KwiaU5gXTSAfKf6SZtYSg3XGmbvNgjTS3Tdo3ZeQbb5xJrd19uYf",
+                    "wif": "KwiaU5gXTSAfKf6SZtYSg3XGmbvNgjTS3Tdo3ZeQbb5xJrd19uYf",
+                    "hex": "0ed9aa2c6c7c900854d7852fbad63e0500ebf335d880678b92203505ca01e81a",
+                    "network": "mainnet",
+                    "is_compressed": true
+                },
+                "error": false
+            },
+            {
+                "case": "hex test (mainnet)",
+                "request": {
+                    "wif": "",
+                    "hex": "0ed9aa2c6c7c900854d7852fbad63e0500ebf335d880678b92203505ca01e81a",
+                    "network": "mainnet",
+                    "is_compressed": true
+                },
+                "expect": {
+                    "privkey": "0ed9aa2c6c7c900854d7852fbad63e0500ebf335d880678b92203505ca01e81a",
+                    "wif": "KwiaU5gXTSAfKf6SZtYSg3XGmbvNgjTS3Tdo3ZeQbb5xJrd19uYf",
+                    "hex": "0ed9aa2c6c7c900854d7852fbad63e0500ebf335d880678b92203505ca01e81a",
+                    "network": "mainnet",
+                    "is_compressed": true
+                },
+                "error": false
+            },
+            {
+                "case": "hex test (testnet)",
+                "request": {
+                    "wif": "",
+                    "hex": "d371c0115118916450d4fafc4a123b7ead0e320b1f7f82f119e6caacc860b06f",
+                    "network": "testnet",
+                    "is_compressed": true
+                },
+                "expect": {
+                    "privkey": "d371c0115118916450d4fafc4a123b7ead0e320b1f7f82f119e6caacc860b06f",
+                    "wif": "cUfipPioYnHU61pfYTH9uuNoswRXx8rtzXhJZrsPeVV1LRFdTxvp",
+                    "hex": "d371c0115118916450d4fafc4a123b7ead0e320b1f7f82f119e6caacc860b06f",
+                    "network": "testnet",
+                    "is_compressed": true
+                },
+                "error": false
+            },
+            {
+                "case": "hex test(mainnet & uncompress)",
+                "request": {
+                    "wif": "",
+                    "hex": "c5fadc0c2b8144c0f97d600b95f42d9959ddcafb30dba62bc2925084e2b7fbe9",
+                    "network": "mainnet",
+                    "is_compressed": false
+                },
+                "expect": {
+                    "privkey": "c5fadc0c2b8144c0f97d600b95f42d9959ddcafb30dba62bc2925084e2b7fbe9",
+                    "wif": "5KKUiJHk4ZT1vyZjLauvZpst6STMwcJ6y5i285vkbvWUrJWDUw6",
+                    "hex": "c5fadc0c2b8144c0f97d600b95f42d9959ddcafb30dba62bc2925084e2b7fbe9",
+                    "network": "mainnet",
+                    "is_compressed": false
+                },
+                "error": false
+            },
+            {
+                "case": "hex test(testnet & uncompress)",
+                "request": {
+                    "wif": "",
+                    "hex": "9e1285166b42230e448ae63f72d4135d42300e0462c3b7018a5d041a43bed7a0",
+                    "network": "testnet",
+                    "is_compressed": false
+                },
+                "expect": {
+                    "privkey": "9e1285166b42230e448ae63f72d4135d42300e0462c3b7018a5d041a43bed7a0",
+                    "wif": "92nXugKVPD1wCiuy6Ain4BnjxSJainfDHmF4V8rwxmSpZiXrb5E",
+                    "hex": "9e1285166b42230e448ae63f72d4135d42300e0462c3b7018a5d041a43bed7a0",
+                    "network": "testnet",
+                    "is_compressed": false
+                },
+                "error": false
+            },
+            {
+                "case": "empty key",
+                "request": {
+                    "wif": "",
+                    "hex": "",
+                    "network": "mainnet",
+                    "is_compressed": true
+                },
+                "expect": {
+                    "python": "Failed to parameter. privkey is null or empty.",
+                    "json": "Invalid Privkey data."
+                },
+                "error": true
+            },
+            {
+                "case": "invalid wif",
+                "request": {
+                    "wif": "KwiaU5gXTSAfKf6SZtYSg3XGmbvNgjTS3Tdo3ZeQbb5xJrd19u",
+                    "hex": "",
+                    "network": "mainnet",
+                    "is_compressed": true
+                },
+                "expect": {
+                    "python": "Failed to GetPrivkeyFromWif. Wif format error.",
+                    "json": "Failed to GetPrivkeyFromWif. Wif format error."
+                },
+                "error": true
+            },
+            {
+                "case": "invalid hex size",
+                "request": {
+                    "wif": "",
+                    "hex": "c5fadc0c2b8144c0f97d600b95f42d9959ddcafb30dba62bc2925084e2b7",
+                    "network": "mainnet",
+                    "is_compressed": true
+                },
+                "expect": {
+                    "python": "Invalid Privkey data.",
+                    "json": "Invalid Privkey data."
+                },
+                "error": true
+            }
+        ]
+    },
+    {
+        "name": "Privkey.AddTweak",
+        "cases": [
+            {
+                "case": "normal",
+                "request": {
+                    "hex": "036b13c5a0dd9935fe175b2b9ff86585c231e734b2148149d788a941f1f4f566",
+                    "tweak": "98430d10471cf697e2661e31ceb8720750b59a85374290e175799ba5dd06508e"
+                },
+                "expect": {
+                    "hex": "9bae20d5e7fa8fcde07d795d6eb0d78d12e781b9e957122b4d0244e7cefb45f4"
+                },
+                "error": false
+            },
+            {
+                "case": "invalid tweak size",
+                "request": {
+                    "hex": "036b13c5a0dd9935fe175b2b9ff86585c231e734b2148149d788a941f1f4f566",
+                    "tweak": "98430d10471cf697e2661e31ceb8720750b59a85374290e175799ba5dd0650"
+                },
+                "expect": {
+                    "python": "ByteData256 size unmatch.",
+                    "json": ""
+                },
+                "error": true
+            }
+        ]
+    },
+    {
+        "name": "Privkey.MulTweak",
+        "cases": [
+            {
+                "case": "normal",
+                "request": {
+                    "hex": "036b13c5a0dd9935fe175b2b9ff86585c231e734b2148149d788a941f1f4f566",
+                    "tweak": "98430d10471cf697e2661e31ceb8720750b59a85374290e175799ba5dd06508e"
+                },
+                "expect": {
+                    "hex": "aa71b12accba23b49761a7521e661f07a7e5742ac48cf708b8f9497b3a72a957"
+                },
+                "error": false
+            },
+            {
+                "case": "invalid tweak size",
+                "request": {
+                    "hex": "036b13c5a0dd9935fe175b2b9ff86585c231e734b2148149d788a941f1f4f566",
+                    "tweak": "98430d10471cf697e2661e31ceb8720750b59a85374290e175799ba5dd0650"
+                },
+                "expect": {
+                    "python": "ByteData256 size unmatch.",
+                    "json": ""
+                },
+                "error": true
+            }
+        ]
+    },
+    {
+        "name": "Privkey.Negate",
+        "cases": [
+            {
+                "case": "normal",
+                "request": {
+                    "hex": "036b13c5a0dd9935fe175b2b9ff86585c231e734b2148149d788a941f1f4f566"
+                },
+                "expect": {
+                    "hex": "fc94ec3a5f2266ca01e8a4d460079a78f87cf5b1fd341ef1e849b54ade414bdb"
+                },
+                "error": false
+            }
+        ]
+    },
+    {
+        "name": "Privkey.CalculateEcSignature",
+        "cases": [
+            {
+                "case": "grindR is true",
+                "request": {
+                    "hex": "305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27",
+                    "sighash": "2a67f03e63a6a422125878b40b82da593be8d4efaafe88ee528af6e5a9955c6e",
+                    "grind_r": true
+                },
+                "expect": {
+                    "signature": "0e68b55347fe37338beb3c28920267c5915a0c474d1dcafc65b087b9b3819cae6ae5e8fb12d669a63127abb4724070f8bd232a9efe3704e6544296a843a64f2c"
+                },
+                "error": false
+            },
+            {
+                "case": "grindR is false",
+                "request": {
+                    "hex": "305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27",
+                    "sighash": "2a67f03e63a6a422125878b40b82da593be8d4efaafe88ee528af6e5a9955c6e",
+                    "grind_r": false
+                },
+                "expect": {
+                    "signature": "0e68b55347fe37338beb3c28920267c5915a0c474d1dcafc65b087b9b3819cae6ae5e8fb12d669a63127abb4724070f8bd232a9efe3704e6544296a843a64f2c"
+                },
+                "error": false
+            }
+        ]
+    },
+    {
+        "name": "Pubkey",
+        "cases": [
+            {
+                "case": "success",
+                "request": {
+                    "hex": "031d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1"
+                },
+                "expect": {
+                    "hex": "031d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1"
+                },
+                "error": false
+            },
+            {
+                "case": "empty key",
+                "request": {
+                    "hex": ""
+                },
+                "expect": {
+                    "python": "Failed to parameter. pubkey is null or empty.",
+                    "json": ""
+                },
+                "error": true
+            },
+            {
+                "case": "invalid hex size",
+                "request": {
+                    "hex": "031d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020"
+                },
+                "expect": {
+                    "python": "Invalid Pubkey data.",
+                    "json": ""
+                },
+                "error": true
+            }
+        ]
+    },
+    {
+        "name": "Pubkey.VerifyEcSignature",
+        "cases": [
+            {
+                "case": "success",
+                "request": {
+                    "hex": "031777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb",
+                    "sighash": "2a67f03e63a6a422125878b40b82da593be8d4efaafe88ee528af6e5a9955c6e",
+                    "signature": "0e68b55347fe37338beb3c28920267c5915a0c474d1dcafc65b087b9b3819cae6ae5e8fb12d669a63127abb4724070f8bd232a9efe3704e6544296a843a64f2c"
+                },
+                "expect": {
+                    "bool": true
+                },
+                "error": false
+            },
+            {
+                "case": "verify fail",
+                "request": {
+                    "hex": "031777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb",
+                    "sighash": "2a67f03e63a6a422125878b40b82da593be8d4efaafe88ee528af6e5a9955c6e",
+                    "signature": "1e68b55347fe37338beb3c28920267c5915a0c474d1dcafc65b087b9b3819cae6ae5e8fb12d669a63127abb4724070f8bd232a9efe3704e6544296a843a64f2c"
+                },
+                "expect": {
+                    "bool": false
+                },
+                "error": false
+            },
+            {
+                "case": "invalid signature data",
+                "request": {
+                    "hex": "031777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb",
+                    "sighash": "2a67f03e63a6a422125878b40b82da593be8d4efaafe88ee528af6e5a9955c6e",
+                    "signature": "zz68b55347fe37338beb3c28920267c5915a0c474d1dcafc65b087b9b3819cae6ae5e8fb12d669a63127abb4724070f8bd232a9efe3704e6544296a843a64f2c"
+                },
+                "expect": {
+                    "python": "hex to byte convert error.",
+                    "json": ""
+                },
+                "error": true
+            }
+        ]
+    }
+]

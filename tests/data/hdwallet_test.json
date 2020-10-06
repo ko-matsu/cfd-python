@@ -1,0 +1,193 @@
+[
+    {
+        "name": "GetMnemonicWordList",
+        "cases": [
+            {
+                "case": "lang:en",
+                "request": {
+                    "language": "en"
+                },
+                "expect": {
+                    "file": "bip39/wordlist_en.json"
+                },
+                "error": false
+            },
+            {
+                "case": "lang:es",
+                "request": {
+                    "language": "es"
+                },
+                "expect": {
+                    "file": "bip39/wordlist_es.json"
+                },
+                "error": false
+            },
+            {
+                "case": "lang:fr",
+                "request": {
+                    "language": "fr"
+                },
+                "expect": {
+                    "file": "bip39/wordlist_fr.json"
+                },
+                "error": false
+            },
+            {
+                "case": "lang:it",
+                "request": {
+                    "language": "it"
+                },
+                "expect": {
+                    "file": "bip39/wordlist_it.json"
+                },
+                "error": false
+            },
+            {
+                "case": "lang:jp",
+                "request": {
+                    "language": "jp"
+                },
+                "expect": {
+                    "file": "bip39/wordlist_jp.json"
+                },
+                "error": false
+            },
+            {
+                "case": "lang:zhs",
+                "request": {
+                    "language": "zhs"
+                },
+                "expect": {
+                    "file": "bip39/wordlist_zhs.json"
+                },
+                "error": false
+            },
+            {
+                "case": "lang:zht",
+                "request": {
+                    "language": "zht"
+                },
+                "expect": {
+                    "file": "bip39/wordlist_zht.json"
+                },
+                "error": false
+            }
+        ]
+    },
+    {
+        "name": "GetEntropyFromMnemonic",
+        "cases": [
+            {
+                "case": "lang:en",
+                "request": {
+                    "file": "test_vector.json",
+                    "language": "en"
+                },
+                "expect": {
+                    "file": "test_vector.json",
+                    "language": "en"
+                },
+                "error": false
+            },
+            {
+                "case": "lang:jp",
+                "request": {
+                    "file": "test_vector.json",
+                    "language": "jp"
+                },
+                "expect": {
+                    "file": "test_vector.json",
+                    "language": "jp"
+                },
+                "error": false
+            }
+        ]
+    },
+    {
+        "name": "GetMnemonicFromEntropy",
+        "cases": [
+            {
+                "case": "lang:en",
+                "request": {
+                    "file": "test_vector.json",
+                    "language": "en"
+                },
+                "expect": {
+                    "file": "test_vector.json",
+                    "language": "en"
+                },
+                "error": false
+            },
+            {
+                "case": "lang:jp",
+                "request": {
+                    "file": "test_vector.json",
+                    "language": "jp"
+                },
+                "expect": {
+                    "file": "test_vector.json",
+                    "language": "jp"
+                },
+                "error": false
+            }
+        ]
+    },
+    {
+        "name": "GetMnemonicToSeed",
+        "cases": [
+            {
+                "case": "lang:en",
+                "request": {
+                    "file": "test_vector.json",
+                    "language": "en"
+                },
+                "expect": {
+                    "file": "test_vector.json",
+                    "language": "en"
+                },
+                "error": false
+            },
+            {
+                "case": "lang:jp",
+                "request": {
+                    "file": "test_vector.json",
+                    "language": "jp"
+                },
+                "expect": {
+                    "file": "test_vector.json",
+                    "language": "jp"
+                },
+                "error": false
+            }
+        ]
+    },
+    {
+        "name": "GetExtPrivkeyFromSeed",
+        "cases": [
+            {
+                "case": "lang:en",
+                "request": {
+                    "file": "test_vector.json",
+                    "language": "en"
+                },
+                "expect": {
+                    "file": "test_vector.json",
+                    "language": "en"
+                },
+                "error": false
+            },
+            {
+                "case": "lang:jp",
+                "request": {
+                    "file": "test_vector.json",
+                    "language": "jp"
+                },
+                "expect": {
+                    "file": "test_vector.json",
+                    "language": "jp"
+                },
+                "error": false
+            }
+        ]
+    }
+]
