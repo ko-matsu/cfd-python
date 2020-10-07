@@ -1,0 +1,24 @@
+[
+    {
+        "base": true,
+        "memo": "The commitment is calculated from asset, amount and blinders.",
+        "txid": "",
+        "vout": 0,
+        "amount": 0,
+        "asset": "",
+        "redeemScript": "",
+        "descriptor": "",
+        "scriptSigTemplate": "",
+        "isIssuance": false,
+        "isBlindIssuance": false,
+        "isPegin": false,
+        "peginBtcTxSize": 0,
+        "fedpegScript": "",
+        "assetBlindFactor": "",
+        "blindFactor": "",
+        "keyData": {
+            "privkey": "",
+            "blindingKey": ""
+        }
+    }
+]
