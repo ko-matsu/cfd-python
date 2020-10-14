@@ -23,6 +23,12 @@ class DescriptorScriptType(Enum):
     ADDR = 9
     RAW = 10
 
+    ##
+    # @brief get string.
+    # @return name.
+    def as_str(self):
+        return self.name.lower().replace('_', '')
+
     @classmethod
     def get(cls, desc_type):
         if (isinstance(desc_type, DescriptorScriptType)):
@@ -48,6 +54,18 @@ class DescriptorKeyType(Enum):
     BIP32 = 2
     BIP32_PRIV = 3
 
+    ##
+    # @brief get string.
+    # @return name.
+    def as_str(self):
+        if self == DescriptorKeyType.PUBLIC:
+            return 'pubkey'
+        elif self == DescriptorKeyType.BIP32:
+            return 'extPubkey'
+        elif self == DescriptorKeyType.BIP32_PRIV:
+            return 'extPrivkey'
+        return self.name
+
     @classmethod
     def get(cls, desc_type):
         if (isinstance(desc_type, DescriptorKeyType)):
@@ -62,6 +80,12 @@ class DescriptorKeyType(Enum):
             for type_data in DescriptorKeyType:
                 if _type == type_data.name.lower():
                     return type_data
+            if _type == 'pubkey':
+                return DescriptorKeyType.PUBLIC
+            elif _type == 'extpubkey':
+                return DescriptorKeyType.BIP32
+            elif _type == 'extprivkey':
+                return DescriptorKeyType.BIP32_PRIV
         raise CfdError(
             error_code=1,
             message='Error: Invalid type.')
@@ -78,6 +102,18 @@ class DescriptorKeyData:
         self.pubkey = pubkey
         self.ext_pubkey = ext_pubkey
         self.ext_privkey = ext_privkey
+
+    ##
+    # @brief get string.
+    # @return descriptor.
+    def __str__(self):
+        if self.key_type == DescriptorKeyType.PUBLIC:
+            return str(self.pubkey)
+        elif self.key_type == DescriptorKeyType.BIP32:
+            return str(self.ext_pubkey)
+        elif self.key_type == DescriptorKeyType.BIP32_PRIV:
+            return str(self.ext_privkey)
+        return ''
 
 
 class DescriptorScriptData:
@@ -117,7 +153,7 @@ class Descriptor:
         with util.create_handle() as handle:
             word_handle, max_index = util.call_func(
                 'CfdParseDescriptor', handle.get_handle(),
-                self.descriptor, self.network.value)
+                self.descriptor, self.network.value, self.path)
             with JobHandle(
                     handle,
                     word_handle,
@@ -138,11 +174,11 @@ class Descriptor:
                             'CfdGetDescriptorData',
                             handle.get_handle(), desc_handle.get_handle(), i)
                     _script_type = DescriptorScriptType.get(script_type)
+                    _hash_type = HashType.P2SH
+                    if _script_type != DescriptorScriptType.RAW:
+                        _hash_type = HashType.get(hash_type)
                     data = DescriptorScriptData(
-                        _script_type,
-                        depth,
-                        HashType.get(hash_type),
-                        address)
+                        _script_type, depth, _hash_type, address)
                     if _script_type in {
                             DescriptorScriptType.COMBO,
                             DescriptorScriptType.PK,
@@ -238,7 +274,7 @@ class Descriptor:
     ##
     # @brief get string.
     # @return descriptor.
-    def __repr__(self):
+    def __str__(self):
         return self.descriptor
 
 
@@ -250,3 +286,13 @@ class Descriptor:
 # @retval Descriptor        descriptor object
 def parse_descriptor(descriptor, network=Network.MAINNET, path=''):
     return Descriptor(descriptor, network=network, path=path)
+
+
+__all__ = [
+    'parse_descriptor',
+    'Descriptor',
+    'DescriptorScriptType',
+    'DescriptorKeyType',
+    'DescriptorScriptData',
+    'DescriptorKeyData'
+]

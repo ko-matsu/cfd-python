@@ -49,5 +49,8 @@ class ConfidentialAddress:
     ##
     # @brief get string.
     # @return confidential address.
-    def __repr__(self):
+    def __str__(self):
         return self.confidential_address
+
+
+__all__ = ['ConfidentialAddress']

@@ -31,6 +31,18 @@ class HashType(Enum):
     # HashType: p2sh-p2wpkh
     P2SH_P2WPKH = 6
 
+    ##
+    # @brief get string.
+    # @return name.
+    def __str__(self):
+        return self.name.lower().replace('_', '-')
+
+    ##
+    # @brief get string.
+    # @return name.
+    def as_str(self):
+        return self.name.lower().replace('_', '-')
+
     @classmethod
     def get(cls, hashtype):
         if (isinstance(hashtype, HashType)):
@@ -51,7 +63,7 @@ class HashType(Enum):
                 return HashType.P2SH_P2WPKH
         raise CfdError(
             error_code=1,
-            message='Error: Invalid hash type.')
+            message='Error: Invalid hash type: {}'.format(hashtype))
 
 
 class Script:
@@ -60,6 +72,10 @@ class Script:
         _asm = script_items
         if isinstance(script_items, list):
             _asm = ' '.join(script_items)
+        if len(_asm) == 0:
+            raise CfdError(
+                error_code=1,
+                message='Error: empty script items.')
         util = get_util()
         with util.create_handle() as handle:
             _hex = util.call_func(
@@ -82,12 +98,7 @@ class Script:
                         raise CfdError(
                             error_code=1,
                             message='Error: Invalid sign_parameter_list item.')
-                    if len(param.hex) > 130:    # der encoded
-                        util.call_func(
-                            'CfdAddMultisigScriptSigData',
-                            handle.get_handle(), script_handle.get_handle(),
-                            param.hex, param.related_pubkey)
-                    else:
+                    if (len(param.hex) <= 130) and param.use_der_encode:
                         _sighashtype = SigHashType.get(param.sighashtype)
                         util.call_func(
                             'CfdAddMultisigScriptSigDataToDer',
@@ -95,6 +106,11 @@ class Script:
                             param.hex, _sighashtype.get_type(),
                             _sighashtype.anyone_can_pay(),
                             param.related_pubkey)
+                    else:
+                        util.call_func(
+                            'CfdAddMultisigScriptSigData',
+                            handle.get_handle(), script_handle.get_handle(),
+                            param.hex, param.related_pubkey)
                 scriptsig = util.call_func(
                     'CfdFinalizeMultisigScriptSig',
                     handle.get_handle(), script_handle.get_handle(),
@@ -107,7 +123,7 @@ class Script:
 
     # @brief get string.
     # @return address.
-    def __repr__(self):
+    def __str__(self):
         return self.hex
 
     @classmethod
@@ -127,3 +143,9 @@ class Script:
                         handle.get_handle(), script_handle.get_handle(), i)
                     script_list.append(item)
         return ' '.join(script_list)
+
+
+__all__ = [
+    'Script',
+    'HashType'
+]

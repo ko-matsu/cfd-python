@@ -27,9 +27,44 @@ class ExtKeyType(Enum):
     EXT_PRIVKEY = 0
     EXT_PUBKEY = 1
 
+    ##
+    # @brief get string.
+    # @return name.
+    def __str__(self):
+        return self.name.lower().replace('_', '')
+
+    ##
+    # @brief get string.
+    # @return name.
+    def as_str(self):
+        return self.name.lower().replace('_', '')
+
+    @classmethod
+    def get(cls, key_type):
+        if (isinstance(key_type, ExtKeyType)):
+            return key_type
+        elif (isinstance(key_type, int)):
+            _num = int(key_type)
+            for _type in ExtKeyType:
+                if _num == _type.value:
+                    return _type
+        else:
+            _key_type = str(key_type).lower()
+            for _type in ExtKeyType:
+                if _key_type == _type.name.lower():
+                    return _type
+            if _key_type == 'extprivkey':
+                return ExtKeyType.EXT_PRIVKEY
+            elif _key_type == 'extpubkey':
+                return ExtKeyType.EXT_PUBKEY
+        raise CfdError(
+            error_code=1,
+            message='Error: Invalid extkey type.')
+
 
 class Extkey(object):
-    def __init__(self):
+    def __init__(self, extkey_type):
+        self.extkey_type = extkey_type
         self.util = get_util()
         self.version, self.fingerprint, self.chain_code, self.depth, \
             self.child_number = ('', '', '', 0, 0)
@@ -43,16 +78,38 @@ class Extkey(object):
             self.version, self.fingerprint, self.chain_code, self.depth, \
                 self.child_number = result
             self.extkey = extkey
-            self.network = Network.TESTNET
-            if self.version in {XPRIV_MAINNET_VERSION, XPUB_MAINNET_VERSION}:
+            if self.extkey_type == ExtKeyType.EXT_PRIVKEY:
+                main, test, name = XPRIV_MAINNET_VERSION,\
+                    XPRIV_TESTNET_VERSION, 'privkey'
+            else:
+                main, test, name = XPUB_MAINNET_VERSION,\
+                    XPUB_TESTNET_VERSION, 'pubkey'
+            if self.version == main:
                 self.network = Network.MAINNET
+            elif self.version == test:
+                self.network = Network.TESTNET
+            else:
+                raise CfdError(
+                    error_code=1,
+                    message='Error: Invalid ext {}.'.format(name))
 
-    def _convert_path(self, path='', number=0, number_list=[]):
+    @classmethod
+    def _convert_path(cls, path='', number=0, number_list=[]):
         if path != '':
             return path, []
         if isinstance(number_list, list) and (
                 len(number_list) > 0) and (isinstance(number_list[0], int)):
+            for num in number_list:
+                if (num < 0) or (num > 0xffffffff):
+                    raise CfdError(
+                        error_code=1,
+                        message='Error: Invalid number_list item range.')
             return '', number_list
+        if (not isinstance(number, int)) or (
+                number < 0) or (number > 0xffffffff):
+            raise CfdError(
+                error_code=1,
+                message='Error: Invalid number range.')
         return '', [number]
 
     def _get_path_data(self, bip32_path, key_type):
@@ -67,6 +124,8 @@ class Extkey(object):
             depth, number, parent_key=''):
         _network = Network.get_mainchain(network)
         _fingerprint = ''
+        _path, _num_list = cls._convert_path(number=number)
+        _number = _num_list[0] if len(_num_list) > 0 else number
         if parent_key == '':
             _fingerprint = fingerprint
         _network = Network.get_mainchain(network)
@@ -75,7 +134,7 @@ class Extkey(object):
             _extkey = util.call_func(
                 'CfdCreateExtkey', handle.get_handle(),
                 _network.value, key_type.value, parent_key,
-                _fingerprint, key, chain_code, depth, number)
+                _fingerprint, key, chain_code, depth, _number)
         return _extkey
 
 
@@ -96,12 +155,12 @@ class ExtPrivkey(Extkey):
             cls, network, fingerprint, key, chain_code,
             depth, number, parent_key=''):
         _extkey = cls._create(
-            cls, ExtKeyType.EXT_PRIVKEY, network, fingerprint, key,
+            ExtKeyType.EXT_PRIVKEY, network, fingerprint, key,
             chain_code, depth, number, parent_key)
         return ExtPrivkey(_extkey)
 
     def __init__(self, extkey):
-        super().__init__()
+        super().__init__(ExtKeyType.EXT_PRIVKEY)
         self._get_information(extkey)
         with self.util.create_handle() as handle:
             _hex, wif = self.util.call_func(
@@ -111,7 +170,7 @@ class ExtPrivkey(Extkey):
 
     # @brief get string.
     # @return extkey.
-    def __repr__(self):
+    def __str__(self):
         return self.extkey
 
     def derive(self, path='', number=0, number_list=[]):
@@ -120,9 +179,10 @@ class ExtPrivkey(Extkey):
             if _path == '':
                 _extkey = self.extkey
                 for child in _list:
+                    hardened = True if child >= 0x80000000 else False
                     _extkey = self.util.call_func(
                         'CfdCreateExtkeyFromParent',
-                        handle.get_handle(), _extkey, child, False,
+                        handle.get_handle(), _extkey, child, hardened,
                         self.network.value,
                         ExtKeyType.EXT_PRIVKEY.value)
             else:
@@ -145,13 +205,14 @@ class ExtPrivkey(Extkey):
                 self.extkey, self.network.value)
             return ExtPubkey(ext_pubkey)
 
-    def get_path_data(self, bip32_path, key_type):
+    def get_path_data(self, bip32_path, key_type=ExtKeyType.EXT_PRIVKEY):
         path_data, child_key = self._get_path_data(
             bip32_path, key_type)
-        if key_type == ExtKeyType.EXT_PRIVKEY:
-            return path_data, ExtPrivkey(child_key)
-        else:
+        _key_type = ExtKeyType.get(key_type)
+        if _key_type == ExtKeyType.EXT_PUBKEY:
             return path_data, ExtPubkey(child_key)
+        else:
+            return path_data, ExtPrivkey(child_key)
 
 
 class ExtPubkey(Extkey):
@@ -160,12 +221,12 @@ class ExtPubkey(Extkey):
             cls, network, fingerprint, key, chain_code,
             depth, number, parent_key=''):
         _extkey = cls._create(
-            cls, ExtKeyType.EXT_PUBKEY, network, fingerprint, key,
+            ExtKeyType.EXT_PUBKEY, network, fingerprint, key,
             chain_code, depth, number, parent_key)
         return ExtPubkey(_extkey)
 
     def __init__(self, extkey):
-        super().__init__()
+        super().__init__(ExtKeyType.EXT_PUBKEY)
         self._get_information(extkey)
         with self.util.create_handle() as handle:
             hex = self.util.call_func(
@@ -175,19 +236,20 @@ class ExtPubkey(Extkey):
 
     # @brief get string.
     # @return extkey.
-    def __repr__(self):
+    def __str__(self):
         return self.extkey
 
     def derive(self, path='', number=0, number_list=[]):
         _path, _list = self._convert_path(path, number, number_list)
         with self.util.create_handle() as handle:
-            if _path == '':
+            if len(_path) == 0:
                 _extkey = self.extkey
-                for child in number_list:
+                for child in _list:
+                    hardened = True if child >= 0x80000000 else False
                     _extkey = self.util.call_func(
                         'CfdCreateExtkeyFromParent',
                         handle.get_handle(),
-                        _extkey, child, False,
+                        _extkey, child, hardened,
                         self.network.value,
                         ExtKeyType.EXT_PUBKEY.value)
             else:
@@ -321,3 +383,17 @@ class HDWallet:
     def _convert_mnemonic(cls, mnemonic):
         _words = ' '.join(mnemonic) if isinstance(mnemonic, list) else mnemonic
         return _words.replace('　', ' ') if isinstance(_words, str) else _words
+
+
+__all__ = [
+    'ExtKeyType',
+    'Extkey',
+    'ExtPrivkey',
+    'ExtPubkey',
+    'MnemonicLanguage',
+    'HDWallet',
+    'XPRIV_MAINNET_VERSION',
+    'XPRIV_TESTNET_VERSION',
+    'XPUB_MAINNET_VERSION',
+    'XPUB_TESTNET_VERSION'
+]

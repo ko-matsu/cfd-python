@@ -4,6 +4,7 @@
 # @brief key function implements file.
 # @note Copyright 2020 CryptoGarage
 from .util import get_util, CfdError, to_hex_string, CfdErrorCode, JobHandle
+import hashlib
 from enum import Enum
 
 
@@ -33,7 +34,7 @@ class Network(Enum):
     ##
     # @brief get string.
     # @return name.
-    def __repr__(self):
+    def __str__(self):
         return self.name.lower().replace('_', '')
 
     ##
@@ -100,7 +101,7 @@ class SigHashType(Enum):
     ##
     # @brief get string.
     # @return name.
-    def __repr__(self):
+    def __str__(self):
         return self.name.lower().replace('_', '')
 
     ##
@@ -114,6 +115,9 @@ class SigHashType(Enum):
 
     def anyone_can_pay(self):
         return self.value >= 0x80
+
+    def get_type_object(self):
+        return self.get(self.get_type())
 
     @classmethod
     def get(cls, sighashtype, anyoneCanPay=False):
@@ -169,9 +173,18 @@ class Privkey:
         util = get_util()
         with util.create_handle() as handle:
             pubkey, privkey, wif = util.call_func(
-                'CfdGetPrivkeyWif', handle.get_handle(),
+                'CfdCreateKeyPair', handle.get_handle(),
                 is_compressed, _network.value)
             return Privkey(wif=wif), Pubkey(pubkey)
+
+    @classmethod
+    def from_hex(cls, hex, network=Network.MAINNET, is_compressed=True):
+        return Privkey(hex=hex, network=network,
+                       is_compressed=is_compressed)
+
+    @classmethod
+    def from_wif(cls, wif):
+        return Privkey(wif=wif)
 
     ##
     # @brief constructor.
@@ -210,7 +223,7 @@ class Privkey:
     ##
     # @brief get string.
     # @return pubkey hex.
-    def __repr__(self):
+    def __str__(self):
         return self.wif if (self.wif_first) else self.hex
 
     def add_tweak(self, tweak):
@@ -245,12 +258,15 @@ class Privkey:
                 is_compressed=self.is_compressed)
 
     def calculate_ec_signature(self, sighash, grind_r=True):
+        _sighash = to_hex_string(sighash)
         util = get_util()
         with util.create_handle() as handle:
             signature = util.call_func(
                 'CfdCalculateEcSignature', handle.get_handle(),
-                sighash, self.hex, '', self.network.value, grind_r)
-        return signature
+                _sighash, self.hex, '', self.network.value, grind_r)
+            sign = SignParameter(signature)
+            sign.use_der_encode = True
+            return sign
 
 
 ##
@@ -264,7 +280,7 @@ class Pubkey:
     @classmethod
     def combine(cls, pubkey_list):
         if (isinstance(pubkey_list, list) is False) or (
-                len(pubkey_list) == 0):
+                len(pubkey_list) <= 1):
             raise CfdError(
                 error_code=1,
                 message='Error: Invalid pubkey list.')
@@ -272,10 +288,8 @@ class Pubkey:
         with util.create_handle() as handle:
             word_handle = util.call_func(
                 'CfdInitializeCombinePubkey', handle.get_handle())
-            with JobHandle(
-                    handle,
-                    word_handle,
-                    'CfdFreeCombinePubkeyHandle') as key_handle:
+            with JobHandle(handle, word_handle,
+                           'CfdFreeCombinePubkeyHandle') as key_handle:
                 for pubkey in pubkey_list:
                     util.call_func(
                         'CfdAddCombinePubkey',
@@ -301,7 +315,7 @@ class Pubkey:
     ##
     # @brief get string.
     # @return pubkey hex.
-    def __repr__(self):
+    def __str__(self):
         return self._hex
 
     def compress(self):
@@ -359,16 +373,17 @@ class Pubkey:
 
 
 class SignParameter:
-    def __init__(self, data, related_pubkey='', sighashtype=SigHashType.ALL):
+    def __init__(self, data, related_pubkey='',
+                 sighashtype=SigHashType.ALL, use_der_encode=False):
         self.hex = to_hex_string(data)
         self.related_pubkey = related_pubkey
         self.sighashtype = SigHashType.get(sighashtype)
-        self.use_der_encode = False
+        self.use_der_encode = use_der_encode
 
     ##
     # @brief get string.
     # @return sing data hex.
-    def __repr__(self):
+    def __str__(self):
         return self.hex
 
     def set_der_encode(self):
@@ -412,8 +427,14 @@ class SignParameter:
 
 class EcdsaAdaptor:
     @classmethod
-    def sign(cls, message, secret_key, adaptor):
-        _msg = to_hex_string(message)
+    def sign(cls, message, secret_key, adaptor,
+             is_message_hashed=True):
+        msg = message
+        if (not is_message_hashed) and isinstance(message, str):
+            m = hashlib.sha256()
+            m.update(message.encode('utf-8'))
+            msg = m.hexdigest()
+        _msg = to_hex_string(msg)
         _sk = to_hex_string(secret_key)
         _adaptor = to_hex_string(adaptor)
         util = get_util()
@@ -443,14 +464,20 @@ class EcdsaAdaptor:
             adaptor_secret = util.call_func(
                 'CfdExtractEcdsaAdaptorSecret', handle.get_handle(),
                 _adaptor_signature, _signature, _adaptor)
-        return adaptor_secret
+        return Privkey(hex=adaptor_secret)
 
     @classmethod
-    def verify(cls, adaptor_signature, proof, adaptor, message, pubkey):
+    def verify(cls, adaptor_signature, proof, adaptor, message, pubkey,
+               is_message_hashed=True):
+        msg = message
+        if (not is_message_hashed) and isinstance(message, str):
+            m = hashlib.sha256()
+            m.update(message.encode('utf-8'))
+            msg = m.hexdigest()
+        _msg = to_hex_string(msg)
         _adaptor_signature = to_hex_string(adaptor_signature)
         _proof = to_hex_string(proof)
         _adaptor = to_hex_string(adaptor)
-        _msg = to_hex_string(message)
         _pk = to_hex_string(pubkey)
         util = get_util()
         with util.create_handle() as handle:
@@ -458,6 +485,7 @@ class EcdsaAdaptor:
                 util.call_func(
                     'CfdVerifyEcdsaAdaptor', handle.get_handle(),
                     _adaptor_signature, _proof, _adaptor, _msg, _pk)
+                return True
             except CfdError as err:
                 if err.error_code == CfdErrorCode.SIGN_VERIFICATION.value:
                     return False
@@ -466,9 +494,13 @@ class EcdsaAdaptor:
 
 
 class SchnorrPubkey:
+    @classmethod
     def from_privkey(cls, privkey):
         if isinstance(privkey, Privkey):
             _privkey = privkey.hex
+        elif isinstance(privkey, str) and (len(privkey) != 64):
+            _sk = Privkey(wif=privkey)
+            _privkey = _sk.hex
         else:
             _privkey = to_hex_string(privkey)
         util = get_util()
@@ -487,7 +519,7 @@ class SchnorrPubkey:
     ##
     # @brief get string.
     # @return pubkey hex.
-    def __repr__(self):
+    def __str__(self):
         return self.hex
 
 
@@ -499,18 +531,26 @@ class SchnorrSignature:
             self.nonce, self.key = util.call_func(
                 'CfdSplitSchnorrSignature', handle.get_handle(),
                 self.signature)
+            self.nonce = SchnorrPubkey(self.nonce)
+            self.key = Privkey(hex=self.key)
 
     ##
     # @brief get string.
     # @return signature hex.
-    def __repr__(self):
+    def __str__(self):
         return self.signature
 
 
 class SchnorrUtil:
     @classmethod
-    def sign(cls, message, secret_key, aux_rand='', nonce=''):
-        _msg = to_hex_string(message)
+    def sign(cls, message, secret_key, aux_rand='', nonce='',
+             is_message_hashed=True):
+        msg = message
+        if (not is_message_hashed) and isinstance(message, str):
+            m = hashlib.sha256()
+            m.update(message.encode('utf-8'))
+            msg = m.hexdigest()
+        _msg = to_hex_string(msg)
         _sk = to_hex_string(secret_key)
         _rand = to_hex_string(aux_rand)
         _nonce = to_hex_string(nonce)
@@ -526,8 +566,14 @@ class SchnorrUtil:
         return SchnorrSignature(signature)
 
     @classmethod
-    def compute_sig_point(cls, message, nonce, pubkey):
-        _msg = to_hex_string(message)
+    def compute_sig_point(cls, message, nonce, pubkey,
+                          is_message_hashed=True):
+        msg = message
+        if (not is_message_hashed) and isinstance(message, str):
+            m = hashlib.sha256()
+            m.update(message.encode('utf-8'))
+            msg = m.hexdigest()
+        _msg = to_hex_string(msg)
         _nonce = to_hex_string(nonce)
         _pubkey = to_hex_string(pubkey)
         util = get_util()
@@ -535,12 +581,18 @@ class SchnorrUtil:
             sig_point = util.call_func(
                 'CfdComputeSchnorrSigPoint', handle.get_handle(),
                 _msg, _nonce, _pubkey)
-        return sig_point
+        return Pubkey(sig_point)
 
     @classmethod
-    def verify(cls, signature, message, pubkey):
+    def verify(cls, signature, message, pubkey,
+               is_message_hashed=True):
+        msg = message
+        if (not is_message_hashed) and isinstance(message, str):
+            m = hashlib.sha256()
+            m.update(message.encode('utf-8'))
+            msg = m.hexdigest()
+        _msg = to_hex_string(msg)
         _signature = to_hex_string(signature)
-        _msg = to_hex_string(message)
         _pk = to_hex_string(pubkey)
         util = get_util()
         with util.create_handle() as handle:
@@ -554,3 +606,16 @@ class SchnorrUtil:
                     return False
                 else:
                     raise err
+
+
+__all__ = [
+    'Network',
+    'SigHashType',
+    'Privkey',
+    'Pubkey',
+    'SignParameter',
+    'EcdsaAdaptor',
+    'SchnorrPubkey',
+    'SchnorrSignature',
+    'SchnorrUtil'
+]

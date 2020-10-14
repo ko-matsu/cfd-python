@@ -4,11 +4,13 @@
 # @brief elements confidential transaction function implements file.
 # @note Copyright 2020 CryptoGarage
 from .util import ReverseByteData, CfdError, JobHandle,\
-    CfdErrorCode, to_hex_string, get_util
-from .key import Network, SigHashType
+    CfdErrorCode, to_hex_string, get_util, ByteData
+from .key import Network, SigHashType, Privkey
 from .script import HashType
-from .transaction import UtxoData, OutPoint, Txid, TxIn, TxOut, _FundTxOpt
+from .transaction import UtxoData, OutPoint, Txid, TxIn, TxOut, _FundTxOpt,\
+    _TransactionBase
 from enum import Enum
+import copy
 
 
 class BlindFactor(ReverseByteData):
@@ -29,7 +31,7 @@ class ConfidentialNonce:
     ##
     # @brief get string.
     # @return hex.
-    def __repr__(self):
+    def __str__(self):
         return self.hex
 
 
@@ -45,7 +47,7 @@ class ConfidentialAsset:
     ##
     # @brief get string.
     # @return hex.
-    def __repr__(self):
+    def __str__(self):
         return self.hex
 
     def has_blind(self):
@@ -67,6 +69,7 @@ class ConfidentialAsset:
 
 
 class ConfidentialValue:
+    @classmethod
     def create(cls, value, amount):
         _value_hex = to_hex_string(value)
         if isinstance(value, ConfidentialValue):
@@ -88,6 +91,9 @@ class ConfidentialValue:
         if isinstance(data, int):
             self.amount = data
             self.hex = self._byte_from_amount(self.amount)
+        elif isinstance(data, float) or isinstance(data, complex):
+            raise CfdError(
+                error_code=1, message='Error: Invalid amount format.')
         else:
             self.hex = to_hex_string(data)
             self.amount = 0
@@ -98,7 +104,7 @@ class ConfidentialValue:
     ##
     # @brief get string.
     # @return hex or amount.
-    def __repr__(self):
+    def __str__(self):
         return self.hex
 
     def has_blind(self):
@@ -141,6 +147,8 @@ class ElementsUtxoData(UtxoData):
         self.fedpeg_script = fedpeg_script
         self.asset_blinder = asset_blinder
         self.amount_blinder = amount_blinder
+        if self.amount == 0:
+            self.amount = self.value.amount
 
 
 class UnblindData:
@@ -166,12 +174,23 @@ class IssuanceKeyPair:
 
 
 class ConfidentialTxIn(TxIn):
-    def __init__(self, outpoint=None, txid='', vout=0, sequence=0xffffffff):
+    def __init__(self, outpoint=None, txid='', vout=0,
+                 sequence=TxIn.SEQUENCE_DISABLE):
         super().__init__(outpoint, txid, vout, sequence)
         self.pegin_witness_stack = []
+        self.issuance = Issuance()
 
 
 class ConfidentialTxOut(TxOut):
+    @classmethod
+    def for_destroy_amount(cls, amount, asset, nonce=''):
+        return ConfidentialTxOut(amount, asset=asset, nonce=nonce,
+                                 locking_script='6a')
+
+    @classmethod
+    def for_fee(cls, amount, asset):
+        return ConfidentialTxOut(amount, asset=asset)
+
     def __init__(
             self, amount=0, address='', locking_script='',
             value='', asset='', nonce=''):
@@ -192,7 +211,7 @@ class TargetAmountData:
         self.reserved_address = reserved_address
 
 
-class ConfidentialTransaction:
+class ConfidentialTransaction(_TransactionBase):
     ##
     # bitcoin network value.
     NETWORK = Network.LIQUID_V1.value
@@ -204,20 +223,76 @@ class ConfidentialTransaction:
     FREE_FUNC_NAME = 'CfdFreeTransactionHandle'
 
     @classmethod
-    def parse_to_json(cls, hex, network=Network.LIQUID_V1):
+    def parse_to_json(cls, hex, network=Network.LIQUID_V1,
+                      full_dump=False):
+        _network = Network.get(network)
         mainchain_str = 'mainnet'
         network_str = 'liquidv1'
-        if network != Network.LIQUID_V1:
+        if _network != Network.LIQUID_V1:
             mainchain_str = 'regtest'
-            network_str = 'elementsregtest'
-        cmd = '{{"hex":"{}","network":"{}","mainchainNetwork":"{}"}}'
+            network_str = 'regtest'
+        full_dump_str = 'true' if full_dump else 'false'
+        cmd = '{{"hex":"{}","network":"{}","{}":"{}","fullDump":{}}}'
         request_json = cmd.format(
-            hex, network_str, mainchain_str)
+            hex, network_str, 'mainchainNetwork', mainchain_str,
+            full_dump_str)
         util = get_util()
         with util.create_handle() as handle:
             return util.call_func(
                 'CfdRequestExecuteJson', handle.get_handle(),
                 'ElementsDecodeRawTransaction', request_json)
+
+    @classmethod
+    def get_default_blinding_key(cls, master_blinding_key, locking_script):
+        _key = to_hex_string(master_blinding_key)
+        _script = to_hex_string(locking_script)
+        util = get_util()
+        with util.create_handle() as handle:
+            return util.call_func(
+                'CfdGetDefaultBlindingKey', handle.get_handle(),
+                _key, _script)
+
+    @classmethod
+    def get_issuance_blinding_key(cls, master_blinding_key,
+                                  txid, vout):
+        _key = to_hex_string(master_blinding_key)
+        _txid = to_hex_string(txid)
+        util = get_util()
+        with util.create_handle() as handle:
+            return util.call_func(
+                'CfdGetIssuanceBlindingKey', handle.get_handle(),
+                _key, _txid, vout)
+
+    @classmethod
+    def create(cls, version, locktime, txins, txouts):
+        util = get_util()
+        with util.create_handle() as handle:
+            _tx_handle = util.call_func(
+                'CfdInitializeTransaction', handle.get_handle(),
+                cls.NETWORK, version, locktime, '')
+            with JobHandle(
+                    handle, _tx_handle, cls.FREE_FUNC_NAME) as tx_handle:
+                for txin in txins:
+                    sec = TxIn.get_sequence_number(locktime, txin.sequence)
+                    util.call_func(
+                        'CfdAddTransactionInput', handle.get_handle(),
+                        tx_handle.get_handle(), str(txin.outpoint.txid),
+                        txin.outpoint.vout, sec)
+                for txout in txouts:
+                    util.call_func(
+                        'CfdAddConfidentialTxOutput', handle.get_handle(),
+                        tx_handle.get_handle(), txout.amount,
+                        str(txout.address),
+                        str(txout.locking_script),
+                        str(txout.asset), str(txout.nonce))
+                hex = util.call_func(
+                    'CfdFinalizeTransaction', handle.get_handle(),
+                    tx_handle.get_handle())
+        return ConfidentialTransaction(hex)
+
+    @classmethod
+    def from_hex(cls, hex, enable_cache=True):
+        return ConfidentialTransaction(hex, enable_cache)
 
     def __init__(self, hex, enable_cache=True):
         super().__init__(hex, self.NETWORK, enable_cache)
@@ -251,7 +326,7 @@ class ConfidentialTransaction:
             txin.witness_stack.append(data)
 
         entropy, nonce, asset_amount, asset_value, token_amount,\
-            toke_value, _ = util.call_func(
+            toke_value, _, _ = util.call_func(
                 'CfdGetTxInIssuanceInfoByHandle',
                 handle.get_handle(), tx_handle.get_handle(), index)
         txin.issuance.entropy = entropy
@@ -280,7 +355,7 @@ class ConfidentialTransaction:
             self.txid, self.wtxid, self.wit_hash, self.size, self.vsize,\
                 self.weight, self.version, self.locktime = util.call_func(
                     'CfdGetConfidentialTxInfo', handle.get_handle(),
-                    self.NETWORK, self.hex)
+                    self.hex)
             self.txid = Txid(self.txid)
             self.wtxid = Txid(self.wtxid)
 
@@ -305,32 +380,6 @@ class ConfidentialTransaction:
                     handle, tx_handle, outpoint=outpoint)
                 self.txin_list[index] = txin
 
-    @classmethod
-    def create(cls, version, locktime, txins, txouts):
-        util = get_util()
-        with util.create_handle() as handle:
-            _tx_handle = util.call_func(
-                'CfdInitializeTransaction', handle.get_handle(),
-                cls.NETWORK, version, locktime, '')
-            with JobHandle(
-                    handle, _tx_handle, cls.FREE_FUNC_NAME) as tx_handle:
-                for txin in txins:
-                    util.call_func(
-                        'CfdAddTransactionInput', handle.get_handle(),
-                        tx_handle.get_handle(), str(txin.outpoint.txid),
-                        txin.outpoint.vout, txin.sequence)
-                for txout in txouts:
-                    util.call_func(
-                        'CfdAddConfidentialTxOutput', handle.get_handle(),
-                        tx_handle.get_handle(), txout.amount,
-                        str(txout.address),
-                        str(txout.locking_script),
-                        str(txout.asset), str(txout.nonce))
-                hex = util.call_func(
-                    'CfdFinalizeTransaction', handle.get_handle(),
-                    tx_handle.get_handle())
-        return ConfidentialTransaction(hex)
-
     def get_tx_all(self):
         def get_txin_list(handle, tx_handle):
             txin_list = []
@@ -338,7 +387,7 @@ class ConfidentialTransaction:
                 'CfdGetTxInCountByHandle', handle.get_handle(),
                 tx_handle.get_handle())
             for i in range(_count):
-                txin = self._get_txin(handle, tx_handle, i)
+                txin, _ = self._get_txin(handle, tx_handle, i)
                 txin_list.append(txin)
             return txin_list
 
@@ -377,18 +426,19 @@ class ConfidentialTransaction:
                 self.txout_list = get_txout_list(handle, tx_handle)
                 return self.txin_list, self.txout_list
 
-    def add_txin(self, outpoint=None, sequence=0xffffffff, txid='', vout=0):
+    def add_txin(self, outpoint=None, sequence=-1,
+                 txid='', vout=0):
+        sec = TxIn.get_sequence_number(self.locktime, sequence)
         txin = ConfidentialTxIn(
-            outpoint=outpoint, sequence=sequence,
-            txid=txid, vout=vout)
-        self.update([txin], [])
+            outpoint=outpoint, sequence=sec, txid=txid, vout=vout)
+        self.add([txin], [])
 
     def add_txout(
             self, amount, address='', locking_script='',
             value='', asset='', nonce=''):
         txout = ConfidentialTxOut(
             amount, address, locking_script, value, asset, nonce)
-        self.update([], [txout])
+        self.add([], [txout])
 
     def add_fee_txout(self, amount, asset):
         self.add_txout(amount, asset=asset)
@@ -396,7 +446,7 @@ class ConfidentialTransaction:
     def add_destroy_amount_txout(self, amount, asset):
         self.add_txout(amount, locking_script='6a', asset=asset)
 
-    def update(self, txins, txouts):
+    def add(self, txins, txouts):
         util = get_util()
         with util.create_handle() as handle:
             _tx_handle = util.call_func(
@@ -405,10 +455,12 @@ class ConfidentialTransaction:
             with JobHandle(
                     handle, _tx_handle, self.FREE_FUNC_NAME) as tx_handle:
                 for txin in txins:
+                    sec = TxIn.get_sequence_number(
+                        self.locktime, txin.sequence)
                     util.call_func(
                         'CfdAddTransactionInput', handle.get_handle(),
                         tx_handle.get_handle(), str(txin.outpoint.txid),
-                        txin.outpoint.vout, txin.sequence)
+                        txin.outpoint.vout, sec)
                 for txout in txouts:
                     util.call_func(
                         'CfdAddConfidentialTxOutput',
@@ -426,8 +478,8 @@ class ConfidentialTransaction:
                         handle.get_handle(), tx_handle.get_handle())
                 self.txid = Txid(self.txid)
                 self.wtxid = Txid(self.wtxid)
-                self.txin_list += txins
-                self.txout_list += txouts
+                self.txin_list += copy.deepcopy(txins)
+                self.txout_list += copy.deepcopy(txouts)
 
     def update_txout_amount(self, index, amount):
         util = get_util()
@@ -462,7 +514,7 @@ class ConfidentialTransaction:
         def set_opt(handle, tx_handle, key, i_val=0):
             util.call_func(
                 'CfdSetBlindTxOption', handle.get_handle(),
-                tx_handle.get_handle(), key, i_val)
+                tx_handle.get_handle(), key.value, i_val)
 
         util = get_util()
         with util.create_handle() as handle:
@@ -482,7 +534,7 @@ class ConfidentialTransaction:
                         txin.outpoint.vout, to_hex_string(txin.asset),
                         to_hex_string(txin.asset_blinder),
                         to_hex_string(txin.amount_blinder),
-                        asset_key, token_key)
+                        txin.amount, asset_key, token_key)
                 for addr in confidential_address_list:
                     util.call_func(
                         'CfdAddBlindTxOutByAddress', handle.get_handle(),
@@ -513,14 +565,14 @@ class ConfidentialTransaction:
             return UnblindData(
                 asset, asset_amount, asset_blinder, amount_blinder)
 
-    def unblind_issuance(self, asset_key, token_key):
+    def unblind_issuance(self, index, asset_key, token_key):
         util = get_util()
         with util.create_handle() as handle:
             asset, asset_amount, asset_blinder, amount_blinder, token,\
                 token_amount, token_blinder,\
                 token_amount_blinder = util.call_func(
                     'CfdUnblindIssuance', handle.get_handle(),
-                    self.hex, to_hex_string(asset_key),
+                    self.hex, index, to_hex_string(asset_key),
                     to_hex_string(token_key))
             asset_data = UnblindData(
                 asset, asset_amount, asset_blinder, amount_blinder)
@@ -559,14 +611,19 @@ class ConfidentialTransaction:
                 _hash_type.value, _pubkey, _script,
                 _value.amount, _value.hex, _sighashtype.get_type(),
                 _sighashtype.anyone_can_pay())
-            return sighash
+            return ByteData(sighash)
 
     def sign_with_privkey(
             self, outpoint, hash_type, privkey, value,
             sighashtype=SigHashType.ALL, grind_r=True):
         _hash_type = HashType.get(hash_type)
-        _privkey = privkey
-        _pubkey = _privkey.get_pubkey()
+        if isinstance(privkey, Privkey):
+            _privkey = privkey
+        elif isinstance(privkey, str) and (len(privkey) != 64):
+            _privkey = Privkey(wif=privkey)
+        else:
+            _privkey = Privkey(hex=privkey)
+        _pubkey = _privkey.pubkey
         _sighashtype = SigHashType.get(sighashtype)
         _value = value
         if isinstance(value, ConfidentialValue) is False:
@@ -596,14 +653,13 @@ class ConfidentialTransaction:
                 '', _value.amount, _value.hex)
 
     def verify_signature(
-            self, outpoint, address, hash_type, value,
-            direct_locking_script=''):
-        if direct_locking_script != '':
-            _script = to_hex_string(direct_locking_script)
-            _addr = ''
-        else:
-            _addr, _script = address, ''
+            self, outpoint, signature, hash_type, pubkey, value,
+            redeem_script='', sighashtype=SigHashType.ALL):
+        _signature = to_hex_string(signature)
+        _pubkey = to_hex_string(pubkey)
+        _script = to_hex_string(redeem_script)
         _hash_type = HashType.get(hash_type)
+        _sighashtype = SigHashType.get(sighashtype)
         _value = value
         if isinstance(value, ConfidentialValue) is False:
             _value = ConfidentialValue(value)
@@ -612,9 +668,10 @@ class ConfidentialTransaction:
             with util.create_handle() as handle:
                 util.call_func(
                     'CfdVerifySignature', handle.get_handle(),
-                    self.NETWORK, self.hex, str(outpoint.txid),
-                    outpoint.vout, str(_addr), _hash_type.value,
-                    _script, _value.amount, _value.hex)
+                    self.NETWORK, self.hex, _signature, _hash_type.value,
+                    _pubkey, _script, str(outpoint.txid),
+                    outpoint.vout, _sighashtype.get_type(),
+                    _sighashtype.anyone_can_pay(), _value.amount, _value.hex)
                 return True
         except CfdError as err:
             if err.error_code == CfdErrorCode.SIGN_VERIFICATION.value:
@@ -643,10 +700,8 @@ class ConfidentialTransaction:
                 'CfdInitializeCoinSelection', handle.get_handle(),
                 len(utxo_list), 1, '', tx_fee_amount, effective_fee_rate,
                 long_term_fee_rate, dust_fee_rate, knapsack_min_change)
-            with JobHandle(
-                    handle,
-                    word_handle,
-                    'CfdFreeCoinSelectionHandle') as tx_handle:
+            with JobHandle(handle, word_handle,
+                           'CfdFreeCoinSelectionHandle') as tx_handle:
                 for index, utxo in enumerate(utxo_list):
                     util.call_func(
                         'CfdAddCoinSelectionUtxoTemplate',
@@ -818,3 +873,19 @@ class _CoinSelectionOpt(Enum):
 class _FeeOpt(Enum):
     EXPONENT = 1
     MINIMUM_BITS = 2
+
+
+__all__ = [
+    'BlindFactor',
+    'ConfidentialNonce',
+    'ConfidentialAsset',
+    'ConfidentialValue',
+    'ElementsUtxoData',
+    'Issuance',
+    'IssuanceKeyPair',
+    'UnblindData',
+    'TargetAmountData',
+    'ConfidentialTxIn',
+    'ConfidentialTxOut',
+    'ConfidentialTransaction'
+]

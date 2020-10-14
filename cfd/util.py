@@ -70,7 +70,7 @@ class ByteData:
     ##
     # @brief get string.
     # @return hex.
-    def __repr__(self):
+    def __str__(self):
         return self.hex
 
     def as_bytes(self):
@@ -101,12 +101,17 @@ class ReverseByteData:
         else:
             self.hex = str(data).lower()
             if self.hex != '':
-                bytes.fromhex(self.hex)  # check hex
+                try:
+                    bytes.fromhex(self.hex)
+                except ValueError:
+                    raise CfdError(
+                        error_code=1,
+                        message='Error: Invalid hex value.')
 
     ##
     # @brief get string.
     # @return hex.
-    def __repr__(self):
+    def __str__(self):
         return self.hex
 
     def as_bytes(self):
@@ -127,10 +132,17 @@ def to_hex_string(value):
         return value.hex()
     elif isinstance(value, list):
         return "".join("%02x" % b for b in value)
+    elif str(type(value)) == "<class 'cfd.key.Privkey'>":
+        return value.hex
     else:
         _hex = str(value)
         if _hex != '':
-            bytes.fromhex(_hex)
+            try:
+                bytes.fromhex(_hex)
+            except ValueError:
+                raise CfdError(
+                    error_code=1,
+                    message='Error: Invalid hex value.')
         return _hex
 
 
@@ -812,3 +824,10 @@ class CfdUtil:
 # @return utility object.
 def get_util():
     return CfdUtil.get_instance()
+
+
+__all__ = [
+    'CfdError',
+    'ByteData',
+    'ReverseByteData'
+]

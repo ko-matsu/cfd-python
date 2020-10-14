@@ -25,11 +25,18 @@ class Address:
         self.p2sh_wrapped_script = p2sh_wrapped_script
         self.hash_type = hash_type
         self.network = network
+        self.witness_version = -1
+        if p2sh_wrapped_script and len(p2sh_wrapped_script) > 2:
+            if int(locking_script[0:2], 16) < 16:
+                self.witness_version = int(p2sh_wrapped_script[0:2])
+        elif len(locking_script) > 2:
+            if int(locking_script[0:2], 16) < 16:
+                self.witness_version = int(locking_script[0:2])
 
     ##
     # @brief get string.
     # @return address.
-    def __repr__(self):
+    def __str__(self):
         return self.address
 
 
@@ -150,7 +157,7 @@ class AddressUtil:
         _network = Network.get(network)
         util = get_util()
         with util.create_handle() as handle:
-            word_handle, max_index = util.call_func(
+            word_handle = util.call_func(
                 'CfdInitializeMultisigScript', handle.get_handle(),
                 _network.value, _hash_type.value)
             with JobHandle(
@@ -221,3 +228,6 @@ class AddressUtil:
                     _addr.pubkey = pubkey
                     addr_list.append(_addr)
         return addr_list
+
+
+__all__ = ['Address', 'AddressUtil']

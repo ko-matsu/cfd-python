@@ -4,11 +4,12 @@
 # @brief hdwallet function implements file.
 # @note Copyright 2020 CryptoGarage
 from .util import get_util, JobHandle, CfdError, to_hex_string,\
-    CfdErrorCode, ReverseByteData
+    CfdErrorCode, ReverseByteData, ByteData
 from .address import Address, AddressUtil
-from .key import Network, SigHashType, SignParameter
+from .key import Network, SigHashType, SignParameter, Privkey
 from .script import HashType
 from enum import Enum
+import copy
 
 
 class Txid(ReverseByteData):
@@ -31,7 +32,7 @@ class OutPoint:
     ##
     # @brief get string.
     # @return txid.
-    def __repr__(self):
+    def __str__(self):
         return '{},{}'.format(str(self.txid), self.vout)
 
 
@@ -50,12 +51,25 @@ class UtxoData:
     ##
     # @brief get string.
     # @return hex.
-    def __repr__(self):
+    def __str__(self):
         return str(self.outpoint)
 
 
 class TxIn:
-    def __init__(self, outpoint=None, txid='', vout=0, sequence=0xffffffff):
+    SEQUENCE_DISABLE = 0xffffffff
+    SEQUENCE_FINAL = 0xfffffffe
+
+    @classmethod
+    def get_sequence_number(cls, locktime=0, sequence=SEQUENCE_DISABLE):
+        if sequence not in [-1, TxIn.SEQUENCE_DISABLE]:
+            return sequence
+        elif locktime == 0:
+            return TxIn.SEQUENCE_DISABLE
+        else:
+            return TxIn.SEQUENCE_FINAL
+
+    def __init__(self, outpoint=None, txid='', vout=0,
+                 sequence=SEQUENCE_DISABLE):
         if isinstance(outpoint, OutPoint):
             self.outpoint = outpoint
         else:
@@ -67,7 +81,7 @@ class TxIn:
     ##
     # @brief get string.
     # @return hex.
-    def __repr__(self):
+    def __str__(self):
         return str(self.outpoint)
 
 
@@ -91,7 +105,7 @@ class TxOut:
     ##
     # @brief get string.
     # @return address or script.
-    def __repr__(self):
+    def __str__(self):
         return self.address if (self.address != '') else self.locking_script
 
 
@@ -114,15 +128,15 @@ class _TransactionBase:
     ##
     # @brief get string.
     # @return tx hex.
-    def __repr__(self):
+    def __str__(self):
         return self.hex
 
     def _update_tx_all(self):
         if self.enable_cache:
             self.get_tx_all()
 
-    def get_tx_all(self):
-        pass
+    # def get_tx_all(self):
+    #     pass
 
     def _get_txin(self, handle, tx_handle, index=0, outpoint=None):
         util = get_util()
@@ -210,10 +224,11 @@ class _TransactionBase:
                     _sig = to_hex_string(sig)
                     _sighashtype = SigHashType.ALL
                     _related_pubkey = ''
-                    use_der = (len(_sig) <= 130)
+                    use_der = (len(_sig) in [128, 130])
                     if isinstance(sig, SignParameter):
                         _sighashtype = SigHashType.get(sig.sighashtype)
                         _related_pubkey = to_hex_string(sig.related_pubkey)
+                        use_der = sig.use_der_encode
                     elif use_der:
                         raise CfdError(
                             error_code=1, message='Error: Invalid signature.')
@@ -250,7 +265,9 @@ class _TransactionBase:
         with util.create_handle() as handle:
             clear_stack = True
             for sig in signature_list:
-                _sig = to_hex_string(sig)
+                _sig = sig
+                if not isinstance(sig, str):
+                    _sig = to_hex_string(sig)
                 _sighashtype = SigHashType.ALL
                 use_der_encode = False
                 if isinstance(sig, SignParameter):
@@ -277,7 +294,9 @@ class _TransactionBase:
             clear_stack=False, use_der_encode=False,
             sighashtype=SigHashType.ALL):
         _hash_type = HashType.get(hash_type)
-        _sign_data = to_hex_string(sign_data)
+        _sign_data = sign_data
+        if not isinstance(sign_data, str):
+            _sign_data = to_hex_string(sign_data)
         _sighashtype = SigHashType.get(sighashtype)
         util = get_util()
         with util.create_handle() as handle:
@@ -300,10 +319,11 @@ class Transaction(_TransactionBase):
 
     @classmethod
     def parse_to_json(cls, hex, network=Network.MAINNET):
+        _network = Network.get(network)
         network_str = 'mainnet'
-        if network == Network.TESTNET:
+        if _network == Network.TESTNET:
             network_str = 'testnet'
-        elif network == Network.REGTEST:
+        elif _network == Network.REGTEST:
             network_str = 'regtest'
         request_json = '{{"hex":"{}","network":"{}"}}'.format(hex, network_str)
         util = get_util()
@@ -311,6 +331,36 @@ class Transaction(_TransactionBase):
             return util.call_func(
                 'CfdRequestExecuteJson', handle.get_handle(),
                 'DecodeRawTransaction', request_json)
+
+    @classmethod
+    def create(cls, version, locktime, txins, txouts, enable_cache=True):
+        util = get_util()
+        with util.create_handle() as handle:
+            _tx_handle = util.call_func(
+                'CfdInitializeTransaction', handle.get_handle(),
+                cls.NETWORK, version, locktime, '')
+            with JobHandle(
+                    handle, _tx_handle, cls.FREE_FUNC_NAME) as tx_handle:
+                for txin in txins:
+                    sec = TxIn.get_sequence_number(locktime, txin.sequence)
+                    util.call_func(
+                        'CfdAddTransactionInput', handle.get_handle(),
+                        tx_handle.get_handle(), str(txin.outpoint.txid),
+                        txin.outpoint.vout, sec)
+                for txout in txouts:
+                    util.call_func(
+                        'CfdAddTransactionOutput', handle.get_handle(),
+                        tx_handle.get_handle(), txout.amount,
+                        str(txout.address),
+                        str(txout.locking_script), '')
+                hex = util.call_func(
+                    'CfdFinalizeTransaction', handle.get_handle(),
+                    tx_handle.get_handle())
+        return Transaction(hex, enable_cache)
+
+    @classmethod
+    def from_hex(cls, hex, enable_cache=True):
+        return Transaction(hex, enable_cache)
 
     def __init__(self, hex, enable_cache=True):
         super().__init__(hex, self.NETWORK, enable_cache)
@@ -351,31 +401,6 @@ class Transaction(_TransactionBase):
                     handle, tx_handle, outpoint=outpoint)
                 self.txin_list[index] = txin
 
-    @classmethod
-    def create(cls, version, locktime, txins, txouts):
-        util = get_util()
-        with util.create_handle() as handle:
-            _tx_handle = util.call_func(
-                'CfdInitializeTransaction', handle.get_handle(),
-                cls.NETWORK, version, locktime, '')
-            with JobHandle(
-                    handle, _tx_handle, cls.FREE_FUNC_NAME) as tx_handle:
-                for txin in txins:
-                    util.call_func(
-                        'CfdAddTransactionInput', handle.get_handle(),
-                        tx_handle.get_handle(), str(txin.outpoint.txid),
-                        txin.outpoint.vout, txin.sequence)
-                for txout in txouts:
-                    util.call_func(
-                        'CfdAddTransactionOutput', handle.get_handle(),
-                        tx_handle.get_handle(), txout.amount,
-                        str(txout.address),
-                        str(txout.locking_script), '')
-                hex = util.call_func(
-                    'CfdFinalizeTransaction', handle.get_handle(),
-                    tx_handle.get_handle())
-        return Transaction(hex)
-
     def get_tx_all(self):
         def get_txin_list(handle, tx_handle):
             txin_list = []
@@ -383,7 +408,7 @@ class Transaction(_TransactionBase):
                 'CfdGetTxInCountByHandle', handle.get_handle(),
                 tx_handle.get_handle())
             for i in range(_count):
-                txin = self._get_txin(handle, tx_handle, i)
+                txin, _ = self._get_txin(handle, tx_handle, i)
                 txin_list.append(txin)
             return txin_list
 
@@ -417,17 +442,18 @@ class Transaction(_TransactionBase):
                 self.txout_list = get_txout_list(handle, tx_handle)
                 return self.txin_list, self.txout_list
 
-    def add_txin(self, outpoint=None, sequence=0xffffffff, txid='', vout=0):
+    def add_txin(self, outpoint=None, sequence=-1,
+                 txid='', vout=0):
+        sec = TxIn.get_sequence_number(self.locktime, sequence)
         txin = TxIn(
-            outpoint=outpoint, sequence=sequence,
-            txid=txid, vout=vout)
-        self.update([txin], [])
+            outpoint=outpoint, sequence=sec, txid=txid, vout=vout)
+        self.add([txin], [])
 
     def add_txout(self, amount, address='', locking_script=''):
         txout = TxOut(amount, address, locking_script)
-        self.update([], [txout])
+        self.add([], [txout])
 
-    def update(self, txins, txouts):
+    def add(self, txins, txouts):
         util = get_util()
         with util.create_handle() as handle:
             _tx_handle = util.call_func(
@@ -436,10 +462,12 @@ class Transaction(_TransactionBase):
             with JobHandle(
                     handle, _tx_handle, self.FREE_FUNC_NAME) as tx_handle:
                 for txin in txins:
+                    sec = TxIn.get_sequence_number(
+                        self.locktime, txin.sequence)
                     util.call_func(
                         'CfdAddTransactionInput', handle.get_handle(),
                         tx_handle.get_handle(), str(txin.outpoint.txid),
-                        txin.outpoint.vout, txin.sequence)
+                        txin.outpoint.vout, sec)
                 for txout in txouts:
                     util.call_func(
                         'CfdAddTransactionOutput', handle.get_handle(),
@@ -455,8 +483,8 @@ class Transaction(_TransactionBase):
                         tx_handle.get_handle())
                 self.txid = Txid(self.txid)
                 self.wtxid = Txid(self.wtxid)
-                self.txin_list += txins
-                self.txout_list += txouts
+                self.txin_list += copy.deepcopy(txins)
+                self.txout_list += copy.deepcopy(txouts)
 
     def update_txout_amount(self, index, amount):
         util = get_util()
@@ -487,7 +515,7 @@ class Transaction(_TransactionBase):
                 outpoint.vout, _hash_type.value, _pubkey,
                 _script, amount, _sighashtype.get_type(),
                 _sighashtype.anyone_can_pay())
-            return sighash
+            return ByteData(sighash)
 
     def sign_with_privkey(
             self,
@@ -498,8 +526,13 @@ class Transaction(_TransactionBase):
             sighashtype=SigHashType.ALL,
             grind_r=True):
         _hash_type = HashType.get(hash_type)
-        _privkey = privkey
-        _pubkey = _privkey.get_pubkey()
+        if isinstance(privkey, Privkey):
+            _privkey = privkey
+        elif isinstance(privkey, str) and (len(privkey) != 64):
+            _privkey = Privkey(wif=privkey)
+        else:
+            _privkey = Privkey(hex=privkey)
+        _pubkey = _privkey.pubkey
         _sighashtype = SigHashType.get(sighashtype)
         util = get_util()
         with util.create_handle() as handle:
@@ -522,23 +555,22 @@ class Transaction(_TransactionBase):
                 '', amount, '')
 
     def verify_signature(
-            self, outpoint, address, hash_type, amount,
-            direct_locking_script=''):
-        if direct_locking_script != '':
-            _script = to_hex_string(direct_locking_script)
-            _addr = ''
-        else:
-            _addr = address
-            _script = ''
+            self, outpoint, signature, hash_type, pubkey, amount=0,
+            redeem_script='', sighashtype=SigHashType.ALL):
+        _signature = to_hex_string(signature)
+        _pubkey = to_hex_string(pubkey)
+        _script = to_hex_string(redeem_script)
         _hash_type = HashType.get(hash_type)
+        _sighashtype = SigHashType.get(sighashtype)
         try:
             util = get_util()
             with util.create_handle() as handle:
                 util.call_func(
                     'CfdVerifySignature', handle.get_handle(),
-                    self.NETWORK, self.hex, str(outpoint.txid),
-                    outpoint.vout, str(_addr), _hash_type.value,
-                    _script, amount, '')
+                    self.NETWORK, self.hex, _signature, _hash_type.value,
+                    _pubkey, _script, str(outpoint.txid),
+                    outpoint.vout, _sighashtype.get_type(),
+                    _sighashtype.anyone_can_pay(), amount, '')
                 return True
         except CfdError as err:
             if err.error_code == CfdErrorCode.SIGN_VERIFICATION.value:
@@ -691,3 +723,14 @@ class _FundTxOpt(Enum):
     KNAPSACK_MIN_CHANGE = 4
     EXPONENT = 5
     MINIMUM_BITS = 6
+
+
+__all__ = [
+    'Txid',
+    'OutPoint',
+    'UtxoData',
+    'TxIn',
+    'TxOut',
+    '_TransactionBase',
+    'Transaction'
+]
