@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 # @file util.py
-# @brief internal utility file.
+# @brief cfd utility file.
 # @note Copyright 2020 CryptoGarage
 from ctypes import c_int, c_void_p, c_char_p, c_int32, c_int64,\
     c_uint32, c_uint64, c_bool, c_double, c_ubyte, \
@@ -17,17 +17,42 @@ import re
 ################
 
 
+##
+# @class CfdErrorCode
+# @brief Cfd error code.
 class CfdErrorCode(Enum):
+    ##
+    # CfdErrorCode: success
     SUCCESS = 0
+    ##
+    # CfdErrorCode: unknown error.
     UNKNOWN = -1
+    ##
+    # CfdErrorCode: internal error.
     INTERNAL = -2
+    ##
+    # CfdErrorCode: memory full error.
     MEMORY_FULL = -3
+    ##
+    # CfdErrorCode: illegal argument error.
     ILLEGAL_ARGUMENT = 1
+    ##
+    # CfdErrorCode: illegal state error.
     ILLEGAL_STATE = 2
+    ##
+    # CfdErrorCode: out of range error.
     OUT_OF_RANGE = 3
+    ##
+    # CfdErrorCode: invalid setting.
     INVALID_SETTING = 4
+    ##
+    # CfdErrorCode: connection error.
     CONNECTION_ERROR = 5
+    ##
+    # CfdErrorCode: disk access error.
     DISK_ACCESS_ERROR = 6
+    ##
+    # CfdErrorCode: sign verification.
     SIGN_VERIFICATION = 7
 
 
@@ -57,7 +82,17 @@ class CfdError(Exception):
         return 'code={}, msg={}'.format(self.error_code, self.message)
 
 
+##
+# @class ByteData
+# @brief cfd byte data class.
 class ByteData:
+    ##
+    # @var hex
+    # hex string
+
+    ##
+    # @brief constructor.
+    # @param[in] data     byte data
     def __init__(self, data):
         if isinstance(data, bytes) or isinstance(data, bytearray):
             self.hex = data.hex()
@@ -73,13 +108,22 @@ class ByteData:
     def __str__(self):
         return self.hex
 
+    ##
+    # @brief get bytes data.
+    # @return bytes data.
     def as_bytes(self):
         return bytes.fromhex(self.hex)
 
+    ##
+    # @brief get array data.
+    # @return array data.
     def as_array(self):
         _hex_list = re.split('(..)', self.hex)[1::2]
         return [int('0x' + s, 16) for s in _hex_list]
 
+    ##
+    # @brief get serialized data.
+    # @return serialize hex.
     def serialize(self):
         util = get_util()
         with util.create_handle() as handle:
@@ -88,7 +132,17 @@ class ByteData:
             return _serialized
 
 
+##
+# @class ReverseByteData
+# @brief reversible byte data class.
 class ReverseByteData:
+    ##
+    # @var hex
+    # hex string
+
+    ##
+    # @brief constructor.
+    # @param[in] data     byte data
     def __init__(self, data):
         if isinstance(data, bytes) or isinstance(data, bytearray):
             _data = data.hex()
@@ -114,17 +168,27 @@ class ReverseByteData:
     def __str__(self):
         return self.hex
 
+    ##
+    # @brief get bytes data.
+    # @return bytes data.
     def as_bytes(self):
         _hex_list = re.split('(..)', self.hex)[1::2]
         _hex_list = _hex_list[::-1]
         return bytes.fromhex(''.join(_hex_list))
 
+    ##
+    # @brief get array data.
+    # @return array data.
     def as_array(self):
         _hex_list = re.split('(..)', self.hex)[1::2]
         _hex_list = _hex_list[::-1]
         return [int('0x' + s, 16) for s in _hex_list]
 
 
+##
+# @brief get hex string.
+# @param[in] value      data
+# @return hex string.
 def to_hex_string(value):
     if isinstance(value, bytes):
         return value.hex()
@@ -826,6 +890,8 @@ def get_util():
     return CfdUtil.get_instance()
 
 
+##
+# All import target.
 __all__ = [
     'CfdError',
     'ByteData',

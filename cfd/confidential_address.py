@@ -53,4 +53,6 @@ class ConfidentialAddress:
         return self.confidential_address
 
 
+##
+# All import target.
 __all__ = ['ConfidentialAddress']

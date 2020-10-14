@@ -8,7 +8,44 @@ from .key import Network, Pubkey
 from .script import HashType, Script
 
 
+##
+# @class Address
+# @brief Address data.
 class Address:
+    ##
+    # @var address
+    # address string
+    ##
+    # @var locking_script
+    # locking script (scriptPubkey)
+    ##
+    # @var pubkey
+    # pubkey for pubkey hash.
+    ##
+    # @var redeem_script
+    # redeem script for script hash.
+    ##
+    # @var p2sh_wrapped_script
+    # witness locking script for p2sh.
+    ##
+    # @var hash_type
+    # hash type.
+    ##
+    # @var network
+    # network.
+    ##
+    # @var witness_version
+    # witness version.
+
+    ##
+    # @brief constructor.
+    # @param[in] address          address
+    # @param[in] locking_script   locking script
+    # @param[in] hash_type        hash type
+    # @param[in] network          network
+    # @param[in] pubkey           public key
+    # @param[in] redeem_script    redeem script
+    # @param[in] p2sh_wrapped_script    witness locking script for p2sh
     def __init__(
             self,
             address,
@@ -40,7 +77,15 @@ class Address:
         return self.address
 
 
+##
+# @class AddressUtil
+# @brief Address utility.
 class AddressUtil:
+    ##
+    # @brief parse address string.
+    # @param[in] address          address string
+    # @param[in] hash_type        hash type
+    # @return address object.
     @classmethod
     def parse(cls, address, hash_type=HashType.P2WPKH):
         util = get_util()
@@ -63,36 +108,72 @@ class AddressUtil:
                 hash_type=_hash_type,
                 network=Network.get(network))
 
+    ##
+    # @brief get p2pkh address.
+    # @param[in] pubkey           public key
+    # @param[in] network          network
+    # @return address object.
     @classmethod
     def p2pkh(cls, pubkey, network=Network.MAINNET):
         return cls.from_pubkey_hash(
             pubkey, HashType.P2PKH, network)
 
+    ##
+    # @brief get p2wpkh address.
+    # @param[in] pubkey           public key
+    # @param[in] network          network
+    # @return address object.
     @classmethod
     def p2wpkh(cls, pubkey, network=Network.MAINNET):
         return cls.from_pubkey_hash(
             pubkey, HashType.P2WPKH, network)
 
+    ##
+    # @brief get p2sh-p2wpkh address.
+    # @param[in] pubkey           public key
+    # @param[in] network          network
+    # @return address object.
     @classmethod
     def p2sh_p2wpkh(cls, pubkey, network=Network.MAINNET):
         return cls.from_pubkey_hash(
             pubkey, HashType.P2SH_P2WPKH, network)
 
+    ##
+    # @brief get p2sh address.
+    # @param[in] redeem_script    redeem script
+    # @param[in] network          network
+    # @return address object.
     @classmethod
     def p2sh(cls, redeem_script, network=Network.MAINNET):
         return cls.from_script_hash(
             redeem_script, HashType.P2SH, network)
 
+    ##
+    # @brief get p2wsh address.
+    # @param[in] redeem_script    redeem script
+    # @param[in] network          network
+    # @return address object.
     @classmethod
     def p2wsh(cls, redeem_script, network=Network.MAINNET):
         return cls.from_script_hash(
             redeem_script, HashType.P2WSH, network)
 
+    ##
+    # @brief get p2sh-p2wsh address.
+    # @param[in] redeem_script    redeem script
+    # @param[in] network          network
+    # @return address object.
     @classmethod
     def p2sh_p2wsh(cls, redeem_script, network=Network.MAINNET):
         return cls.from_script_hash(
             redeem_script, HashType.P2SH_P2WSH, network)
 
+    ##
+    # @brief get pubkey hash address.
+    # @param[in] pubkey           public key
+    # @param[in] hash_type        hash type
+    # @param[in] network          network
+    # @return address object.
     @classmethod
     def from_pubkey_hash(
             cls,
@@ -116,6 +197,12 @@ class AddressUtil:
                 pubkey=Pubkey(_pubkey),
                 p2sh_wrapped_script=segwit_locking_script)
 
+    ##
+    # @brief get script hash address.
+    # @param[in] redeem_script    redeem script
+    # @param[in] hash_type        hash type
+    # @param[in] network          network
+    # @return address object.
     @classmethod
     def from_script_hash(
             cls,
@@ -139,6 +226,13 @@ class AddressUtil:
                 redeem_script=Script(_script),
                 p2sh_wrapped_script=segwit_locking_script)
 
+    ##
+    # @brief get multisig address.
+    # @param[in] require_num      require signature num
+    # @param[in] pubkey_list      pubkey list
+    # @param[in] hash_type        hash type
+    # @param[in] network          network
+    # @return address object.
     @classmethod
     def multisig(
             cls,
@@ -187,6 +281,11 @@ class AddressUtil:
                     redeem_script=Script(witness_script),
                     p2sh_wrapped_script=redeem_script)
 
+    ##
+    # @brief get address from locking script.
+    # @param[in] locking_script   locking script
+    # @param[in] network          network
+    # @return address object.
     @classmethod
     def from_locking_script(
             cls,
@@ -201,6 +300,12 @@ class AddressUtil:
                 handle.get_handle(), _script, _network.value)
             return cls.parse(addr)
 
+    ##
+    # @brief get multisig pubkey addresses.
+    # @param[in] redeem_script    multisig script
+    # @param[in] hash_type        hash type
+    # @param[in] network          network
+    # @return address object list.
     @classmethod
     def get_multisig_address_list(
             cls,
@@ -230,4 +335,6 @@ class AddressUtil:
         return addr_list
 
 
+##
+# All import target.
 __all__ = ['Address', 'AddressUtil']

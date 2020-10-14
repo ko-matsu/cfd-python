@@ -10,17 +10,42 @@ from .script import HashType
 from enum import Enum
 
 
+##
+# @class DescriptorScriptType
+# @brief Descriptor script type
 class DescriptorScriptType(Enum):
+    ##
+    # null
     NULL = 0
+    ##
+    # p2sh
     SH = 1
+    ##
+    # p2wsh
     WSH = 2
+    ##
+    # p2pk
     PK = 3
+    ##
+    # p2pkh
     PKH = 4
+    ##
+    # p2wpkh
     WPKH = 5
+    ##
+    # combo
     COMBO = 6
+    ##
+    # multi
     MULTI = 7
+    ##
+    # sorted multi
     SORTED_MULTI = 8
+    ##
+    # address
     ADDR = 9
+    ##
+    # raw
     RAW = 10
 
     ##
@@ -29,6 +54,10 @@ class DescriptorScriptType(Enum):
     def as_str(self):
         return self.name.lower().replace('_', '')
 
+    ##
+    # @brief get object.
+    # @param[in] desc_type      descriptor type
+    # @return object.
     @classmethod
     def get(cls, desc_type):
         if (isinstance(desc_type, DescriptorScriptType)):
@@ -48,10 +77,21 @@ class DescriptorScriptType(Enum):
             message='Error: Invalid type.')
 
 
+##
+# @class DescriptorKeyType
+# @brief Descriptor key type
 class DescriptorKeyType(Enum):
+    ##
+    # null
     NULL = 0
+    ##
+    # public key
     PUBLIC = 1
+    ##
+    # bip32 (ext pubkey)
     BIP32 = 2
+    ##
+    # bip32 (ext privkey)
     BIP32_PRIV = 3
 
     ##
@@ -66,6 +106,10 @@ class DescriptorKeyType(Enum):
             return 'extPrivkey'
         return self.name
 
+    ##
+    # @brief get object.
+    # @param[in] desc_type      descriptor type
+    # @return object.
     @classmethod
     def get(cls, desc_type):
         if (isinstance(desc_type, DescriptorKeyType)):
@@ -91,7 +135,29 @@ class DescriptorKeyType(Enum):
             message='Error: Invalid type.')
 
 
+##
+# @class DescriptorKeyData
+# @brief Descriptor key data
 class DescriptorKeyData:
+    ##
+    # @var key_type
+    # key type
+    ##
+    # @var pubkey
+    # pubkey
+    ##
+    # @var ext_pubkey
+    # ext pubkey
+    ##
+    # @var ext_privkey
+    # ext privkey
+
+    ##
+    # @brief constructor.
+    # @param[in] key_type       key type
+    # @param[in] pubkey         pubkey
+    # @param[in] ext_pubkey     ext pubkey
+    # @param[in] ext_privkey    ext privkey
     def __init__(
             self,
             key_type=DescriptorKeyType.NULL,
@@ -116,7 +182,45 @@ class DescriptorKeyData:
         return ''
 
 
+##
+# @class DescriptorScriptData
+# @brief Descriptor script data
 class DescriptorScriptData:
+    ##
+    # @var script_type
+    # script type
+    ##
+    # @var depth
+    # depth
+    ##
+    # @var hash_type
+    # hash type
+    ##
+    # @var address
+    # address
+    ##
+    # @var redeem_script
+    # redeem script
+    ##
+    # @var key_data
+    # key data
+    ##
+    # @var key_list
+    # key list
+    ##
+    # @var multisig_require_num
+    # multisig require num
+
+    ##
+    # @brief constructor.
+    # @param[in] script_type    script type
+    # @param[in] depth          depth
+    # @param[in] hash_type      hash type
+    # @param[in] address        address
+    # @param[in] redeem_script  redeem script
+    # @param[in] key_data       key data
+    # @param[in] key_list       key list
+    # @param[in] multisig_require_num   multisig require num
     def __init__(
             self, script_type, depth, hash_type, address,
             redeem_script='',
@@ -133,7 +237,31 @@ class DescriptorScriptData:
         self.multisig_require_num = multisig_require_num
 
 
+##
+# @class Descriptor
+# @brief Descriptor data
 class Descriptor:
+    ##
+    # @var path
+    # bip32 path
+    ##
+    # @var descriptor
+    # descriptor string
+    ##
+    # @var network
+    # network
+    ##
+    # @var script_list
+    # script list
+    ##
+    # @var data
+    # reference data
+
+    ##
+    # @brief constructor.
+    # @param[in] descriptor     descriptor
+    # @param[in] network        network
+    # @param[in] path           bip32 path
     def __init__(self, descriptor, network=Network.MAINNET, path=''):
         self.network = Network.get(network)
         self.path = str(path)
@@ -141,6 +269,10 @@ class Descriptor:
         self.script_list = self._parse()
         self.data = self._analyze()
 
+    ##
+    # @brief verify descriptor.
+    # @param[in] descriptor     descriptor
+    # @return append checksum descriptor
     def _verify(self, descriptor):
         util = get_util()
         with util.create_handle() as handle:
@@ -148,6 +280,9 @@ class Descriptor:
                 'CfdGetDescriptorChecksum', handle.get_handle(),
                 self.network.value, descriptor)
 
+    ##
+    # @brief parse descriptor.
+    # @return script list
     def _parse(self):
         util = get_util()
         with util.create_handle() as handle:
@@ -213,6 +348,9 @@ class Descriptor:
                         break
                 return script_list
 
+    ##
+    # @brief analyze descriptor.
+    # @return reference data
     def _analyze(self):
         if (self.script_list[0].hash_type in {
                 HashType.P2WSH, HashType.P2SH}) and (
@@ -288,6 +426,8 @@ def parse_descriptor(descriptor, network=Network.MAINNET, path=''):
     return Descriptor(descriptor, network=network, path=path)
 
 
+##
+# All import target.
 __all__ = [
     'parse_descriptor',
     'Descriptor',

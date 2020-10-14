@@ -23,8 +23,15 @@ XPUB_MAINNET_VERSION = '0488b21e'
 XPUB_TESTNET_VERSION = '043587cf'
 
 
+##
+# @class ExtKeyType
+# @brief ExtKey type.
 class ExtKeyType(Enum):
+    ##
+    # Ext privkey
     EXT_PRIVKEY = 0
+    ##
+    # Ext pubkey
     EXT_PUBKEY = 1
 
     ##
@@ -39,6 +46,10 @@ class ExtKeyType(Enum):
     def as_str(self):
         return self.name.lower().replace('_', '')
 
+    ##
+    # @brief get object.
+    # @param[in] key_type   key type
+    # @return object.
     @classmethod
     def get(cls, key_type):
         if (isinstance(key_type, ExtKeyType)):
@@ -62,15 +73,56 @@ class ExtKeyType(Enum):
             message='Error: Invalid extkey type.')
 
 
+##
+# @class Extkey
+# @brief ExtKey base class.
 class Extkey(object):
+    ##
+    # @var extkey_type
+    # extkey type
+    ##
+    # @var util
+    # cfd util
+    ##
+    # @var version
+    # version
+    ##
+    # @var fingerprint
+    # fingerprint
+    ##
+    # @var chain_code
+    # chain code
+    ##
+    # @var depth
+    # depth
+    ##
+    # @var child_number
+    # child number
+    ##
+    # @var extkey
+    # extkey
+    ##
+    # @var network
+    # network
+
+    ##
+    # @brief constructor.
+    # @param[in] extkey_type    extkey type
     def __init__(self, extkey_type):
         self.extkey_type = extkey_type
         self.util = get_util()
-        self.version, self.fingerprint, self.chain_code, self.depth, \
-            self.child_number = ('', '', '', 0, 0)
+        self.version = ''
+        self.fingerprint = ''
+        self.chain_code = ''
+        self.depth = 0
+        self.child_number = 0
         self.extkey = ''
         self.network = Network.TESTNET
 
+    ##
+    # @brief get extkey information.
+    # @param[in] extkey    extkey
+    # @return void
     def _get_information(self, extkey):
         with self.util.create_handle() as handle:
             result = self.util.call_func(
@@ -93,6 +145,13 @@ class Extkey(object):
                     error_code=1,
                     message='Error: Invalid ext {}.'.format(name))
 
+    ##
+    # @brief get extkey information.
+    # @param[in] path           bip32 path
+    # @param[in] number         bip32 number
+    # @param[in] number_list    bip32 number list
+    # @retval [0]  bip32 path
+    # @retval [1]  bip32 number list
     @classmethod
     def _convert_path(cls, path='', number=0, number_list=[]):
         if path != '':
@@ -112,12 +171,28 @@ class Extkey(object):
                 message='Error: Invalid number range.')
         return '', [number]
 
+    ##
+    # @brief get extkey path data.
+    # @param[in] bip32_path     bip32 path
+    # @param[in] key_type       key type
+    # @return path data
     def _get_path_data(self, bip32_path, key_type):
         with self.util.create_handle() as handle:
             return self.util.call_func(
                 'CfdGetParentExtkeyPathData', handle.get_handle(),
                 self.extkey, bip32_path, key_type.value)
 
+    ##
+    # @brief create extkey.
+    # @param[in] key_type       key type
+    # @param[in] network        network
+    # @param[in] fingerprint    fingerprint
+    # @param[in] key            key
+    # @param[in] chain_code     chain_code
+    # @param[in] depth          depth
+    # @param[in] number         number
+    # @param[in] parent_key     parent key
+    # @return Extkey string
     @classmethod
     def _create(
             cls, key_type, network, fingerprint, key, chain_code,
@@ -138,7 +213,19 @@ class Extkey(object):
         return _extkey
 
 
+##
+# @class ExtPrivkey
+# @brief ExtPrivkey class.
 class ExtPrivkey(Extkey):
+    ##
+    # @var privkey
+    # privkey
+
+    ##
+    # @brief create extkey from seed.
+    # @param[in] seed       seed
+    # @param[in] network    network
+    # @return ExtPrivkey
     @classmethod
     def from_seed(cls, seed, network=Network.MAINNET):
         _seed = to_hex_string(seed)
@@ -150,6 +237,16 @@ class ExtPrivkey(Extkey):
                 _seed, _network.value, ExtKeyType.EXT_PRIVKEY.value)
         return ExtPrivkey(_extkey)
 
+    ##
+    # @brief create extkey.
+    # @param[in] network        network
+    # @param[in] fingerprint    fingerprint
+    # @param[in] key            key
+    # @param[in] chain_code     chain_code
+    # @param[in] depth          depth
+    # @param[in] number         number
+    # @param[in] parent_key     parent key
+    # @return ExtPrivkey
     @classmethod
     def create(
             cls, network, fingerprint, key, chain_code,
@@ -159,6 +256,9 @@ class ExtPrivkey(Extkey):
             chain_code, depth, number, parent_key)
         return ExtPrivkey(_extkey)
 
+    ##
+    # @brief constructor.
+    # @param[in] extkey        extkey
     def __init__(self, extkey):
         super().__init__(ExtKeyType.EXT_PRIVKEY)
         self._get_information(extkey)
@@ -168,11 +268,18 @@ class ExtPrivkey(Extkey):
                 self.extkey, self.network.value)
             self.privkey = Privkey(wif=wif)
 
+    ##
     # @brief get string.
     # @return extkey.
     def __str__(self):
         return self.extkey
 
+    ##
+    # @brief derive key.
+    # @param[in] path           bip32 path
+    # @param[in] number         bip32 number
+    # @param[in] number_list    bip32 number list
+    # @return ExtPrivkey
     def derive(self, path='', number=0, number_list=[]):
         _path, _list = self._convert_path(path, number, number_list)
         with self.util.create_handle() as handle:
@@ -192,12 +299,21 @@ class ExtPrivkey(Extkey):
                     ExtKeyType.EXT_PRIVKEY.value)
         return ExtPrivkey(_extkey)
 
+    ##
+    # @brief derive pubkey.
+    # @param[in] path           bip32 path
+    # @param[in] number         bip32 number
+    # @param[in] number_list    bip32 number list
+    # @return ExtPubkey
     def derive_pubkey(self, path='', number=0, number_list=[]):
         return self.derive(
             path=path,
             number=number,
             number_list=number_list).get_extpubkey()
 
+    ##
+    # @brief get ext pubkey.
+    # @return ExtPubkey
     def get_extpubkey(self):
         with self.util.create_handle() as handle:
             ext_pubkey = self.util.call_func(
@@ -205,6 +321,11 @@ class ExtPrivkey(Extkey):
                 self.extkey, self.network.value)
             return ExtPubkey(ext_pubkey)
 
+    ##
+    # @brief get extkey path data.
+    # @param[in] bip32_path     bip32 path
+    # @param[in] key_type       key type
+    # @return path data
     def get_path_data(self, bip32_path, key_type=ExtKeyType.EXT_PRIVKEY):
         path_data, child_key = self._get_path_data(
             bip32_path, key_type)
@@ -215,7 +336,24 @@ class ExtPrivkey(Extkey):
             return path_data, ExtPrivkey(child_key)
 
 
+##
+# @class ExtPubkey
+# @brief ExtPubkey class.
 class ExtPubkey(Extkey):
+    ##
+    # @var pubkey
+    # pubkey
+
+    ##
+    # @brief create extkey.
+    # @param[in] network        network
+    # @param[in] fingerprint    fingerprint
+    # @param[in] key            key
+    # @param[in] chain_code     chain_code
+    # @param[in] depth          depth
+    # @param[in] number         number
+    # @param[in] parent_key     parent key
+    # @return ExtPubkey
     @classmethod
     def create(
             cls, network, fingerprint, key, chain_code,
@@ -225,6 +363,9 @@ class ExtPubkey(Extkey):
             chain_code, depth, number, parent_key)
         return ExtPubkey(_extkey)
 
+    ##
+    # @brief constructor.
+    # @param[in] extkey        extkey
     def __init__(self, extkey):
         super().__init__(ExtKeyType.EXT_PUBKEY)
         self._get_information(extkey)
@@ -234,11 +375,18 @@ class ExtPubkey(Extkey):
                 self.extkey, self.network.value)
             self.pubkey = Pubkey(hex)
 
+    ##
     # @brief get string.
     # @return extkey.
     def __str__(self):
         return self.extkey
 
+    ##
+    # @brief derive key.
+    # @param[in] path           bip32 path
+    # @param[in] number         bip32 number
+    # @param[in] number_list    bip32 number list
+    # @return ExtPubkey
     def derive(self, path='', number=0, number_list=[]):
         _path, _list = self._convert_path(path, number, number_list)
         with self.util.create_handle() as handle:
@@ -259,21 +407,46 @@ class ExtPubkey(Extkey):
                     ExtKeyType.EXT_PUBKEY.value)
         return ExtPubkey(_extkey)
 
+    ##
+    # @brief get extkey path data.
+    # @param[in] bip32_path     bip32 path
+    # @return path data
     def get_path_data(self, bip32_path):
         path_data, child_key = self._get_path_data(
             bip32_path, ExtKeyType.EXT_PUBKEY)
         return path_data, ExtPubkey(child_key)
 
 
+##
+# @class MnemonicLanguage
+# @brief Mnemonic language class.
 class MnemonicLanguage(Enum):
+    ##
+    # English
     EN = 'en'
+    ##
+    # Spanish
     ES = 'es'
+    ##
+    # French
     FR = 'fr'
+    ##
+    # Italic
     IT = 'it'
+    ##
+    # Japanese
     JP = 'jp'
+    ##
+    # Simplified Chinese
     ZH_CN = 'zhs'
+    ##
+    # Traditional Chinese
     ZH_TW = 'zht'
 
+    ##
+    # @brief get object.
+    # @param[in] language    language
+    # @return object.
     @classmethod
     def get(cls, language):
         if (isinstance(language, MnemonicLanguage)):
@@ -296,12 +469,25 @@ class MnemonicLanguage(Enum):
             message='Error: Invalid lang.')
 
 
+##
+# @class HDWallet
+# @brief HDWallet class.
 class HDWallet:
+    ##
+    # @var seed
+    # seed
+    ##
+    # @var network
+    # network
+    ##
+    # @var ext_privkey
+    # ext privkey
+
     @classmethod
     ##
     # @brief get mnemonic word list.
     # @param[in] language   language
-    # @retval word_list     mnemonic word list
+    # @return word_list     mnemonic word list
     def get_mnemonic_word_list(cls, language):
         util = get_util()
         _lang = MnemonicLanguage.get(language).value
@@ -320,6 +506,11 @@ class HDWallet:
                     word_list.append(word)
         return word_list
 
+    ##
+    # @brief get mnemonic.
+    # @param[in] entropy    entropy
+    # @param[in] language   language
+    # @return mnemonic
     @classmethod
     def get_mnemonic(cls, entropy, language):
         _entropy = to_hex_string(entropy)
@@ -331,6 +522,12 @@ class HDWallet:
                 handle.get_handle(), _entropy, _lang)
             return mnemonic
 
+    ##
+    # @brief get entropy.
+    # @param[in] mnemonic       mnemonic
+    # @param[in] language       language
+    # @param[in] strict_check   strict check
+    # @return entropy
     @classmethod
     def get_entropy(cls, mnemonic, language, strict_check=True):
         _mnemonic = cls._convert_mnemonic(mnemonic)
@@ -343,10 +540,23 @@ class HDWallet:
                 _mnemonic, '', strict_check, _lang, False)
             return entropy
 
+    ##
+    # @brief create extkey from seed.
+    # @param[in] seed       seed
+    # @param[in] network    network
+    # @return HDWallet
     @classmethod
     def from_seed(cls, seed, network=Network.MAINNET):
         return HDWallet(seed=seed, network=network)
 
+    ##
+    # @brief create extkey from mnemonic.
+    # @param[in] mnemonic       mnemonic
+    # @param[in] language       language
+    # @param[in] passphrase     passphrase
+    # @param[in] network        network
+    # @param[in] strict_check   strict check
+    # @return HDWallet
     @classmethod
     def from_mnemonic(
             cls, mnemonic, language='en', passphrase='',
@@ -355,6 +565,14 @@ class HDWallet:
             mnemonic=mnemonic, language=language,
             passphrase=passphrase, network=network, strict_check=strict_check)
 
+    ##
+    # @brief constructor.
+    # @param[in] seed           seed
+    # @param[in] mnemonic       mnemonic
+    # @param[in] language       language
+    # @param[in] passphrase     passphrase
+    # @param[in] network        network
+    # @param[in] strict_check   strict check
     def __init__(
             self, seed='', mnemonic='', language='en', passphrase='',
             network=Network.MAINNET, strict_check=True):
@@ -373,18 +591,36 @@ class HDWallet:
                     strict_check, _lang, False)
         self.ext_privkey = ExtPrivkey.from_seed(self.seed, self.network)
 
+    ##
+    # @brief get privkey.
+    # @param[in] path           bip32 path
+    # @param[in] number         bip32 number
+    # @param[in] number_list    bip32 number list
+    # @return ExtPrivkey
     def get_privkey(self, path='', number=0, number_list=[]):
         return self.ext_privkey.derive(path, number, number_list)
 
+    ##
+    # @brief get pubkey.
+    # @param[in] path           bip32 path
+    # @param[in] number         bip32 number
+    # @param[in] number_list    bip32 number list
+    # @return ExtPubkey
     def get_pubkey(self, path='', number=0, number_list=[]):
         return self.ext_privkey.derive_pubkey(path, number, number_list)
 
+    ##
+    # @brief convert mnemonic.
+    # @param[in] mnemonic   mnemonic
+    # @return mnemonic
     @classmethod
     def _convert_mnemonic(cls, mnemonic):
         _words = ' '.join(mnemonic) if isinstance(mnemonic, list) else mnemonic
         return _words.replace('　', ' ') if isinstance(_words, str) else _words
 
 
+##
+# All import target.
 __all__ = [
     'ExtKeyType',
     'Extkey',

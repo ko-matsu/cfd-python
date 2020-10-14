@@ -9,8 +9,8 @@ from cfd.key import Privkey, Pubkey, SchnorrPubkey,\
 def test_privkey_func(obj, name, case, req, exp, error):
     try:
         if name == 'Privkey.GenerateKeyPair':
-            resp, _ = Privkey.generate(network=req['network'],
-                                       is_compressed=req['isCompressed'])
+            resp = Privkey.generate(network=req['network'],
+                                    is_compressed=req['isCompressed'])
         elif name == 'Privkey.FromHex':
             resp = Privkey.from_hex(req['hex'],
                                     network=req['network'],

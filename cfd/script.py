@@ -43,6 +43,10 @@ class HashType(Enum):
     def as_str(self):
         return self.name.lower().replace('_', '-')
 
+    ##
+    # @brief get object.
+    # @param[in] hashtype  hashtype
+    # @return object
     @classmethod
     def get(cls, hashtype):
         if (isinstance(hashtype, HashType)):
@@ -66,7 +70,21 @@ class HashType(Enum):
             message='Error: Invalid hash type: {}'.format(hashtype))
 
 
+##
+# @class Script
+# @brief Script
 class Script:
+    ##
+    # @var hex
+    # script hex
+    ##
+    # @var asm
+    # asm
+
+    ##
+    # @brief get script from asm.
+    # @param[in] script_items  asm strings (list or string)
+    # @return script object
     @classmethod
     def from_asm(cls, script_items):
         _asm = script_items
@@ -82,6 +100,11 @@ class Script:
                 'CfdConvertScriptAsmToHex', handle.get_handle(), _asm)
             return Script(_hex)
 
+    ##
+    # @brief create multisig scriptsig.
+    # @param[in] redeem_script          multisig script
+    # @param[in] sign_parameter_list    signature list
+    # @return script object
     @classmethod
     def create_multisig_scriptsig(cls, redeem_script, sign_parameter_list):
         _script = to_hex_string(redeem_script)
@@ -117,15 +140,23 @@ class Script:
                     _script)
                 return Script(scriptsig)
 
+    ##
+    # @brief constructor.
+    # @param[in] script     script
     def __init__(self, script):
         self.hex = to_hex_string(script)
         self.asm = Script._parse(self.hex)
 
+    ##
     # @brief get string.
-    # @return address.
+    # @return script hex.
     def __str__(self):
         return self.hex
 
+    ##
+    # @brief create multisig scriptsig.
+    # @param[in] script     script
+    # @return script asm
     @classmethod
     def _parse(cls, script):
         util = get_util()
@@ -145,6 +176,8 @@ class Script:
         return ' '.join(script_list)
 
 
+##
+# All import target.
 __all__ = [
     'Script',
     'HashType'
