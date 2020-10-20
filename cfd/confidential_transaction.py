@@ -937,11 +937,13 @@ class ConfidentialTransaction(_TransactionBase):
                 'CfdInitializeBlindTx', handle.get_handle())
             with JobHandle(
                     handle, _tx_handle, 'CfdFreeBlindHandle') as tx_handle:
+                issuance_count = 0
                 for txin in utxo_list:
                     asset_key, token_key = '', ''
                     if str(txin.outpoint) in issuance_key_map:
                         item = issuance_key_map[str(txin.outpoint)]
                         asset_key, token_key = item.asset_key, item.token_key
+                        issuance_count += 1
                     util.call_func(
                         'CfdAddBlindTxInData', handle.get_handle(),
                         tx_handle.get_handle(),
@@ -950,6 +952,10 @@ class ConfidentialTransaction(_TransactionBase):
                         to_hex_string(txin.asset_blinder),
                         to_hex_string(txin.amount_blinder),
                         txin.amount, asset_key, token_key)
+                if issuance_count != len(issuance_key_map):
+                    raise CfdError(
+                        error_code=1,
+                        message='Error: Issuance Txid is not found.')
                 for addr in confidential_address_list:
                     util.call_func(
                         'CfdAddBlindTxOutByAddress', handle.get_handle(),

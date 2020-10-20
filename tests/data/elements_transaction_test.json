@@ -2292,11 +2292,7 @@
                             }
                         }
                     ]
-                },
-                "exclude": [
-                    "python"
-                ],
-                "fixme": "fix c-api"
+                }
             },
             {
                 "case": "Unblind Transaction",
@@ -4184,8 +4180,9 @@
                     "message": "witness_datas empty."
                 },
                 "exclude": [
-                    "python"
-                ]
+                    "capi"
+                ],
+                "todo": "C-API can set empty data."
             },
             {
                 "case": "invalid witness stack hex (3 chars)",
@@ -8757,12 +8754,9 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "Txid is not found."
-                },
-                "exclude": [
-                    "python"
-                ],
-                "fixme": "check not occured error."
+                    "cfd": "Txid is not found.",
+                    "python": "Error: Issuance Txid is not found."
+                }
             }
         ]
     }

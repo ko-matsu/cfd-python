@@ -610,7 +610,8 @@
                 },
                 "exclude": [
                     "python"
-                ]
+                ],
+                "todo": "check current test case."
             },
             {
                 "case": "p2wsh miniscript",
@@ -638,7 +639,8 @@
                 },
                 "exclude": [
                     "python"
-                ]
+                ],
+                "todo": "check current test case."
             },
             {
                 "case": "p2sh-p2wsh miniscript",
@@ -674,7 +676,8 @@
                 },
                 "exclude": [
                     "python"
-                ]
+                ],
+                "todo": "check current test case."
             },
             {
                 "case": "Elements pkh liquidv1",

@@ -4560,11 +4560,7 @@
                 },
                 "expect": {
                     "hex": "020000000001014cdeada737db97af334f0fa4e87432d6068759eea65a3067d1f14a979e5a9dea0000000000ffffffff0101000000000000002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c63296049032620300004752210205ffcdde75f262d66ada3dd877c7471f8f8ee9ee24d917c3e18d01cee458bafe2102be61f4350b4ae7544f99649a917f48ba16cf48c983ac1599774958d88ad17ec552ae00000000"
-                },
-                "exclude": [
-                    "python"
-                ],
-                "fixme": "python"
+                }
             },
             {
                 "case": "sign maximum (sign count: 15)",
@@ -6644,9 +6640,5 @@
                 }
             }
         ]
-    },
-    {
-        "name": "Transaction.SelectCoin",
-        "cases": []
     }
 ]

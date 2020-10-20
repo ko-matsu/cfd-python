@@ -541,10 +541,31 @@ def test_ct_transaction_func(obj, name, case, req, exp, error):
         raise Exception('unknown name: ' + name)
 
 
+def test_elements_tx_func(obj, name, case, req, exp, error):
+    try:
+        if name == 'Elements.CoinSelection':
+            pass
+        elif name == 'Elements.EstimateFee':
+            pass
+        elif name == 'Elements.FundTransaction':
+            pass
+        else:
+            raise Exception('unknown name: ' + name)
+        assert_error(obj, name, case, error)
+
+    except CfdError as err:
+        if not error:
+            raise err
+        assert_equal(obj, name, case, exp, err.message)
+
+
 class TestConfidentialTransaction(TestCase):
     def setUp(self):
         self.test_list = load_json_file('elements_transaction_test.json')
+        self.test_list += load_json_file('elements_coin_test.json')
 
     def test_confidential_transaction(self):
         exec_test(self, 'ConfidentialTransaction', test_ct_transaction_func)
-        # pass
+
+    def test_elements_tx(self):
+        exec_test(self, 'Elements', test_elements_tx_func)

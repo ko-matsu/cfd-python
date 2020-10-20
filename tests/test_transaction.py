@@ -283,6 +283,24 @@ def test_transaction_func(obj, name, case, req, exp, error):
         raise Exception('unknown name: ' + name)
 
 
+def test_bitcoin_tx_func(obj, name, case, req, exp, error):
+    try:
+        if name == 'Bitcoin.CoinSelection':
+            pass
+        elif name == 'Bitcoin.EstimateFee':
+            pass
+        elif name == 'Bitcoin.FundTransaction':
+            pass
+        else:
+            raise Exception('unknown name: ' + name)
+        assert_error(obj, name, case, error)
+
+    except CfdError as err:
+        if not error:
+            raise err
+        assert_equal(obj, name, case, exp, err.message)
+
+
 class TestTxid(TestCase):
     def test_txid(self):
         txid = 'fe0000000000000000000000000000000000000000000000000000000000ff01'  # noqa: E501
@@ -304,9 +322,13 @@ class TestTxid(TestCase):
 class TestTransaction(TestCase):
     def setUp(self):
         self.test_list = load_json_file('transaction_test.json')
+        self.test_list += load_json_file('bitcoin_coin_test.json')
 
     def test_transaction(self):
         exec_test(self, 'Transaction', test_transaction_func)
+
+    def test_bitcoin_tx(self):
+        exec_test(self, 'Bitcoin', test_bitcoin_tx_func)
 
     def test_create_raw_transaction(self):
         privkey = ExtPrivkey(

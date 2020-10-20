@@ -366,7 +366,8 @@
                 },
                 "exclude": [
                     "python"
-                ]
+                ],
+                "fixme": "c-api"
             },
             {
                 "case": "sign maximum (sign count: 15)",

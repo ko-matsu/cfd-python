@@ -1071,7 +1071,7 @@
                 "request": {
                     "extkey": "xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi",
                     "extkeyType": "extPrivkey",
-                    "bip32": "0h/1/2h/2/1000000000"
+                    "bip32": "m/0h/1/2h/2/1000000000"
                 },
                 "expect": {
                     "extkey": "xprvA41z7zogVVwxVSgdKUHDy1SKmdb533PjDz7J6N6mV6uS3ze1ai8FHa8kmHScGpWmj4WggLyQjgPie1rFSruoUihUZREPSL39UNdE3BBDu76",
