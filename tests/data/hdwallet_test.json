@@ -1075,8 +1075,7 @@
                 },
                 "expect": {
                     "extkey": "xprvA41z7zogVVwxVSgdKUHDy1SKmdb533PjDz7J6N6mV6uS3ze1ai8FHa8kmHScGpWmj4WggLyQjgPie1rFSruoUihUZREPSL39UNdE3BBDu76",
-                    "path": "[00000000/0h/1/2h/2/1000000000]",
-                    "fixme": "bip32: m/0h/1/2h/2/1000000000"
+                    "path": "[00000000/0h/1/2h/2/1000000000]"
                 }
             },
             {
