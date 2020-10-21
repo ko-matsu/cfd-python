@@ -393,7 +393,7 @@ class CfdUtil:
     ##
     # function map list
     _FUNC_LIST = [
-        ("CfdCreateAddress", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_int, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+                ("CfdCreateAddress", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_int, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdInitializeMultisigScript", c_int, [c_void_p, c_int, c_int, c_void_p_p]),  # noqa: E501
         ("CfdAddMultisigScriptData", c_int, [c_void_p, c_void_p, c_char_p]),  # noqa: E501
         ("CfdFinalizeMultisigScript", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
@@ -488,7 +488,11 @@ class CfdUtil:
         ("CfdAdaptEcdsaAdaptor", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdExtractEcdsaAdaptorSecret", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdVerifyEcdsaAdaptor", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
-        ("CfdGetSchnorrPubkeyFromPrivkey", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetSchnorrPubkeyFromPrivkey", c_int, [c_void_p, c_char_p, c_char_p_p, c_bool_p]),  # noqa: E501
+        ("CfdGetSchnorrPubkeyFromPubkey", c_int, [c_void_p, c_char_p, c_char_p_p, c_bool_p]),  # noqa: E501
+        ("CfdSchnorrPubkeyTweakAdd", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p, c_bool_p]),  # noqa: E501
+        ("CfdSchnorrKeyPairTweakAdd", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p, c_bool_p, c_char_p_p]),  # noqa: E501
+        ("CfdCheckTweakAddFromSchnorrPubkey", c_int, [c_void_p, c_char_p, c_bool, c_char_p, c_char_p]),  # noqa: E501
         ("CfdSignSchnorr", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdSignSchnorrWithNonce", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdComputeSchnorrSigPoint", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501

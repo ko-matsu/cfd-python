@@ -1,6 +1,6 @@
 from unittest import TestCase
 from tests.util import load_json_file, exec_test,\
-    assert_equal, assert_error
+    assert_equal, assert_error, assert_match
 from cfd.util import CfdError, to_hex_string
 from cfd.key import Privkey, Pubkey, SchnorrPubkey,\
     SchnorrUtil, SignParameter, SigHashType, EcdsaAdaptor
@@ -183,8 +183,9 @@ def test_ecdsa_adaptor_func(obj, name, case, req, exp, error):
 
 def test_schnorr_func(obj, name, case, req, exp, error):
     try:
-        if name == 'Schnorr.GetPubkey':
-            resp = SchnorrPubkey.from_privkey(
+        parity = False
+        if name == 'Schnorr.GetPubkeyFromPrivkey':
+            resp, parity = SchnorrPubkey.from_privkey(
                 Privkey.from_hex(req['privkey']))
         elif name == 'Schnorr.Sign':
             aux_rand, nonce = req['nonceOrAux'], ''
@@ -211,6 +212,8 @@ def test_schnorr_func(obj, name, case, req, exp, error):
         assert_equal(obj, name, case, exp, str(resp), 'pubkey')
         assert_equal(obj, name, case, exp, str(resp), 'hex')
         assert_equal(obj, name, case, exp, resp, 'valid')
+        if 'parity' in exp:
+            assert_match(obj, name, case, exp['parity'], parity, 'parity')
 
     except CfdError as err:
         if not error:

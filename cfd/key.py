@@ -657,7 +657,8 @@ class SchnorrPubkey:
     ##
     # @brief create SchnorrPubkey from privkey.
     # @param[in] privkey      private key
-    # @return SchnorrPubkey
+    # @retval [0] SchnorrPubkey
+    # @retval [1] parity flag
     @classmethod
     def from_privkey(cls, privkey):
         if isinstance(privkey, Privkey):
@@ -669,10 +670,10 @@ class SchnorrPubkey:
             _privkey = to_hex_string(privkey)
         util = get_util()
         with util.create_handle() as handle:
-            pubkey = util.call_func(
+            pubkey, parity = util.call_func(
                 'CfdGetSchnorrPubkeyFromPrivkey', handle.get_handle(),
                 _privkey)
-            return SchnorrPubkey(pubkey)
+            return SchnorrPubkey(pubkey), parity
 
     ##
     # @brief constructor.
