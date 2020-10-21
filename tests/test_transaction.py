@@ -1,13 +1,13 @@
 from unittest import TestCase
-from tests.util import load_json_file, exec_test,\
-    assert_equal, assert_error, assert_match
+from tests.util import load_json_file, exec_test, assert_message,\
+    assert_equal, assert_error, assert_match, get_json_file
 from cfd.util import CfdError
 from cfd.hdwallet import ExtPrivkey
 from cfd.address import AddressUtil
 from cfd.descriptor import parse_descriptor
 from cfd.script import HashType
 from cfd.key import Network, SigHashType, SignParameter
-from cfd.transaction import OutPoint, TxIn, TxOut, Transaction, Txid
+from cfd.transaction import OutPoint, TxIn, TxOut, Transaction, Txid, UtxoData
 import json
 
 
@@ -285,20 +285,87 @@ def test_transaction_func(obj, name, case, req, exp, error):
 
 def test_bitcoin_tx_func(obj, name, case, req, exp, error):
     try:
+        resp = ''
         if name == 'Bitcoin.CoinSelection':
-            pass
+            # selected_utxo_list, _utxo_fee, total_amount
+            utxo_list = obj.utxos.get(req['utxoFile'], [])
+            fee_info = req.get('feeInfo', {})
+            resp = Transaction.select_coins(
+                utxo_list,
+                tx_fee_amount=fee_info.get('txFeeAmount', 0),
+                target_amount=req.get('targetAmount', 0),
+                effective_fee_rate=fee_info.get('feeRate', 20.0),
+                long_term_fee_rate=fee_info.get('longTermFeeRate', 20.0),
+                dust_fee_rate=fee_info.get('dustFeeRate', 3.0),
+                knapsack_min_change=fee_info.get('knapsackMinChange', -1))
         elif name == 'Bitcoin.EstimateFee':
-            pass
+            utxo_list = convert_bitcoin_utxo(req['selectUtxos'])
+            tx = Transaction.from_hex(req['tx'])
+            resp = tx.estimate_fee(
+                utxo_list, fee_rate=req.get('feeRate', 20.0))
         elif name == 'Bitcoin.FundTransaction':
-            pass
+            tx = Transaction.from_hex(req['tx'])
+            txin_utxo_list = convert_bitcoin_utxo(req['selectUtxos'])
+            utxo_list = obj.utxos.get(req['utxoFile'], [])
+            fee_info = req.get('feeInfo', {})
+            tx_fee, used_addr = tx.fund_raw_transaction(
+                txin_utxo_list,
+                utxo_list,
+                reserved_address=req.get('reserveAddress', ''),
+                target_amount=req.get('targetAmount', 0),
+                effective_fee_rate=fee_info.get('feeRate', 20.0),
+                long_term_fee_rate=fee_info.get('longTermFeeRate', 20.0),
+                dust_fee_rate=fee_info.get('dustFeeRate', 3.0),
+                knapsack_min_change=fee_info.get('knapsackMinChange', -1))
+            resp = {'hex': str(tx), 'usedAddresses': [used_addr],
+                    'feeAmount': tx_fee}
         else:
             raise Exception('unknown name: ' + name)
         assert_error(obj, name, case, error)
+
+        if name == 'Bitcoin.CoinSelection':
+            selected_utxo_list, utxo_fee, total_amount = resp
+            assert_equal(obj, name, case, exp, total_amount, 'selectedAmount')
+            assert_equal(obj, name, case, exp, utxo_fee, 'utxoFeeAmount')
+            exp_list = convert_bitcoin_utxo(exp['utxos'])
+            for exp_utxo in exp_list:
+                if exp_utxo not in selected_utxo_list:
+                    assert_message(obj, name, case,
+                                   '{} is not found.'.format(str(exp_utxo)))
+        elif name == 'Bitcoin.EstimateFee':
+            total_fee, txout_fee, utxo_fee = resp
+            assert_equal(obj, name, case, exp, total_fee, 'feeAmount')
+            assert_equal(obj, name, case, exp, txout_fee, 'txoutFeeAmount')
+            assert_equal(obj, name, case, exp, utxo_fee, 'utxoFeeAmount')
+        elif name == 'Bitcoin.FundTransaction':
+            assert_equal(obj, name, case, exp, resp['hex'], 'hex')
+            assert_equal(obj, name, case, exp, resp['feeAmount'], 'feeAmount')
+            exp_addr_list = exp['usedAddresses']
+            assert_match(obj, name, case, len(exp_addr_list),
+                         len(resp['usedAddresses']), 'usedAddressesLen')
+            assert_match(obj, name, case, exp_addr_list[0],
+                         resp['usedAddresses'][0], 'usedAddresses:0')
 
     except CfdError as err:
         if not error:
             raise err
         assert_equal(obj, name, case, exp, err.message)
+
+
+def convert_bitcoin_utxo(json_utxo_list):
+    utxo_list = []
+    for utxo in json_utxo_list:
+        if utxo.get('base', False):
+            continue
+        desc = utxo.get('descriptor', '')
+        # if not desc:
+        #     desc = ''.format(utxo['redeemScript'])
+        data = UtxoData(
+            txid=utxo['txid'], vout=utxo['vout'],
+            amount=utxo.get('amount', 0), descriptor=desc,
+            scriptsig_template=utxo.get('scriptSigTemplate', ''))
+        utxo_list.append(data)
+    return utxo_list
 
 
 class TestTxid(TestCase):
@@ -323,6 +390,13 @@ class TestTransaction(TestCase):
     def setUp(self):
         self.test_list = load_json_file('transaction_test.json')
         self.test_list += load_json_file('bitcoin_coin_test.json')
+        self.utxos = {}
+        self.utxos['utxo_1'] = convert_bitcoin_utxo(
+            get_json_file('utxo/utxo_1.json'))
+        self.utxos['utxo_2'] = convert_bitcoin_utxo(
+            get_json_file('utxo/utxo_2.json'))
+        self.utxos['utxo_3'] = convert_bitcoin_utxo(
+            get_json_file('utxo/utxo_3.json'))
 
     def test_transaction(self):
         exec_test(self, 'Transaction', test_transaction_func)

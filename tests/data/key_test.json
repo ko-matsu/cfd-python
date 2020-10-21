@@ -835,7 +835,7 @@
         ]
     },
     {
-        "name": "Schnorr.GetPubkey",
+        "name": "Schnorr.GetPubkeyFromPrivkey",
         "cases": [
             {
                 "case": "normal",
@@ -843,7 +843,8 @@
                     "privkey": "688c77bc2d5aaff5491cf309d4753b732135470d05b7b2cd21add0744fe97bef"
                 },
                 "expect": {
-                    "pubkey": "b33cc9edc096d0a83416964bd3c6247b8fecd256e4efa7870d2c854bdeb33390"
+                    "pubkey": "b33cc9edc096d0a83416964bd3c6247b8fecd256e4efa7870d2c854bdeb33390",
+                    "parity": true
                 }
             },
             {
@@ -1018,7 +1019,7 @@
                     "pubkey": "b3c9edc096d0a83416964bd3c6247b8fecd256e4efa7870d2c854bdeb33390"
                 },
                 "error": {
-                    "python": "Invalid Schnorr pubkey data.",
+                    "python": "Invalid Schnorr pubkey length.",
                     "cfd": "hex to byte convert error."
                 }
             },
