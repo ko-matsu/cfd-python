@@ -393,7 +393,7 @@ class CfdUtil:
     ##
     # function map list
     _FUNC_LIST = [
-                ("CfdCreateAddress", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_int, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdCreateAddress", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_int, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdInitializeMultisigScript", c_int, [c_void_p, c_int, c_int, c_void_p_p]),  # noqa: E501
         ("CfdAddMultisigScriptData", c_int, [c_void_p, c_void_p, c_char_p]),  # noqa: E501
         ("CfdFinalizeMultisigScript", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501

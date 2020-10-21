@@ -9,6 +9,7 @@ from .address import Address, AddressUtil
 from .key import Network, SigHashType, SignParameter, Privkey
 from .script import HashType
 from enum import Enum
+import ctypes
 import copy
 
 
@@ -55,6 +56,53 @@ class OutPoint:
     def __str__(self):
         return '{},{}'.format(str(self.txid), self.vout)
 
+    ##
+    # @brief equal method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __eq__(self, other):
+        if not isinstance(other, OutPoint):
+            return NotImplemented
+        return (self.txid.hex == other.txid.hex) and (
+            self.vout == other.vout)
+
+    ##
+    # @brief diff method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __lt__(self, other):
+        if not isinstance(other, OutPoint):
+            return NotImplemented
+        return (self.txid.hex, self.vout) < (other.txid.hex, other.vout)
+
+    ##
+    # @brief equal method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    ##
+    # @brief diff method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __le__(self, other):
+        return self.__lt__(other) or self.__eq__(other)
+
+    ##
+    # @brief diff method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __gt__(self, other):
+        return not self.__le__(other)
+
+    ##
+    # @brief diff method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __ge__(self, other):
+        return not self.__lt__(other)
+
 
 ##
 # @class UtxoData
@@ -97,6 +145,52 @@ class UtxoData:
     # @return hex.
     def __str__(self):
         return str(self.outpoint)
+
+    ##
+    # @brief equal method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __eq__(self, other):
+        if not isinstance(other, UtxoData):
+            return NotImplemented
+        return self.outpoint == other.outpoint
+
+    ##
+    # @brief diff method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __lt__(self, other):
+        if not isinstance(other, UtxoData):
+            return NotImplemented
+        return (self.outpoint) < (other.outpoint)
+
+    ##
+    # @brief equal method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    ##
+    # @brief diff method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __le__(self, other):
+        return self.__lt__(other) or self.__eq__(other)
+
+    ##
+    # @brief diff method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __gt__(self, other):
+        return not self.__le__(other)
+
+    ##
+    # @brief diff method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __ge__(self, other):
+        return not self.__lt__(other)
 
 
 ##
@@ -910,18 +1004,19 @@ class Transaction(_TransactionBase):
                     handle.get_handle(), tx_handle.get_handle())
 
                 selected_utxo_list = []
-                for i in range(len(utxo_list)):
-                    _utxo_index = util.call_func(
-                        'CfdGetSelectedCoinIndex',
-                        handle.get_handle(), tx_handle.get_handle(), i)
-                    if _utxo_index < 0:
-                        break
-                    elif _utxo_index < len(utxo_list):
-                        selected_utxo_list.append(utxo_list[_utxo_index])
-
-                total_amount = util.call_func(
-                    'CfdGetSelectedCoinAssetAmount',
-                    handle.get_handle(), tx_handle.get_handle(), 0)
+                total_amount = 0
+                if (target_amount != 0) or (tx_fee_amount != 0):
+                    for i in range(len(utxo_list)):
+                        _utxo_index = util.call_func(
+                            'CfdGetSelectedCoinIndex',
+                            handle.get_handle(), tx_handle.get_handle(), i)
+                        if _utxo_index < 0:
+                            break
+                        elif _utxo_index < len(utxo_list):
+                            selected_utxo_list.append(utxo_list[_utxo_index])
+                    total_amount = util.call_func(
+                        'CfdGetSelectedCoinAssetAmount',
+                        handle.get_handle(), tx_handle.get_handle(), 0)
                 return selected_utxo_list, _utxo_fee, total_amount
 
     ##
@@ -938,9 +1033,11 @@ class Transaction(_TransactionBase):
                 error_code=1, message='Error: Invalid utxo_list.')
         util = get_util()
         with util.create_handle() as handle:
-            word_handle = util.call_func(
-                'CfdInitializeEstimateFee', handle.get_handle(), False)
-            with JobHandle(handle, word_handle,
+            work_handle = ctypes.c_void_p()
+            util.call_func(
+                'CfdInitializeEstimateFee', handle.get_handle(),
+                ctypes.byref(work_handle), False)
+            with JobHandle(handle, work_handle.value,
                            'CfdFreeEstimateFeeHandle') as tx_handle:
                 for utxo in utxo_list:
                     util.call_func(
@@ -950,11 +1047,15 @@ class Transaction(_TransactionBase):
                         str(utxo.descriptor), '', False, False, False,
                         0, '', to_hex_string(utxo.scriptsig_template))
 
-                _txout_fee, _utxo_fee = util.call_func(
+                _txout_fee = ctypes.c_int64()
+                _utxo_fee = ctypes.c_int64()
+                util.call_func(
                     'CfdFinalizeEstimateFee',
                     handle.get_handle(), tx_handle.get_handle(),
-                    self.hex, '', False, fee_rate)
-                return (_txout_fee + _utxo_fee), _txout_fee, _utxo_fee
+                    self.hex, '', ctypes.byref(_txout_fee),
+                    ctypes.byref(_utxo_fee), False, float(fee_rate))
+                txout_fee, utxo_fee = _txout_fee.value, _utxo_fee.value
+                return (txout_fee + utxo_fee), txout_fee, utxo_fee
 
     ##
     # @brief fund transaction.
@@ -978,7 +1079,8 @@ class Transaction(_TransactionBase):
         def set_opt(handle, tx_handle, key, i_val=0, f_val=0, b_val=False):
             util.call_func(
                 'CfdSetOptionFundRawTx', handle.get_handle(),
-                tx_handle.get_handle(), key, i_val, f_val, b_val)
+                tx_handle.get_handle(), int(key.value),
+                int(i_val), float(f_val), b_val)
 
         with util.create_handle() as handle:
             word_handle = util.call_func(
@@ -1008,9 +1110,9 @@ class Transaction(_TransactionBase):
                     0, target_amount, '', str(reserved_address))
 
                 set_opt(handle, tx_handle, _FundTxOpt.DUST_FEE_RATE,
-                        d_val=dust_fee_rate)
+                        f_val=dust_fee_rate)
                 set_opt(handle, tx_handle, _FundTxOpt.LONG_TERM_FEE_RATE,
-                        d_val=long_term_fee_rate)
+                        f_val=long_term_fee_rate)
                 set_opt(handle, tx_handle, _FundTxOpt.KNAPSACK_MIN_CHANGE,
                         i_val=dust_fee_rate)
 

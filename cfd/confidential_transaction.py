@@ -11,6 +11,7 @@ from .transaction import UtxoData, OutPoint, Txid, TxIn, TxOut, _FundTxOpt,\
     _TransactionBase
 from enum import Enum
 import copy
+import ctypes
 
 
 ##
@@ -265,6 +266,52 @@ class ElementsUtxoData(UtxoData):
         self.amount_blinder = amount_blinder
         if self.amount == 0:
             self.amount = self.value.amount
+
+    ##
+    # @brief equal method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __eq__(self, other):
+        if not isinstance(other, UtxoData):
+            return NotImplemented
+        return self.outpoint == other.outpoint
+
+    ##
+    # @brief diff method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __lt__(self, other):
+        if not isinstance(other, UtxoData):
+            return NotImplemented
+        return (self.outpoint) < (other.outpoint)
+
+    ##
+    # @brief equal method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    ##
+    # @brief diff method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __le__(self, other):
+        return self.__lt__(other) or self.__eq__(other)
+
+    ##
+    # @brief diff method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __gt__(self, other):
+        return not self.__le__(other)
+
+    ##
+    # @brief diff method.
+    # @param[in] other      other object.
+    # @return true or false.
+    def __ge__(self, other):
+        return not self.__lt__(other)
 
 
 ##
@@ -1261,9 +1308,11 @@ class ConfidentialTransaction(_TransactionBase):
                 tx_handle.get_handle(), key, i_val, f_val, b_val)
 
         with util.create_handle() as handle:
-            word_handle = util.call_func(
-                'CfdInitializeEstimateFee', handle.get_handle(), True)
-            with JobHandle(handle, word_handle,
+            work_handle = ctypes.c_void_p()
+            util.call_func(
+                'CfdInitializeEstimateFee', handle.get_handle(),
+                ctypes.byref(work_handle), True)
+            with JobHandle(handle, work_handle.value,
                            'CfdFreeEstimateFeeHandle') as tx_handle:
                 for utxo in utxo_list:
                     util.call_func(
@@ -1280,11 +1329,15 @@ class ConfidentialTransaction(_TransactionBase):
                 set_opt(handle, tx_handle, _FeeOpt.MINIMUM_BITS,
                         i_val=minimum_bits)
 
-                _txout_fee, _utxo_fee = util.call_func(
+                _txout_fee = ctypes.c_int64()
+                _utxo_fee = ctypes.c_int64()
+                util.call_func(
                     'CfdFinalizeEstimateFee',
                     handle.get_handle(), tx_handle.get_handle(),
-                    self.hex, str(_fee_asset), is_blind, fee_rate)
-                return (_txout_fee + _utxo_fee), _txout_fee, _utxo_fee
+                    self.hex, str(_fee_asset), ctypes.byref(_txout_fee),
+                    ctypes.byref(_utxo_fee), is_blind, fee_rate)
+                txout_fee, utxo_fee = _txout_fee.value, _utxo_fee.value
+                return (txout_fee + utxo_fee), txout_fee, utxo_fee
 
     ##
     # @brief fund transaction.
@@ -1311,7 +1364,8 @@ class ConfidentialTransaction(_TransactionBase):
         def set_opt(handle, tx_handle, key, i_val=0, f_val=0, b_val=False):
             util.call_func(
                 'CfdSetOptionFundRawTx', handle.get_handle(),
-                tx_handle.get_handle(), key, i_val, f_val, b_val)
+                tx_handle.get_handle(), key.value,
+                int(i_val), float(f_val), b_val)
 
         with util.create_handle() as handle:
             word_handle = util.call_func(
@@ -1346,9 +1400,9 @@ class ConfidentialTransaction(_TransactionBase):
                         str(target.reserved_address))
 
                 set_opt(handle, tx_handle, _FundTxOpt.DUST_FEE_RATE,
-                        d_val=dust_fee_rate)
+                        f_val=dust_fee_rate)
                 set_opt(handle, tx_handle, _FundTxOpt.LONG_TERM_FEE_RATE,
-                        d_val=long_term_fee_rate)
+                        f_val=long_term_fee_rate)
                 set_opt(handle, tx_handle, _FundTxOpt.KNAPSACK_MIN_CHANGE,
                         i_val=dust_fee_rate)
                 set_opt(handle, tx_handle, _FundTxOpt.USE_BLIND,
