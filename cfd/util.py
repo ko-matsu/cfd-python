@@ -129,7 +129,7 @@ class ByteData:
         with util.create_handle() as handle:
             _serialized = util.call_func(
                 'CfdSerializeByteData', handle.get_handle(), self.hex)
-            return _serialized
+            return ByteData(_serialized)
 
 
 ##

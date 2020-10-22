@@ -297,7 +297,10 @@ class TxOut:
     # @brief get string.
     # @return address or script.
     def __str__(self):
-        return self.address if (self.address != '') else self.locking_script
+        if (self.address != ''):
+            return str(self.address)
+        else:
+            return str(self.locking_script)
 
 
 ##
@@ -1114,7 +1117,7 @@ class Transaction(_TransactionBase):
                 set_opt(handle, tx_handle, _FundTxOpt.LONG_TERM_FEE_RATE,
                         f_val=long_term_fee_rate)
                 set_opt(handle, tx_handle, _FundTxOpt.KNAPSACK_MIN_CHANGE,
-                        i_val=dust_fee_rate)
+                        i_val=knapsack_min_change)
 
                 _tx_fee, _append_txout_count, _new_hex = util.call_func(
                     'CfdFinalizeFundRawTx',

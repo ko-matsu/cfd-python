@@ -128,9 +128,9 @@
                     "reserveAddress": "bc1q0r4elskfu8xlvvlvkergtzagv2ep8p9tpewghq",
                     "feeInfo": {
                         "feeRate": 20.0,
-                        "longTermFeeRate": -1.0,
+                        "longTermFeeRate": 20.0,
                         "knapsackMinChange": -1,
-                        "dustFeeRate": -1.0
+                        "dustFeeRate": 3.0
                     }
                 },
                 "expect": {

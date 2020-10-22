@@ -386,6 +386,35 @@ class TestTxid(TestCase):
         self.assertEqual(list_data, _txid1.as_array())
 
 
+class TestOutPoint(TestCase):
+    def test_outpoint(self):
+        txid = '0000000000000000000000000000000000000000000000000000000000000001'  # noqa: E501
+        outpoint1 = OutPoint(txid, 2)
+        outpoint2 = OutPoint(txid, 3)
+        self.assertTrue(outpoint1 < outpoint2)
+        self.assertTrue(outpoint1 <= outpoint2)
+        self.assertFalse(outpoint1 > outpoint2)
+        self.assertFalse(outpoint1 >= outpoint2)
+        self.assertFalse(outpoint1 == outpoint2)
+        self.assertFalse(outpoint1 != outpoint1)
+        self.assertTrue(outpoint1 != outpoint2)
+
+
+class TestUtxoData(TestCase):
+    def test_utxo_data(self):
+        txid = '0000000000000000000000000000000000000000000000000000000000000001'  # noqa: E501
+        utxo1 = UtxoData(txid=txid, vout=2)
+        utxo2 = UtxoData(txid=txid, vout=3)
+        self.assertTrue(utxo1 < utxo2)
+        self.assertTrue(utxo1 <= utxo2)
+        self.assertFalse(utxo1 > utxo2)
+        self.assertFalse(utxo1 >= utxo2)
+        self.assertFalse(utxo1 == utxo2)
+        self.assertFalse(utxo1 != utxo1)
+        self.assertTrue(utxo1 != utxo2)
+        self.assertEqual('{},{}'.format(txid, 2), str(utxo1))
+
+
 class TestTransaction(TestCase):
     def setUp(self):
         self.test_list = load_json_file('transaction_test.json')
@@ -420,16 +449,24 @@ class TestTransaction(TestCase):
         outpoint2 = OutPoint(
             '0000000000000000000000000000000000000000000000000000000000000001',
             3)
+        txin1 = TxIn(outpoint=outpoint1)
+        txout1 = TxOut(amount=10000, locking_script=addr1.locking_script)
+        txout2 = TxOut(amount=10000, address=addr2)
+        self.assertEqual(str(outpoint1), str(txin1))
+        self.assertEqual(str(addr1.locking_script), str(txout1))
+        self.assertEqual(str(addr2), str(txout2))
+        self.assertEqual(str(addr1), str(txout1.get_address(Network.REGTEST)))
+
         tx = Transaction.create(
             version=2,
             locktime=0,
             txins=[
-                TxIn(outpoint=outpoint1),
+                txin1,
                 TxIn(outpoint=outpoint2),
             ],
             txouts=[
-                TxOut(amount=10000, locking_script=addr1.locking_script),
-                TxOut(amount=10000, locking_script=addr2.locking_script),
+                txout1,
+                txout2,
             ])
         tx.add_txout(amount=50000, address=addr3)
         self.assertEqual(
