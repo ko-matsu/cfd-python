@@ -363,11 +363,7 @@
                 },
                 "expect": {
                     "hex": "00004752210205ffcdde75f262d66ada3dd877c7471f8f8ee9ee24d917c3e18d01cee458bafe2102be61f4350b4ae7544f99649a917f48ba16cf48c983ac1599774958d88ad17ec552ae"
-                },
-                "exclude": [
-                    "python"
-                ],
-                "fixme": "c-api"
+                }
             },
             {
                 "case": "sign maximum (sign count: 15)",
