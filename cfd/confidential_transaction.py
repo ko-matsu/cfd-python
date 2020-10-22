@@ -198,8 +198,11 @@ class ConfidentialValue:
 # @brief elements utxo class.
 class ElementsUtxoData(UtxoData):
     ##
+    # @var outpoint
+    # outpoint (for UtxoData class)
+    ##
     # @var amount
-    # amount
+    # amount (for UtxoData class)
     ##
     # @var value
     # value
@@ -272,7 +275,7 @@ class ElementsUtxoData(UtxoData):
     # @param[in] other      other object.
     # @return true or false.
     def __eq__(self, other):
-        if not isinstance(other, UtxoData):
+        if not isinstance(other, ElementsUtxoData):
             return NotImplemented
         return self.outpoint == other.outpoint
 
@@ -281,7 +284,7 @@ class ElementsUtxoData(UtxoData):
     # @param[in] other      other object.
     # @return true or false.
     def __lt__(self, other):
-        if not isinstance(other, UtxoData):
+        if not isinstance(other, ElementsUtxoData):
             return NotImplemented
         return (self.outpoint) < (other.outpoint)
 
@@ -1404,7 +1407,7 @@ class ConfidentialTransaction(_TransactionBase):
                 set_opt(handle, tx_handle, _FundTxOpt.LONG_TERM_FEE_RATE,
                         f_val=long_term_fee_rate)
                 set_opt(handle, tx_handle, _FundTxOpt.KNAPSACK_MIN_CHANGE,
-                        i_val=dust_fee_rate)
+                        i_val=knapsack_min_change)
                 set_opt(handle, tx_handle, _FundTxOpt.USE_BLIND,
                         b_val=is_blind)
                 set_opt(handle, tx_handle, _FundTxOpt.EXPONENT,
