@@ -162,7 +162,7 @@ class ConfidentialValue:
     # @brief get string.
     # @return hex or amount.
     def __str__(self):
-        return self.hex
+        return str(self.amount) if self.amount != 0 else self.hex
 
     ##
     # @brief get blind state.
@@ -372,11 +372,11 @@ class Issuance:
 
     ##
     # @brief constructor.
-    def __init__(self):
-        self.entropy = ''
-        self.nonce = ''
-        self.asset_value = ConfidentialValue(0)
-        self.token_value = ConfidentialValue(0)
+    def __init__(self, entropy='', nonce='', asset_value=0, token_value=0):
+        self.entropy = entropy
+        self.nonce = nonce
+        self.asset_value = ConfidentialValue(asset_value)
+        self.token_value = ConfidentialValue(token_value)
 
     ##
     # @brief get string.
@@ -636,7 +636,7 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] enable_cache   enable tx cache
     # @return transaction object
     @classmethod
-    def create(cls, version, locktime, txins, txouts, enable_cache=True):
+    def create(cls, version, locktime, txins=[], txouts=[], enable_cache=True):
         util = get_util()
         with util.create_handle() as handle:
             _tx_handle = util.call_func(
@@ -1210,11 +1210,11 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] utxo_list              utxo list
     # @param[in] tx_fee_amount          txout fee amount
     # @param[in] target_list            collect target list
+    # @param[in] fee_asset              fee asset
     # @param[in] effective_fee_rate     effective fee rate
     # @param[in] long_term_fee_rate     long term fee rate
     # @param[in] dust_fee_rate          dust fee rate
     # @param[in] knapsack_min_change    minimum change threshold for knapsack
-    # @param[in] is_blind               blind flag
     # @param[in] exponent               exponent
     # @param[in] minimum_bits           minimum bits
     # @retval [0]      select utxo list.
@@ -1222,10 +1222,10 @@ class ConfidentialTransaction(_TransactionBase):
     # @retval [2]      total tx fee.
     @classmethod
     def select_coins(
-            cls, utxo_list, tx_fee_amount, target_list,
+            cls, utxo_list, tx_fee_amount, target_list, fee_asset,
             effective_fee_rate=0.11, long_term_fee_rate=0.11,
-            dust_fee_rate=3.0, knapsack_min_change=-1, is_blind=True,
-            exponent=1, minimum_bits=52):
+            dust_fee_rate=3.0, knapsack_min_change=-1,
+            exponent=0, minimum_bits=52):
         if (isinstance(utxo_list, list) is False) or (
                 len(utxo_list) == 0):
             raise CfdError(error_code=1, message='Error: Invalid utxo_list.')
@@ -1234,14 +1234,17 @@ class ConfidentialTransaction(_TransactionBase):
         def set_opt(handle, tx_handle, key, i_val=0, f_val=0, b_val=False):
             util.call_func(
                 'CfdSetOptionCoinSelection', handle.get_handle(),
-                tx_handle.get_handle(), key, i_val, f_val, b_val)
+                tx_handle.get_handle(), key.value,
+                int(i_val), float(f_val), b_val)
 
         with util.create_handle() as handle:
-            word_handle = util.call_func(
+            work_handle = util.call_func(
                 'CfdInitializeCoinSelection', handle.get_handle(),
-                len(utxo_list), 1, '', tx_fee_amount, effective_fee_rate,
-                long_term_fee_rate, dust_fee_rate, knapsack_min_change)
-            with JobHandle(handle, word_handle,
+                len(utxo_list), len(target_list), str(fee_asset),
+                int(tx_fee_amount), float(effective_fee_rate),
+                float(long_term_fee_rate), float(dust_fee_rate),
+                int(knapsack_min_change))
+            with JobHandle(handle, work_handle,
                            'CfdFreeCoinSelectionHandle') as tx_handle:
                 for index, utxo in enumerate(utxo_list):
                     util.call_func(
@@ -1252,11 +1255,14 @@ class ConfidentialTransaction(_TransactionBase):
                         str(utxo.asset),
                         str(utxo.descriptor),
                         to_hex_string(utxo.scriptsig_template))
+
+                total_collect_amount = 0
                 for index, target in enumerate(target_list):
                     util.call_func(
                         'CfdAddCoinSelectionAmount',
                         handle.get_handle(), tx_handle.get_handle(), index,
                         target.amount, str(target.asset))
+                    total_collect_amount += target.amount
 
                 set_opt(handle, tx_handle, _CoinSelectionOpt.EXPONENT,
                         i_val=exponent)
@@ -1268,22 +1274,23 @@ class ConfidentialTransaction(_TransactionBase):
                     handle.get_handle(), tx_handle.get_handle())
 
                 selected_utxo_list = []
-                for i in range(len(utxo_list)):
-                    _utxo_index = util.call_func(
-                        'CfdGetSelectedCoinIndex',
-                        handle.get_handle(), tx_handle.get_handle(), i)
-                    if _utxo_index < 0:
-                        break
-                    elif _utxo_index < len(utxo_list):
-                        selected_utxo_list.append(utxo_list[_utxo_index])
+                total_amount_map = {}
+                if (total_collect_amount > 0) or (_utxo_fee > 0):
+                    for i in range(len(utxo_list)):
+                        _utxo_index = util.call_func(
+                            'CfdGetSelectedCoinIndex',
+                            handle.get_handle(), tx_handle.get_handle(), i)
+                        if _utxo_index < 0:
+                            break
+                        elif _utxo_index < len(utxo_list):
+                            selected_utxo_list.append(utxo_list[_utxo_index])
 
-                total_amount_list = []
-                for index, target in enumerate(target_list):
-                    total_amount = util.call_func(
-                        'CfdGetSelectedCoinAssetAmount',
-                        handle.get_handle(), tx_handle.get_handle(), index)
-                    total_amount_list[target.asset] = total_amount
-                return selected_utxo_list, _utxo_fee, total_amount_list
+                    for index, target in enumerate(target_list):
+                        total_amount = util.call_func(
+                            'CfdGetSelectedCoinAssetAmount',
+                            handle.get_handle(), tx_handle.get_handle(), index)
+                        total_amount_map[target.asset] = total_amount
+                return selected_utxo_list, _utxo_fee, total_amount_map
 
     ##
     # @brief estimate fee.
@@ -1297,7 +1304,7 @@ class ConfidentialTransaction(_TransactionBase):
     # @retval [1]      txout fee.
     # @retval [2]      utxo fee.
     def estimate_fee(self, utxo_list, fee_asset, fee_rate=0.11,
-                     is_blind=True, exponent=1, minimum_bits=52):
+                     is_blind=True, exponent=0, minimum_bits=52):
         _fee_asset = ConfidentialAsset(fee_asset)
         if (isinstance(utxo_list, list) is False) or (
                 len(utxo_list) == 0):
@@ -1308,7 +1315,8 @@ class ConfidentialTransaction(_TransactionBase):
         def set_opt(handle, tx_handle, key, i_val=0, f_val=0, b_val=False):
             util.call_func(
                 'CfdSetOptionEstimateFee', handle.get_handle(),
-                tx_handle.get_handle(), key, i_val, f_val, b_val)
+                tx_handle.get_handle(), key.value,
+                int(i_val), float(f_val), b_val)
 
         with util.create_handle() as handle:
             work_handle = ctypes.c_void_p()
@@ -1347,6 +1355,7 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] txin_utxo_list         txin list
     # @param[in] utxo_list              utxo list
     # @param[in] target_list            collect target list
+    # @param[in] fee_asset              fee asset
     # @param[in] effective_fee_rate     effective fee rate
     # @param[in] long_term_fee_rate     long term fee rate
     # @param[in] dust_fee_rate          dust fee rate
@@ -1358,7 +1367,7 @@ class ConfidentialTransaction(_TransactionBase):
     # @retval [1]      used reserved address. (None or reserved_address)
     def fund_raw_transaction(
             self, txin_utxo_list, utxo_list, target_list,
-            effective_fee_rate=0.11,
+            fee_asset, effective_fee_rate=0.11,
             long_term_fee_rate=-1.0, dust_fee_rate=-1.0,
             knapsack_min_change=-1, is_blind=True,
             exponent=0, minimum_bits=52):
@@ -1371,10 +1380,10 @@ class ConfidentialTransaction(_TransactionBase):
                 int(i_val), float(f_val), b_val)
 
         with util.create_handle() as handle:
-            word_handle = util.call_func(
+            work_handle = util.call_func(
                 'CfdInitializeFundRawTx', handle.get_handle(),
-                self.NETWORK, 1, '')
-            with JobHandle(handle, word_handle,
+                self.NETWORK, len(target_list), str(fee_asset))
+            with JobHandle(handle, work_handle,
                            'CfdFreeFundRawTxHandle') as tx_handle:
                 for utxo in txin_utxo_list:
                     util.call_func(
