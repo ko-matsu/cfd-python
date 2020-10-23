@@ -835,7 +835,7 @@
         ]
     },
     {
-        "name": "Schnorr.GetPubkeyFromPrivkey",
+        "name": "Schnorr.GetSchnorrPubkeyFromPrivkey",
         "cases": [
             {
                 "case": "normal",
@@ -864,6 +864,114 @@
                 },
                 "error": {
                     "cfd": "Invalid Privkey data."
+                }
+            }
+        ]
+    },
+    {
+        "name": "Schnorr.GetSchnorrPubkeyFromPubkey",
+        "cases": [
+            {
+                "case": "normal",
+                "request": {
+                    "pubkey": "03b33cc9edc096d0a83416964bd3c6247b8fecd256e4efa7870d2c854bdeb33390"
+                },
+                "expect": {
+                    "pubkey": "b33cc9edc096d0a83416964bd3c6247b8fecd256e4efa7870d2c854bdeb33390",
+                    "parity": true
+                }
+            },
+            {
+                "case": "empty pubkey.",
+                "request": {
+                    "pubkey": ""
+                },
+                "error": {
+                    "capi": "Failed to parameter. pubkey is null or empty.",
+                    "cfd": "Invalid Pubkey data."
+                }
+            },
+            {
+                "case": "invalid pubkey.",
+                "request": {
+                    "pubkey": "6877bc2d5aaff5491cf309d4753b732135470d05b7b2cd21add0744fe97bef"
+                },
+                "error": {
+                    "cfd": "Invalid Pubkey data."
+                }
+            }
+        ]
+    },
+    {
+        "name": "Schnorr.TweakAddSchnorrPubkeyFromPrivkey",
+        "cases": [
+            {
+                "case": "normal",
+                "request": {
+                    "privkey": "688c77bc2d5aaff5491cf309d4753b732135470d05b7b2cd21add0744fe97bef",
+                    "tweak": "e48441762fb75010b2aa31a512b62b4148aa3fb08eb0765d76b252559064a614"
+                },
+                "expect": {
+                    "pubkey": "1fc8e882e34cc7942a15f39ffaebcbdf58a19239bcb17b7f5aa88e0eb808f906",
+                    "parity": true,
+                    "privkey": "7bf7c9ba025ca01b698d3e9b3e40efce2774f8a388f8c390550481e1407b2a25"
+                }
+            }
+        ]
+    },
+    {
+        "name": "Schnorr.TweakAddSchnorrPubkey",
+        "cases": [
+            {
+                "case": "normal",
+                "request": {
+                    "pubkey": "b33cc9edc096d0a83416964bd3c6247b8fecd256e4efa7870d2c854bdeb33390",
+                    "tweak": "e48441762fb75010b2aa31a512b62b4148aa3fb08eb0765d76b252559064a614"
+                },
+                "expect": {
+                    "pubkey": "1fc8e882e34cc7942a15f39ffaebcbdf58a19239bcb17b7f5aa88e0eb808f906",
+                    "parity": true
+                }
+            }
+        ]
+    },
+    {
+        "name": "Schnorr.CheckTweakAddSchnorrPubkey",
+        "cases": [
+            {
+                "case": "normal",
+                "request": {
+                    "pubkey": "1fc8e882e34cc7942a15f39ffaebcbdf58a19239bcb17b7f5aa88e0eb808f906",
+                    "parity": true,
+                    "basePubkey": "b33cc9edc096d0a83416964bd3c6247b8fecd256e4efa7870d2c854bdeb33390",
+                    "tweak": "e48441762fb75010b2aa31a512b62b4148aa3fb08eb0765d76b252559064a614"
+                },
+                "expect": {
+                    "valid": true
+                }
+            },
+            {
+                "case": "fail1",
+                "request": {
+                    "pubkey": "1fc8e882e34cc7942a15f39ffaebcbdf58a19239bcb17b7f5aa88e0eb808f906",
+                    "parity": false,
+                    "basePubkey": "b33cc9edc096d0a83416964bd3c6247b8fecd256e4efa7870d2c854bdeb33390",
+                    "tweak": "e48441762fb75010b2aa31a512b62b4148aa3fb08eb0765d76b252559064a614"
+                },
+                "expect": {
+                    "valid": false
+                }
+            },
+            {
+                "case": "fail2",
+                "request": {
+                    "pubkey": "1dc8e882e34cc7942a15f39ffaebcbdf58a19239bcb17b7f5aa88e0eb808f906",
+                    "parity": true,
+                    "basePubkey": "b33cc9edc096d0a83416964bd3c6247b8fecd256e4efa7870d2c854bdeb33390",
+                    "tweak": "e48441762fb75010b2aa31a512b62b4148aa3fb08eb0765d76b252559064a614"
+                },
+                "expect": {
+                    "valid": false
                 }
             }
         ]

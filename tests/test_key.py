@@ -184,9 +184,23 @@ def test_ecdsa_adaptor_func(obj, name, case, req, exp, error):
 def test_schnorr_func(obj, name, case, req, exp, error):
     try:
         parity = False
-        if name == 'Schnorr.GetPubkeyFromPrivkey':
+        privkey = ''
+        if name == 'Schnorr.GetSchnorrPubkeyFromPrivkey':
             resp, parity = SchnorrPubkey.from_privkey(
                 Privkey.from_hex(req['privkey']))
+        elif name == 'Schnorr.GetSchnorrPubkeyFromPubkey':
+            resp, parity = SchnorrPubkey.from_pubkey(req['pubkey'])
+        elif name == 'Schnorr.TweakAddSchnorrPubkeyFromPrivkey':
+            resp, parity, privkey =\
+                SchnorrPubkey.add_tweak_from_privkey(
+                    req['privkey'], req['tweak'])
+        elif name == 'Schnorr.TweakAddSchnorrPubkey':
+            resp = SchnorrPubkey(req['pubkey'])
+            resp, parity = resp.add_tweak(req['tweak'])
+        elif name == 'Schnorr.CheckTweakAddSchnorrPubkey':
+            resp = SchnorrPubkey(req['pubkey'])
+            resp = resp.is_tweaked(
+                req['parity'], req['basePubkey'], req['tweak'])
         elif name == 'Schnorr.Sign':
             aux_rand, nonce = req['nonceOrAux'], ''
             if req.get('isNonce', False):
@@ -212,6 +226,7 @@ def test_schnorr_func(obj, name, case, req, exp, error):
         assert_equal(obj, name, case, exp, str(resp), 'pubkey')
         assert_equal(obj, name, case, exp, str(resp), 'hex')
         assert_equal(obj, name, case, exp, resp, 'valid')
+        assert_equal(obj, name, case, exp, privkey, 'privkey')
         if 'parity' in exp:
             assert_match(obj, name, case, exp['parity'], parity, 'parity')
 

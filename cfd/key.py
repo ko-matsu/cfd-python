@@ -676,6 +676,46 @@ class SchnorrPubkey:
             return SchnorrPubkey(pubkey), parity
 
     ##
+    # @brief create SchnorrPubkey from pubkey.
+    # @param[in] pubkey     public key
+    # @retval [0] SchnorrPubkey
+    # @retval [1] parity flag
+    @classmethod
+    def from_pubkey(cls, pubkey):
+        _pubkey = to_hex_string(pubkey)
+        util = get_util()
+        with util.create_handle() as handle:
+            schnorr_pubkey, parity = util.call_func(
+                'CfdGetSchnorrPubkeyFromPubkey', handle.get_handle(),
+                _pubkey)
+            return SchnorrPubkey(schnorr_pubkey), parity
+
+    ##
+    # @brief add tweak from privkey.
+    # @param[in] privkey    private key
+    # @param[in] tweak      tweak data
+    # @retval [0] tweaked SchnorrPubkey
+    # @retval [1] tweaked parity flag
+    # @retval [2] tweaked Privkey
+    @classmethod
+    def add_tweak_from_privkey(cls, privkey, tweak):
+        if isinstance(privkey, Privkey):
+            _privkey = privkey.hex
+        elif isinstance(privkey, str) and (len(privkey) != 64):
+            _sk = Privkey(wif=privkey)
+            _privkey = _sk.hex
+        else:
+            _privkey = to_hex_string(privkey)
+        _tweak = to_hex_string(tweak)
+        util = get_util()
+        with util.create_handle() as handle:
+            pubkey, parity, tweaked_privkey = util.call_func(
+                'CfdSchnorrKeyPairTweakAdd', handle.get_handle(),
+                _privkey, _tweak)
+            return SchnorrPubkey(pubkey), parity, Privkey.from_hex(
+                tweaked_privkey)
+
+    ##
     # @brief constructor.
     # @param[in] data      pubkey data
     def __init__(self, data):
@@ -689,6 +729,43 @@ class SchnorrPubkey:
     # @return pubkey hex.
     def __str__(self):
         return self.hex
+
+    ##
+    # @brief add tweak.
+    # @param[in] tweak      tweak data
+    # @retval [0] tweaked SchnorrPubkey
+    # @retval [1] tweaked parity flag
+    def add_tweak(self, tweak):
+        _tweak = to_hex_string(tweak)
+        util = get_util()
+        with util.create_handle() as handle:
+            schnorr_pubkey, parity = util.call_func(
+                'CfdSchnorrPubkeyTweakAdd', handle.get_handle(),
+                self.hex, _tweak)
+            return SchnorrPubkey(schnorr_pubkey), parity
+
+    ##
+    # @brief check tweakAdd from base pubkey.
+    # @param[in] tweaked_parity     tweaked parity flag.
+    # @param[in] base_pubkey        base pubkey
+    # @param[in] tweak              tweak data
+    # @retval True      tweaked pubkey from base pubkey.
+    # @retval False     other.
+    def is_tweaked(self, tweaked_parity, base_pubkey, tweak):
+        _base_pubkey = to_hex_string(base_pubkey)
+        _tweak = to_hex_string(tweak)
+        try:
+            util = get_util()
+            with util.create_handle() as handle:
+                util.call_func(
+                    'CfdCheckTweakAddFromSchnorrPubkey', handle.get_handle(),
+                    self.hex, tweaked_parity, _base_pubkey, _tweak)
+                return True
+        except CfdError as err:
+            if err.error_code == CfdErrorCode.SIGN_VERIFICATION.value:
+                return False
+            else:
+                raise err
 
 
 ##
