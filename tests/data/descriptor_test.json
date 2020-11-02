@@ -112,7 +112,6 @@
                     "address": "3LKyvRN6SmYXGBNn8fcQvYxW9MGKtwcinN",
                     "lockingScript": "a914cc6ffbc0bf31af759451068f90ba7a0272b6b33287",
                     "hashType": "p2sh-p2wpkh",
-                    "redeemScript": "00147fda9cf020c16cacf529c87d8de89bfc70b8c9cb",
                     "includeMultisig": false,
                     "scripts": [
                         {
@@ -192,7 +191,7 @@
                     "address": "39XGHYpYmJV9sGFoGHZeU2rLkY6r1MJ6C1",
                     "lockingScript": "a91455e8d5e8ee4f3604aba23c71c2684fa0a56a3a1287",
                     "hashType": "p2sh-p2wsh",
-                    "redeemScript": "0020fc5acc302aab97f821f9a61e1cc572e7968a603551e95d4ba12b51df6581482f",
+                    "redeemScript": "76a914c42e7ef92fdb603af844d064faad95db9bcdfd3d88ac",
                     "includeMultisig": false,
                     "scripts": [
                         {
@@ -374,7 +373,7 @@
                     "address": "3Hd7YQStg9gYpEt6hgK14ZHUABxSURzeuQ",
                     "lockingScript": "a914aec509e284f909f769bb7dda299a717c87cc97ac87",
                     "hashType": "p2sh-p2wsh",
-                    "redeemScript": "0020ef8110fa7ddefb3e2d02b2c1b1480389b4bc93f606281570cfc20dba18066aee",
+                    "redeemScript": "512103f28773c2d975288bc7d1d205c3748651b075fbc6610e58cddeeddf8f19405aa82103499fdf9e895e719cfd64e67f07d38e3226aa7b63678949e6e49b241a60e823e42102d7924d4f7d43ea965a465ae3095ff41131e5946f3c85f79e44adbcf8e27e080e53ae",
                     "includeMultisig": true,
                     "scripts": [
                         {
@@ -795,7 +794,6 @@
                     "address": "XCEs4H1JSJ7ezGVRmkLeptqgvzPQpwLYHZ",
                     "lockingScript": "a91409c370a0373e00cf7e3dc6bb2f37f9fb881baff487",
                     "hashType": "p2sh-p2wpkh",
-                    "redeemScript": "0014d1495dfca98f5d205b683a4eea1b10c7e29c1c92",
                     "includeMultisig": false,
                     "scripts": [
                         {
