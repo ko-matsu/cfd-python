@@ -142,3 +142,4 @@ cmake_build/
 /doc/latex
 /**/*_localdebug.bat
 /*.whl
+/integration_test/localdata
