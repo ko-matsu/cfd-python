@@ -4,7 +4,6 @@ on:
   push:
     branches:
     - features/sprint*
-    - feature/integration_test
     paths-ignore:
     - '.github/workflows/create_release-and-upload.yml'
     - 'README.md'
