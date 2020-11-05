@@ -137,6 +137,13 @@ python ./setup.py sdist
 pip wheel .
 ```
 
+### Using docker (for Ubuntu)
+
+```
+docker-compose build
+docker-compose up
+```
+
 ---
 
 ## Test
