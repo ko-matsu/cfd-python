@@ -143,3 +143,5 @@ cmake_build/
 /**/*_localdebug.bat
 /*.whl
 /integration_test/localdata
+/integration_test/bitcoind_datadir
+/integration_test/elementsd_datadir
