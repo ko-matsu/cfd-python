@@ -497,6 +497,13 @@ class ConfidentialTxOut(TxOut):
         self.surjectionproof = []
         self.rangeproof = []
 
+    ##
+    # @brief check fee.
+    # @retval true   fee txout.
+    # @retval false  other.
+    def is_fee(self):
+        return str(self.locking_script) == ''
+
 
 ##
 # @class TargetAmountData
