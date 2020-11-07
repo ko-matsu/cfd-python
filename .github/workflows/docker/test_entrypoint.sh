@@ -55,4 +55,8 @@ if [ $? -gt 0 ]; then
   exit 1
 fi
 
-# python3 tests/test_elements.py -v
+python3 tests/test_elements.py -v
+if [ $? -gt 0 ]; then
+  cd ../..
+  exit 1
+fi
