@@ -265,7 +265,7 @@ class ElementsUtxoData(UtxoData):
         self.is_issuance = is_issuance
         self.is_blind_issuance = is_blind_issuance
         self.is_pegin = is_pegin
-        self.pegin_btc_tx_size = pegin_btc_tx_size
+        self.pegin_btc_tx_size = int(pegin_btc_tx_size)
         self.fedpeg_script = fedpeg_script
         self.asset_blinder = asset_blinder
         self.amount_blinder = amount_blinder
@@ -496,6 +496,13 @@ class ConfidentialTxOut(TxOut):
         self.nonce = ConfidentialNonce(nonce)
         self.surjectionproof = []
         self.rangeproof = []
+
+    ##
+    # @brief check fee.
+    # @retval true   fee txout.
+    # @retval false  other.
+    def is_fee(self):
+        return str(self.locking_script) == ''
 
 
 ##
@@ -1334,7 +1341,7 @@ class ConfidentialTransaction(_TransactionBase):
                         str(utxo.outpoint.txid), utxo.outpoint.vout,
                         str(utxo.descriptor), str(utxo.asset),
                         utxo.is_issuance, utxo.is_blind_issuance,
-                        utxo.is_pegin, utxo.pegin_btc_tx_size,
+                        utxo.is_pegin, int(utxo.pegin_btc_tx_size),
                         to_hex_string(utxo.fedpeg_script),
                         to_hex_string(utxo.scriptsig_template))
 
@@ -1413,7 +1420,7 @@ class ConfidentialTransaction(_TransactionBase):
                         utxo.amount, str(utxo.descriptor),
                         str(utxo.asset),
                         utxo.is_issuance, utxo.is_blind_issuance,
-                        utxo.is_pegin, utxo.pegin_btc_tx_size,
+                        utxo.is_pegin, int(utxo.pegin_btc_tx_size),
                         to_hex_string(utxo.fedpeg_script),
                         to_hex_string(utxo.scriptsig_template))
                 for utxo in utxo_list:
