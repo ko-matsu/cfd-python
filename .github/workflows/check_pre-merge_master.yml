@@ -4,6 +4,9 @@ on:
   push:
     branches:
     - master
+    paths-ignore:
+    - '.github/workflows/create_release-and-upload.yml'
+    - 'README.md'
   pull_request:
     branches:
     - master
@@ -62,6 +65,8 @@ jobs:
           - os: windows-latest
             py-ver: 3.7
           - os: windows-latest
+            py-ver: pypy3
+          - os: macos-11.0
             py-ver: pypy3
 
     steps:
