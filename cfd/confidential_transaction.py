@@ -17,6 +17,14 @@ import ctypes
 
 
 ##
+# empty blinder
+EMPTY_BLINDER = [
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+]
+
+
+##
 # @class BlindFactor
 # @brief blind factor (blinder) class.
 class BlindFactor(ReverseByteData):
@@ -66,6 +74,9 @@ class ConfidentialAsset:
     # @brief constructor.
     # @param[in] data   asset or asset commitment
     def __init__(self, data):
+        if isinstance(data, ConfidentialAsset):
+            self.hex = data.hex
+            return
         self.hex = to_hex_string(data)
         if len(self.hex) == 64:
             self.hex = str(ReverseByteData(data))
@@ -353,6 +364,66 @@ class UnblindData:
     # @return hex
     def __str__(self):
         return '{},{}'.format(self.asset, self.value)
+
+
+##
+# @class BlindData
+# @brief blind data class.
+class BlindData(UnblindData):
+    ##
+    # @var vout
+    # txout array index
+
+    ##
+    # @brief constructor.
+    # @param[in] vout               txout array index
+    # @param[in] asset              asset
+    # @param[in] amount             amount
+    # @param[in] asset_blinder      asset blind factor
+    # @param[in] amount_blinder     amount blind factor
+    def __init__(self, vout, asset, amount, asset_blinder, amount_blinder):
+        super().__init__(asset, amount, asset_blinder, amount_blinder)
+        self.vout = vout
+
+
+##
+# @class IssuanceAssetBlindData
+# @brief issuance asset blind data class.
+class IssuanceAssetBlindData(BlindData):
+    ##
+    # @var outpoint
+    # issuance outpoint
+
+    ##
+    # @brief constructor.
+    # @param[in] outpoint           txin outpoint
+    # @param[in] vout               txin array index
+    # @param[in] asset              asset
+    # @param[in] amount             amount
+    # @param[in] amount_blinder     amount blind factor
+    def __init__(self, outpoint, vout, asset, amount, amount_blinder):
+        super().__init__(vout, asset, amount, EMPTY_BLINDER, amount_blinder)
+        self.outpoint = outpoint
+
+
+##
+# @class IssuanceTokenBlindData
+# @brief issuance token blind data class.
+class IssuanceTokenBlindData(BlindData):
+    ##
+    # @var outpoint
+    # issuance outpoint
+
+    ##
+    # @brief constructor.
+    # @param[in] outpoint           txin outpoint
+    # @param[in] vout               txin array index
+    # @param[in] asset              asset
+    # @param[in] amount             amount
+    # @param[in] amount_blinder     amount blind factor
+    def __init__(self, outpoint, vout, asset, amount, amount_blinder):
+        super().__init__(vout, asset, amount, EMPTY_BLINDER, amount_blinder)
+        self.outpoint = outpoint
 
 
 ##
@@ -957,15 +1028,19 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] minimum_range_value            minimum range value
     # @param[in] exponent                       exponent
     # @param[in] minimum_bits                   minimum bits
-    # @return void
+    # @param[in] collect_blinder                blinder collect flag.
+    # @return blinder_list (if collect_blinder is true)
     def blind_txout(self, utxo_list, confidential_address_list=[],
                     direct_confidential_key_map={},
-                    minimum_range_value=1, exponent=0, minimum_bits=-1):
-        self.blind(utxo_list=utxo_list,
-                   confidential_address_list=confidential_address_list,
-                   direct_confidential_key_map=direct_confidential_key_map,
-                   minimum_range_value=minimum_range_value,
-                   exponent=exponent, minimum_bits=minimum_bits)
+                    minimum_range_value=1, exponent=0, minimum_bits=-1,
+                    collect_blinder=False):
+        return self.blind(
+            utxo_list=utxo_list,
+            confidential_address_list=confidential_address_list,
+            direct_confidential_key_map=direct_confidential_key_map,
+            minimum_range_value=minimum_range_value,
+            exponent=exponent, minimum_bits=minimum_bits,
+            collect_blinder=collect_blinder)
 
     ##
     # @brief blind transaction output.
@@ -976,19 +1051,24 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] minimum_range_value            minimum range value
     # @param[in] exponent                       exponent
     # @param[in] minimum_bits                   minimum bits
-    # @return void
+    # @param[in] collect_blinder                blinder collect flag.
+    # @return blinder_list (if collect_blinder is true)
     def blind(self, utxo_list,
               issuance_key_map={},
               confidential_address_list=[],
               direct_confidential_key_map={},
-              minimum_range_value=1, exponent=0, minimum_bits=-1):
+              minimum_range_value=1, exponent=0, minimum_bits=-1,
+              collect_blinder=False):
         if minimum_bits == -1:
             minimum_bits = self.DEFAULT_BLIND_MINIMUM_BITS
 
         def set_opt(handle, tx_handle, key, i_val=0):
+            val = i_val
+            if isinstance(val, bool):
+                val = 1 if val is True else 0
             util.call_func(
                 'CfdSetBlindTxOption', handle.get_handle(),
-                tx_handle.get_handle(), key.value, i_val)
+                tx_handle.get_handle(), key.value, val)
 
         util = get_util()
         with util.create_handle() as handle:
@@ -1030,10 +1110,42 @@ class ConfidentialTransaction(_TransactionBase):
                 set_opt(handle, tx_handle, _BlindOpt.EXPONENT, exponent)
                 set_opt(handle, tx_handle,
                         _BlindOpt.MINIMUM_BITS, minimum_bits)
+                set_opt(handle, tx_handle, _BlindOpt.COLLECT_BLINDER,
+                        bool(collect_blinder))
                 self.hex = util.call_func(
                     'CfdFinalizeBlindTx', handle.get_handle(),
                     tx_handle.get_handle(), self.hex)
                 self._update_tx_all()
+                blinder_list = []
+                if bool(collect_blinder):
+                    try:
+                        i = 0
+                        while True:
+                            vout, asset, amount, asset_blinder,\
+                                value_blinder, issuance_txid,\
+                                issuance_vout, is_issue_asset,\
+                                is_issue_token = util.call_func(
+                                    'CfdGetBlindTxBlindData',
+                                    handle.get_handle(),
+                                    tx_handle.get_handle(), i)
+                            if is_issue_asset:
+                                blinder_list.append(IssuanceAssetBlindData(
+                                    OutPoint(issuance_txid, issuance_vout),
+                                    vout, asset, amount,
+                                    value_blinder))
+                            elif is_issue_token:
+                                blinder_list.append(IssuanceTokenBlindData(
+                                    OutPoint(issuance_txid, issuance_vout),
+                                    vout, asset, amount, value_blinder))
+                            else:
+                                blinder_list.append(BlindData(
+                                    vout, asset, amount,
+                                    asset_blinder, value_blinder))
+                            i += 1
+                    except CfdError as err:
+                        if err.error_code != CfdErrorCode.OUT_OF_RANGE.value:
+                            raise err
+                return blinder_list
 
     ##
     # @brief unblind transaction output.
@@ -1481,6 +1593,9 @@ class _BlindOpt(Enum):
     ##
     # blind minimum bits (for elements)
     MINIMUM_BITS = 3
+    ##
+    # collect blinder (for elements)
+    COLLECT_BLINDER = 4
 
 
 ##
@@ -1518,6 +1633,9 @@ __all__ = [
     'Issuance',
     'IssuanceKeyPair',
     'UnblindData',
+    'BlindData',
+    'IssuanceAssetBlindData',
+    'IssuanceTokenBlindData',
     'TargetAmountData',
     'ConfidentialTxIn',
     'ConfidentialTxOut',
