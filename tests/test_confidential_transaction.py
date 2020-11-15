@@ -1,3 +1,4 @@
+import json
 from unittest import TestCase
 from tests.util import load_json_file, get_json_file, exec_test,\
     assert_equal, assert_error, assert_match, assert_message
@@ -9,8 +10,8 @@ from cfd.key import SigHashType, SignParameter, Network
 from cfd.transaction import OutPoint, TxIn
 from cfd.confidential_transaction import ConfidentialTxOut,\
     ConfidentialTransaction, ElementsUtxoData, IssuanceKeyPair,\
-    TargetAmountData, Issuance, UnblindData
-import json
+    TargetAmountData, Issuance, UnblindData,\
+    IssuanceAssetBlindData, IssuanceTokenBlindData
 
 
 def test_ct_transaction_func1(obj, name, case, req, exp, error):
@@ -437,23 +438,29 @@ def test_ct_transaction_func4(obj, name, case, req, exp, error):
             for output in req.get('txouts', []):
                 txout_map[str(output['index'])] = output['confidentialKey']
             if issuance_key_map:
-                resp.blind(utxo_list,
-                           issuance_key_map=issuance_key_map,
-                           confidential_address_list=ct_addr_list,
-                           direct_confidential_key_map=txout_map,
-                           minimum_range_value=req.get('minimumRangeValue', 1),
-                           exponent=req.get('exponent', 0),
-                           minimum_bits=req.get('minimumBits', -1))
+                blinder_list = resp.blind(
+                    utxo_list,
+                    issuance_key_map=issuance_key_map,
+                    confidential_address_list=ct_addr_list,
+                    direct_confidential_key_map=txout_map,
+                    minimum_range_value=req.get('minimumRangeValue', 1),
+                    exponent=req.get('exponent', 0),
+                    minimum_bits=req.get('minimumBits', -1),
+                    collect_blinder=True)
             else:
-                resp.blind_txout(utxo_list,
-                                 confidential_address_list=ct_addr_list,
-                                 direct_confidential_key_map=txout_map,
-                                 minimum_range_value=req.get(
-                                     'minimumRangeValue', 1),
-                                 exponent=req.get('exponent', 0),
-                                 minimum_bits=req.get('minimumBits', -1))
+                blinder_list = resp.blind_txout(
+                    utxo_list,
+                    confidential_address_list=ct_addr_list,
+                    direct_confidential_key_map=txout_map,
+                    minimum_range_value=req.get(
+                        'minimumRangeValue', 1),
+                    exponent=req.get('exponent', 0),
+                    minimum_bits=req.get('minimumBits', -1),
+                    collect_blinder=True)
 
-            resp = {'size': resp.size, 'vsize': resp.vsize}
+            resp = {'size': resp.size, 'vsize': resp.vsize,
+                    'tx': resp, 'blinder_list': blinder_list,
+                    'req_output': req.get('txouts', [])}
         else:
             return False
         assert_error(obj, name, case, error)
@@ -536,6 +543,63 @@ def test_ct_transaction_func4(obj, name, case, req, exp, error):
                 obj.assertEqual(exp['maxVsize'], resp['vsize'],
                                 'Fail: {}:{}:{}'.format(
                                     name, case, 'maxVsize'))
+            txout_list = resp['req_output']
+            tx = resp['tx']
+            blinding_keys = exp.get('blindingKeys', [])
+            issuance_list = exp.get('issuanceList', [])
+            txout_index_list = []
+            for index, txout in enumerate(tx.txout_list):
+                if txout.value.has_blind():
+                    txout_index_list.append(index)
+            for blind_index, blinder in enumerate(resp['blinder_list']):
+                is_find = False
+                has_asset = isinstance(blinder, IssuanceAssetBlindData)
+                has_token = isinstance(blinder, IssuanceTokenBlindData)
+                if has_asset or has_token:
+                    for exp_issuance in issuance_list:
+                        outpoint = OutPoint(
+                            exp_issuance['txid'], exp_issuance['vout'])
+                        if outpoint == blinder.outpoint:
+                            data = tx.unblind_issuance(
+                                blinder.vout,
+                                exp_issuance['assetBlindingKey'],
+                                exp_issuance.get('tokenBlindingKey', ''))
+                            is_find = True
+                            data = data[0] if has_asset else data[1]
+                            break
+                else:
+                    for index, txout in enumerate(txout_list):
+                        if txout['index'] == blinder.vout:
+                            is_find = True
+                            data = tx.unblind_txout(
+                                blinder.vout, blinding_keys[index])
+                            break
+                    if not is_find:
+                        for index, txout_index in enumerate(txout_index_list):
+                            if txout_index == blinder.vout:
+                                is_find = True
+                                data = tx.unblind_txout(
+                                    blinder.vout, blinding_keys[index])
+                                break
+                obj.assertEqual(
+                    True, is_find,
+                    f'Fail: {name}:{case}:blind_index:{blind_index}')
+                if is_find:
+                    obj.assertEqual(
+                        str(data.asset), str(blinder.asset),
+                        f'Fail: {name}:{case}:asset:{blind_index}')
+                    obj.assertEqual(
+                        data.value.amount, blinder.value.amount,
+                        f'Fail: {name}:{case}:value:{blind_index}')
+                    obj.assertEqual(
+                        str(data.asset_blinder),
+                        str(blinder.asset_blinder),
+                        f'Fail: {name}:{case}:asset_blinder:' +
+                        f'{blind_index}')
+                    obj.assertEqual(
+                        str(data.amount_blinder),
+                        str(blinder.amount_blinder),
+                        f'Fail: {name}:{case}:blinder:{blind_index}')
         else:
             assert_equal(obj, name, case, exp, str(resp), 'blindingKey')
 
