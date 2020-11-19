@@ -6,7 +6,7 @@
 from .util import ReverseByteData, CfdError, JobHandle,\
     CfdErrorCode, to_hex_string, get_util, ByteData
 from .address import Address, AddressUtil
-from .key import Network, SigHashType, Privkey
+from .key import Network, SigHashType, Privkey, Pubkey
 from .script import HashType
 from .transaction import UtxoData, OutPoint, Txid, TxIn, TxOut, _FundTxOpt,\
     _TransactionBase
@@ -60,6 +60,13 @@ class ConfidentialNonce:
     # @return hex.
     def __str__(self):
         return self.hex
+
+    ##
+    # @brief check empty.
+    # @retval True      empty.
+    # @retval False     value exist.
+    def is_empty(self):
+        return (len(self.hex) == 0)
 
 
 ##
@@ -137,7 +144,7 @@ class ConfidentialValue:
         _value_hex = to_hex_string(value)
         if isinstance(value, ConfidentialValue):
             return value
-        elif len(_value_hex) != 0:
+        elif len(value) == 66:
             return ConfidentialValue(_value_hex)
         else:
             return ConfidentialValue(amount)
@@ -373,6 +380,9 @@ class BlindData(UnblindData):
     ##
     # @var vout
     # txout array index
+    ##
+    # @var is_issuance
+    # issuance flag
 
     ##
     # @brief constructor.
@@ -384,6 +394,7 @@ class BlindData(UnblindData):
     def __init__(self, vout, asset, amount, asset_blinder, amount_blinder):
         super().__init__(asset, amount, asset_blinder, amount_blinder)
         self.vout = vout
+        self.is_issuance = False
 
 
 ##
@@ -393,6 +404,9 @@ class IssuanceAssetBlindData(BlindData):
     ##
     # @var outpoint
     # issuance outpoint
+    ##
+    # @var is_issuance
+    # issuance flag
 
     ##
     # @brief constructor.
@@ -404,6 +418,7 @@ class IssuanceAssetBlindData(BlindData):
     def __init__(self, outpoint, vout, asset, amount, amount_blinder):
         super().__init__(vout, asset, amount, EMPTY_BLINDER, amount_blinder)
         self.outpoint = outpoint
+        self.is_issuance = True
 
 
 ##
@@ -413,6 +428,9 @@ class IssuanceTokenBlindData(BlindData):
     ##
     # @var outpoint
     # issuance outpoint
+    ##
+    # @var is_issuance
+    # issuance flag
 
     ##
     # @brief constructor.
@@ -424,6 +442,7 @@ class IssuanceTokenBlindData(BlindData):
     def __init__(self, outpoint, vout, asset, amount, amount_blinder):
         super().__init__(vout, asset, amount, EMPTY_BLINDER, amount_blinder)
         self.outpoint = outpoint
+        self.is_issuance = True
 
 
 ##
@@ -576,20 +595,41 @@ class ConfidentialTxOut(TxOut):
         return str(self.locking_script) == ''
 
     ##
+    # @brief get blind state.
+    # @retval True      blinded.
+    # @retval False     unblind.
+    def has_blind(self):
+        return self.value.has_blind()
+
+    ##
     # @brief constructor.
-    # @param[in] network    network
+    # @param[in] network   network
+    # @param[in] is_confidential  Returns Confidential Address if possible.
     # @return address.
-    def get_address(self, network=Network.LIQUID_V1):
+    def get_address(self, network=Network.LIQUID_V1,
+                    is_confidential=False):
+        _network = Network.get(network)
+        if _network not in [Network.LIQUID_V1, Network.ELEMENTS_REGTEST]:
+            raise CfdError(
+                error_code=1,
+                message='Error: Invalid network type.')
         if isinstance(self.address, ConfidentialAddress):
-            return self.address
-        if isinstance(self.address, Address):
-            return self.address
-        if self.address != '':
+            return self.address if is_confidential else self.address.address
+        addr = self.address if isinstance(self.address, Address) else None
+        if (addr is None) and (self.address != ''):
             if ConfidentialAddress.valid(self.address):
-                return ConfidentialAddress.parse(self.address)
-            else:
-                return AddressUtil.parse(self.address)
-        return AddressUtil.from_locking_script(self.locking_script, network)
+                ca = ConfidentialAddress.parse(self.address)
+                return ca if is_confidential else ca.address
+            addr = AddressUtil.parse(self.address)
+
+        if addr is None:
+            return AddressUtil.from_locking_script(
+                self.locking_script, _network)
+        elif self.has_blind() or self.nonce.is_empty() or (
+                not is_confidential):
+            return addr
+        else:
+            return ConfidentialAddress(addr, Pubkey(self.nonce))
 
 
 ##
@@ -926,6 +966,12 @@ class ConfidentialTransaction(_TransactionBase):
                 self.txin_list = get_txin_list(handle, tx_handle)
                 self.txout_list = get_txout_list(handle, tx_handle)
                 return self.txin_list, self.txout_list
+
+    ##
+    # @brief get transaction output fee index.
+    # @return index
+    def get_txout_fee_index(self):
+        return self.get_txout_index()
 
     ##
     # @brief add transaction input.
