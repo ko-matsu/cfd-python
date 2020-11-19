@@ -610,9 +610,8 @@ class ConfidentialTxOut(TxOut):
                     is_confidential=False):
         _network = Network.get(network)
         if _network not in [Network.LIQUID_V1, Network.ELEMENTS_REGTEST]:
-            raise CfdError(
-                error_code=1,
-                message='Error: Invalid network type.')
+            raise CfdError(error_code=1,
+                           message='Error: Invalid network type.')
         if isinstance(self.address, ConfidentialAddress):
             return self.address if is_confidential else self.address.address
         addr = self.address if isinstance(self.address, Address) else None
@@ -621,11 +620,11 @@ class ConfidentialTxOut(TxOut):
                 ca = ConfidentialAddress.parse(self.address)
                 return ca if is_confidential else ca.address
             addr = AddressUtil.parse(self.address)
-
         if addr is None:
-            return AddressUtil.from_locking_script(
+            addr = AddressUtil.from_locking_script(
                 self.locking_script, _network)
-        elif self.has_blind() or self.nonce.is_empty() or (
+
+        if self.has_blind() or self.nonce.is_empty() or (
                 not is_confidential):
             return addr
         else:
