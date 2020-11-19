@@ -575,6 +575,22 @@ class ConfidentialTxOut(TxOut):
     def is_fee(self):
         return str(self.locking_script) == ''
 
+    ##
+    # @brief constructor.
+    # @param[in] network    network
+    # @return address.
+    def get_address(self, network=Network.LIQUID_V1):
+        if isinstance(self.address, ConfidentialAddress):
+            return self.address
+        if isinstance(self.address, Address):
+            return self.address
+        if self.address != '':
+            if ConfidentialAddress.valid(self.address):
+                return ConfidentialAddress.parse(self.address)
+            else:
+                return AddressUtil.parse(self.address)
+        return AddressUtil.from_locking_script(self.locking_script, network)
+
 
 ##
 # @class TargetAmountData
