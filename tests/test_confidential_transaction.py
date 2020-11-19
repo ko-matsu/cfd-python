@@ -624,6 +624,126 @@ def test_ct_transaction_func(obj, name, case, req, exp, error):
         raise Exception('unknown name: ' + name)
 
 
+def test_parse_tx_func(obj, name, case, req, exp, error):
+    try:
+        ignore_list = ['empty hex string', 'invalid hex string(3 chars)',
+                       'invalid hex format', 'invalid elements network type']
+        if case in ignore_list:
+            return  # ignore testcase
+
+        resp = ConfidentialTransaction.from_hex(req['hex'])
+        assert_error(obj, name, case, error)
+
+        exp_vin_list = exp.get('vin', [])
+        exp_vout_list = exp.get('vout', [])
+        assert_match(obj, name, case, len(exp_vin_list),
+                     len(resp.txin_list), 'vin.len')
+        assert_match(obj, name, case, len(exp_vout_list),
+                     len(resp.txout_list), 'vout.len')
+        empty_32byte = '00' * 32
+        for index, txin in enumerate(resp.txin_list):
+            exp_txin = exp_vin_list[index]
+            if 'coinbase' in exp_txin:
+                assert_match(obj, name, case, empty_32byte,
+                             str(txin.outpoint.txid), 'txin.txid')
+                assert_match(obj, name, case, 0xffffffff,
+                             txin.outpoint.vout, 'txin.vout')
+                assert_match(obj, name, case, exp_txin['coinbase'],
+                             str(txin.script_sig), 'txin.coinbase')
+            else:
+                assert_match(obj, name, case, exp_txin['txid'],
+                             str(txin.outpoint.txid), 'txin.txid')
+                assert_match(obj, name, case, exp_txin['vout'],
+                             txin.outpoint.vout, 'txin.vout')
+                assert_match(obj, name, case, exp_txin['scriptSig']['hex'],
+                             str(txin.script_sig), 'txin.scriptSig')
+
+            assert_match(obj, name, case, exp_txin['sequence'],
+                         txin.sequence, 'txin.sequence')
+            assert_match(obj, name, case, len(exp_txin.get('txinwitness', [])),
+                         len(txin.witness_stack), 'txin.witness_stack.length')
+            for idx, stack in enumerate(txin.witness_stack):
+                assert_match(obj, name, case, exp_txin['txinwitness'][idx],
+                             str(stack), f'txin.witness_stack[{idx}]')
+            is_pegin = True if len(txin.pegin_witness_stack) else False
+            assert_match(obj, name, case, exp_txin.get('is_pegin', False),
+                         is_pegin, 'is_pegin')
+            if is_pegin:
+                assert_match(obj, name, case, len(exp_txin['pegin_witness']),
+                             len(txin.pegin_witness_stack),
+                             'txin.pegin_witness_stack.length')
+                for idx, stack in enumerate(txin.pegin_witness_stack):
+                    assert_match(obj, name, case,
+                                 exp_txin['pegin_witness'][idx],
+                                 str(stack),
+                                 f'txin.pegin_witness_stack[{idx}]')
+            is_issuance = False
+            if txin.issuance.asset_value.has_blind() or (
+                    txin.issuance.asset_value.amount > 0):
+                is_issuance = True
+            exp_is_issuance = True if 'issuance' in exp_txin else False
+            assert_match(obj, name, case, exp_is_issuance,
+                         is_issuance, 'is_issuance')
+            if is_issuance:
+                exp_issuance = exp_txin['issuance']
+                # assert_match(obj, name, case,
+                #              exp_issuance['assetEntropy'],
+                #              str(txin.issuance.entropy),
+                #              'txin.issuance.assetEntropy')
+                assert_match(obj, name, case,
+                             exp_issuance['assetBlindingNonce'],
+                             str(txin.issuance.nonce),
+                             'txin.issuance.assetBlindingNonce')
+                if 'assetamountcommitment' in exp_issuance:
+                    assert_match(obj, name, case,
+                                 exp_issuance['assetamountcommitment'],
+                                 str(txin.issuance.asset_value.hex),
+                                 'txin.issuance.assetamountcommitment')
+                else:
+                    assert_match(obj, name, case,
+                                 exp_issuance['assetamount'],
+                                 txin.issuance.asset_value.amount,
+                                 'txin.issuance.assetamount')
+                if 'tokenamountcommitment' in exp_issuance:
+                    assert_match(obj, name, case,
+                                 exp_issuance['tokenamountcommitment'],
+                                 str(txin.issuance.token_value.hex),
+                                 'txin.issuance.tokenamountcommitment')
+                elif 'tokenamount' in exp_issuance:
+                    assert_match(obj, name, case,
+                                 exp_issuance['tokenamount'],
+                                 txin.issuance.token_value.amount,
+                                 'txin.issuance.tokenamount')
+
+        for index, txout in enumerate(resp.txout_list):
+            exp_txout = exp_vout_list[index]
+            if 'valuecommitment' in exp_txout:
+                assert_match(obj, name, case, exp_txout['valuecommitment'],
+                             str(txout.value), 'txout.valuecommitment')
+                assert_match(obj, name, case, exp_txout['assetcommitment'],
+                             str(txout.asset), 'txout.assetcommitment')
+                assert_match(obj, name, case, exp_txout['commitmentnonce'],
+                             str(txout.nonce), 'txout.commitmentnonce')
+            else:
+                assert_match(obj, name, case, exp_txout['value'],
+                             txout.value.amount, 'txout.value')
+                assert_match(obj, name, case, exp_txout['asset'],
+                             str(txout.asset), 'txout.asset')
+                assert_match(obj, name, case, exp_txout['commitmentnonce'],
+                             str(txout.nonce), 'txout.commitmentnonce')
+
+            assert_match(obj, name, case,
+                         exp_txout['scriptPubKey']['hex'],
+                         str(txout.locking_script), 'txout.locking_script')
+
+    except CfdError as err:
+        if not error:
+            print('{}:{} req={}'.format(name, case, req))
+            raise err
+        assert_equal(obj, name, case, exp, err.message)
+    return True
+
+
 def test_elements_tx_func(obj, name, case, req, exp, error):
     try:
         if name == 'Elements.CoinSelection':
@@ -790,6 +910,9 @@ class TestConfidentialTransaction(TestCase):
     def test_elements_tx(self):
         exec_test(self, 'Elements', test_elements_tx_func)
 
+    def test_confidential_tx_parse(self):
+        exec_test(self, 'ConfidentialTransaction.Decode', test_parse_tx_func)
+
     def test_string(self):
         asset = '0000000000000000000000000000000000000000000000000000000000000001'  # noqa: E501
         asset_blinder = '0000000000000000000000000000000000000000000000000000000000000002'  # noqa: E501
@@ -807,3 +930,40 @@ class TestConfidentialTransaction(TestCase):
 
         key_pair = IssuanceKeyPair()
         self.assertEqual('IssuanceKeyPair', str(key_pair))
+
+    def test_parse_unblind_tx(self):
+        tx_hex = '020000000001319bff5f4311e6255ecf4dd472650a6ef85fde7d11cd10d3e6ba5974174aeb560100000000ffffffff0201f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f0100000bd2cc1584c002deb65cc52301e1622f482a2f588b9800d2b8386ffabf74d6b2d73d17503a2f921976a9146a98a3f2935718df72518c00768ec67c589e0b2888ac01f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f0100000000004c4b40000000000000'  # noqa: E501
+        tx = ConfidentialTransaction.from_hex(tx_hex)
+
+        self.assertEqual(2, len(tx.txout_list))
+        self.assertEqual(
+            '6f1a4b6bd5571b5f08ab79c314dc6483f9b952af2f5ef206cd6f8e68eb1186f3',
+            str(tx.txout_list[0].asset))
+        self.assertEqual(
+            12999995000000,
+            tx.txout_list[0].value.amount)
+        self.assertEqual(
+            '0100000bd2cc1584c0',
+            tx.txout_list[0].value.hex)
+        self.assertEqual(
+            '02deb65cc52301e1622f482a2f588b9800d2b8386ffabf74d6b2d73d17503a2f92',  # noqa: E501
+            str(tx.txout_list[0].nonce))
+        self.assertEqual(
+            '6f1a4b6bd5571b5f08ab79c314dc6483f9b952af2f5ef206cd6f8e68eb1186f3',
+            str(tx.txout_list[1].asset))
+        self.assertEqual(
+            5000000,
+            tx.txout_list[1].value.amount)
+        self.assertEqual(
+            '0100000000004c4b40',
+            tx.txout_list[1].value.hex)
+        self.assertEqual(
+            '',
+            str(tx.txout_list[1].nonce))
+
+        self.assertEqual(1, tx.get_txout_fee_index())
+        self.assertEqual('Q6z1cAcrPxMCnsjAUjSgyT2DrSqRR6KZMr',
+                         str(tx.txout_list[0].get_address()))
+        self.assertEqual(
+            'VTpz4UGuFrPeMdFvW6dzq1vH3ZumciG6jmGnCUidgqsY5RHRxbGfLjndgUjzECCzQnNwAGoP8ohYdHXv',  # noqa: E501
+            str(tx.txout_list[0].get_address(is_confidential=True)))
