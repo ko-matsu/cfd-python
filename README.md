@@ -83,10 +83,10 @@ pip install --user .
 
 ### install from wheel
 
-1. get releases asset. (ex. https://github.com/cryptogarageinc/cfd-python/releases/download/v0.0.1/cfd-0.0.1-py3-none-win_amd64.whl )
+1. get releases asset. (ex. https://github.com/cryptogarageinc/cfd-python/releases/download/v0.2.3/cfd-0.2.3-py3-none-win_amd64.whl )
 2. install pip
    ```
-   pip install --user cfd-0.0.1-py3-none-win_amd64.whl
+   pip install --user cfd-0.2.3-py3-none-win_amd64.whl
    ```
 
 ### uninstall
