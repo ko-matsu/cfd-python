@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-10.15, windows-latest, ubuntu-18.04]
+        os: [macos-10.15, windows-2019, ubuntu-18.04]
         py-ver: [3.6, 3.7, 3.8, 3.9, pypy3]
         exclude:
           - os: macos-10.15
@@ -34,9 +34,9 @@ jobs:
             py-ver: 3.7
           - os: macos-10.15
             py-ver: 3.8
-          - os: windows-latest
+          - os: windows-2019
             py-ver: 3.6
-          - os: windows-latest
+          - os: windows-2019
             py-ver: pypy3
 
     steps:
@@ -83,7 +83,7 @@ jobs:
 
   doxygen-ubuntu:
     name: doxygen-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
     - name: install_doxygen
