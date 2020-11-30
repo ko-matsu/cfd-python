@@ -32,6 +32,11 @@ EMPTY_BLINDER = [
 # @brief blind factor (blinder) class.
 class BlindFactor(ReverseByteData):
     ##
+    # @var hex
+    # hex string
+    hex: str
+
+    ##
     # @brief constructor.
     # @param[in] data   blind factor
     # @return BlindFactor
