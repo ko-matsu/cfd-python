@@ -206,7 +206,7 @@ def to_hex_string(value) -> str:
     elif isinstance(value, list):
         return "".join("%02x" % int(b) for b in value)
     elif str(type(value)) == "<class 'cfd.key.Privkey'>":
-        return value.hex
+        return str(value.hex)
     else:
         _hex = str(value)
         if _hex != '':
