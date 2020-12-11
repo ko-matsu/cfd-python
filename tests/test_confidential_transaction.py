@@ -974,4 +974,7 @@ class TestConfidentialTransaction(TestCase):
                          str(tx.txout_list[0].get_address()))
         self.assertEqual(
             'VTpz4UGuFrPeMdFvW6dzq1vH3ZumciG6jmGnCUidgqsY5RHRxbGfLjndgUjzECCzQnNwAGoP8ohYdHXv',  # noqa: E501
-            str(tx.txout_list[0].get_address(is_confidential=True)))
+            str(tx.txout_list[0].get_confidential_address()))
+        self.assertEqual(
+            None,
+            tx.txout_list[1].get_confidential_address())

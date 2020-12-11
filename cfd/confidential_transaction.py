@@ -686,9 +686,9 @@ class ConfidentialTxOut(TxOut):
     # @param[in] network   network
     # @param[in] is_confidential  Returns Confidential Address if possible.
     # @return address.
-    def get_address(self, network=Network.LIQUID_V1,
-                    is_confidential: bool = False,
-                    ) -> Union['Address', 'ConfidentialAddress']:
+    def _get_address(self, network=Network.LIQUID_V1,
+                     is_confidential: bool = False,
+                     ) -> Union['Address', 'ConfidentialAddress', None]:
         _network = Network.get(network)
         if _network not in [Network.LIQUID_V1, Network.ELEMENTS_REGTEST]:
             raise CfdError(error_code=1,
@@ -701,15 +701,32 @@ class ConfidentialTxOut(TxOut):
                 ca = ConfidentialAddress.parse(self.address)
                 return ca if is_confidential else ca.address
             addr = AddressUtil.parse(self.address)
-        if addr is None:
+        if (addr is None) and ((is_confidential is False) or (
+                len(self.locking_script.hex) > 0)):
             addr = AddressUtil.from_locking_script(
                 self.locking_script, _network)
 
         if self.has_blind() or self.nonce.is_empty() or (
-                not is_confidential):
+                not is_confidential) or (addr is None):
             return addr
         else:
             return ConfidentialAddress(addr, Pubkey(self.nonce))
+
+    ##
+    # @brief get address.
+    # @param[in] network   network
+    # @return address.
+    def get_address(self, network=Network.LIQUID_V1) -> 'Address':
+        return self._get_address(network, False)
+
+    ##
+    # @brief get confidential address.
+    # @param[in] network   network
+    # @return address.
+    def get_confidential_address(
+            self, network=Network.LIQUID_V1) -> Optional['ConfidentialAddress']:
+        addr = self._get_address(network, True)
+        return addr if isinstance(addr, ConfidentialAddress) else None
 
 
 ##
