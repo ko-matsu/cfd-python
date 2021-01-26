@@ -447,6 +447,16 @@ class CfdUtil:
         ("CfdGetLastErrorMessage", c_int, [c_void_p, c_char_p_p]),  # noqa: E501
         ("CfdRequestExecuteJson", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdSerializeByteData", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdEncryptAES", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdDecryptAES", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdEncodeBase64", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdDecodeBase64", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdEncodeBase58", c_int, [c_void_p, c_char_p, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdDecodeBase58", c_int, [c_void_p, c_char_p, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdRipemd160", c_int, [c_void_p, c_char_p, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdSha256", c_int, [c_void_p, c_char_p, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdHash160", c_int, [c_void_p, c_char_p, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdHash256", c_int, [c_void_p, c_char_p, c_bool, c_char_p_p]),  # noqa: E501
         ("CfdCreateConfidentialAddress", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdParseConfidentialAddress", c_int, [c_void_p, c_char_p, c_char_p_p, c_char_p_p, c_int_p]),  # noqa: E501
         ("CfdInitializeConfidentialTx", c_int, [c_void_p, c_uint32, c_uint32, c_char_p_p]),  # noqa: E501
@@ -517,6 +527,7 @@ class CfdUtil:
         ("CfdGetPrivkeyWif", c_int, [c_void_p, c_char_p, c_int, c_bool, c_char_p_p]),  # noqa: E501
         ("CfdParsePrivkeyWif", c_int, [c_void_p, c_char_p, c_char_p_p, c_int_p, c_bool_p]),  # noqa: E501
         ("CfdGetPubkeyFromPrivkey", c_int, [c_void_p, c_char_p, c_char_p, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdGetPubkeyFingerprint", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdCompressPubkey", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdUncompressPubkey", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdInitializeCombinePubkey", c_int, [c_void_p, c_void_p_p]),  # noqa: E501
@@ -548,6 +559,49 @@ class CfdUtil:
         ("CfdFinalizeTxSerializeForLedger", c_int, [c_void_p, c_void_p, c_int, c_char_p, c_bool, c_bool, c_char_p_p]),  # noqa: E501
         ("CfdFinalizeTxSerializeHashForLedger", c_int, [c_void_p, c_void_p, c_int, c_char_p, c_bool, c_bool, c_bool, c_char_p_p]),  # noqa: E501
         ("CfdFreeTxSerializeForLedger", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdCreatePsbtHandle", c_int, [c_void_p, c_int, c_char_p, c_char_p, c_uint32, c_uint32, c_void_p_p]),  # noqa: E501
+        ("CfdFreePsbtHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdGetPsbtData", c_int, [c_void_p, c_void_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetPsbtGlobalData", c_int, [c_void_p, c_void_p, c_uint32_p, c_char_p_p, c_uint32_p, c_uint32_p]),  # noqa: E501
+        ("CfdJoinPsbt", c_int, [c_void_p, c_void_p, c_char_p]),  # noqa: E501
+        ("CfdSignPsbt", c_int, [c_void_p, c_void_p, c_char_p, c_bool]),  # noqa: E501
+        ("CfdCombinePsbt", c_int, [c_void_p, c_void_p, c_char_p]),  # noqa: E501
+        ("CfdFinalizePsbt", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdExtractPsbtTransaction", c_int, [c_void_p, c_void_p, c_char_p_p]),  # noqa: E501
+        ("CfdIsFinalizedPsbt", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdIsFinalizedPsbtInput", c_int, [c_void_p, c_void_p, c_char_p, c_uint32]),  # noqa: E501
+        ("CfdAddPsbtTxInWithPubkey", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_uint32, c_int64, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddPsbtTxInWithScript", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_uint32, c_int64, c_char_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdSetPsbtTxInBip32Pubkey", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdSetPsbtSignature", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdSetPsbtSighashType", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int]),  # noqa: E501
+        ("CfdSetPsbtFinalizeScript", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p]),  # noqa: E501
+        ("CfdClearPsbtSignData", c_int, [c_void_p, c_void_p, c_char_p, c_uint32]),  # noqa: E501
+        ("CfdGetPsbtSighashType", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int_p]),  # noqa: E501
+        ("CfdGetPsbtUtxoData", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetPsbtUtxoDataByIndex", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_uint32_p, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdAddPsbtTxOutWithPubkey", c_int, [c_void_p, c_void_p, c_int64, c_char_p, c_char_p, c_uint32_p]),  # noqa: E501
+        ("CfdAddPsbtTxOutWithScript", c_int, [c_void_p, c_void_p, c_int64, c_char_p, c_char_p, c_char_p, c_uint32_p]),  # noqa: E501
+        ("CfdSetPsbtTxOutBip32Pubkey", c_int, [c_void_p, c_void_p, c_uint32, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdGetPsbtTxInIndex", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_uint32_p]),  # noqa: E501
+        ("CfdGetPsbtPubkeyRecord", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdIsFindPsbtPubkeyRecord", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_char_p]),  # noqa: E501
+        ("CfdGetPsbtBip32Data", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_char_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetPsbtPubkeyList", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_uint32_p, c_void_p_p]),  # noqa: E501
+        ("CfdGetPsbtPubkeyListData", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetPsbtPubkeyListBip32Data", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdFreePsbtPubkeyList", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdAddPsbtGlobalXpubkey", c_int, [c_void_p, c_void_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddPsbtRecord", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdGetPsbtRecord", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdIsFindPsbtRecord", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_char_p]),  # noqa: E501
+        ("CfdVerifyPsbtTxIn", c_int, [c_void_p, c_void_p, c_char_p, c_uint32]),  # noqa: E501
+        ("CfdInitializeFundPsbt", c_int, [c_void_p, c_void_p_p]),  # noqa: E501
+        ("CfdFundPsbtAddToUtxoList", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdSetOptionFundPsbt", c_int, [c_void_p, c_void_p, c_int, c_int64, c_double, c_bool]),  # noqa: E501
+        ("CfdFinalizeFundPsbt", c_int, [c_void_p, c_void_p, c_void_p, c_char_p, c_int64_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetFundPsbtUsedUtxo", c_int, [c_void_p, c_void_p, c_uint32, c_uint32_p, c_char_p_p, c_uint32_p, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdFreeFundPsbt", c_int, [c_void_p, c_void_p]),  # noqa: E501
         ("CfdParseScript", c_int, [c_void_p, c_char_p, c_void_p_p, c_uint32_p]),  # noqa: E501
         ("CfdGetScriptItem", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p]),  # noqa: E501
         ("CfdFreeScriptItemHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
