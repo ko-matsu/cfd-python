@@ -55,6 +55,9 @@ class CfdErrorCode(Enum):
     ##
     # CfdErrorCode: sign verification.
     SIGN_VERIFICATION = 7
+    ##
+    # CfdErrorCode: not found.
+    NOT_FOUND = 8
 
 
 ##
@@ -572,6 +575,7 @@ class CfdUtil:
         ("CfdIsFinalizedPsbtInput", c_int, [c_void_p, c_void_p, c_char_p, c_uint32]),  # noqa: E501
         ("CfdAddPsbtTxInWithPubkey", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_uint32, c_int64, c_char_p, c_char_p, c_char_p]),  # noqa: E501
         ("CfdAddPsbtTxInWithScript", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_uint32, c_int64, c_char_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdSetPsbtTxInUtxo", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p]),  # noqa: E501
         ("CfdSetPsbtTxInBip32Pubkey", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_char_p]),  # noqa: E501
         ("CfdSetPsbtSignature", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p]),  # noqa: E501
         ("CfdSetPsbtSighashType", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int]),  # noqa: E501
@@ -591,7 +595,11 @@ class CfdUtil:
         ("CfdGetPsbtPubkeyListData", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdGetPsbtPubkeyListBip32Data", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdFreePsbtPubkeyList", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdGetPsbtByteDataList", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_uint32_p, c_void_p_p]),  # noqa: E501
+        ("CfdGetPsbtByteDataItem", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p]),  # noqa: E501
+        ("CfdFreePsbtByteDataList", c_int, [c_void_p, c_void_p]),  # noqa: E501
         ("CfdAddPsbtGlobalXpubkey", c_int, [c_void_p, c_void_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdSetPsbtRedeemScript", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_char_p]),  # noqa: E501
         ("CfdAddPsbtRecord", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_char_p, c_char_p]),  # noqa: E501
         ("CfdGetPsbtRecord", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdIsFindPsbtRecord", c_int, [c_void_p, c_void_p, c_int, c_uint32, c_char_p]),  # noqa: E501
@@ -614,6 +622,8 @@ class CfdUtil:
         ("CfdInitializeTransaction", c_int, [c_void_p, c_int, c_uint32, c_uint32, c_char_p, c_void_p_p]),  # noqa: E501
         ("CfdAddTransactionInput", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_uint32]),  # noqa: E501
         ("CfdAddTransactionOutput", c_int, [c_void_p, c_void_p, c_int64, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdClearWitnessStack", c_int, [c_void_p, c_void_p, c_char_p, c_uint32]),  # noqa: E501
+        ("CfdUpdateTxInScriptSig", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p]),  # noqa: E501
         ("CfdFinalizeTransaction", c_int, [c_void_p, c_void_p, c_char_p_p]),  # noqa: E501
         ("CfdFreeTransactionHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
         ("CfdUpdateTxOutAmount", c_int, [c_void_p, c_int, c_char_p, c_uint32, c_int64, c_char_p_p]),  # noqa: E501

@@ -324,12 +324,12 @@ class Descriptor:
     def _parse(self) -> List['DescriptorScriptData']:
         util = get_util()
         with util.create_handle() as handle:
-            word_handle, max_index = util.call_func(
+            work_handle, max_index = util.call_func(
                 'CfdParseDescriptor', handle.get_handle(),
                 self.descriptor, self.network.value, self.path)
             with JobHandle(
                     handle,
-                    word_handle,
+                    work_handle,
                     'CfdFreeDescriptorHandle') as desc_handle:
 
                 def get_key(index):

@@ -510,3 +510,7 @@ class TestTransaction(TestCase):
                 amount=50000)
         except Exception as err:
             self.assertIsNone(err)
+
+    def test_empty_input(self):
+        txout = TxOut(1000)
+        self.assertEqual('', str(txout.locking_script))

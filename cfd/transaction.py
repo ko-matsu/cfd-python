@@ -475,9 +475,9 @@ class _TransactionBase:
         _script = to_hex_string(redeem_script)
         util = get_util()
         with util.create_handle() as handle:
-            word_handle = util.call_func(
+            work_handle = util.call_func(
                 'CfdInitializeMultisigSign', handle.get_handle())
-            with JobHandle(handle, word_handle,
+            with JobHandle(handle, work_handle,
                            'CfdFreeMultisigSignHandle') as tx_handle:
                 for sig in signature_list:
                     _sig = to_hex_string(sig)
@@ -863,6 +863,47 @@ class Transaction(_TransactionBase):
                 self.txout_list += copy.deepcopy(txouts)
 
     ##
+    # @brief clear sign data.
+    # @param[in] outpoint               outpoint
+    # @param[in] clear_witness_stack    witness stack clear flag
+    # @param[in] clear_scriptsig        scriptsig clear flag
+    # @return void
+    def clear_sign_data(self,  outpoint: Optional['OutPoint'] = None,
+                        clear_witness_stack: bool = True, clear_scriptsig: bool = True) -> None:
+        outpoints = []
+        if isinstance(outpoint, OutPoint):
+            outpoints = [outpoint]
+        else:
+            outpoints = [txin.outpoint for txin in self.txin_list]
+        util = get_util()
+        with util.create_handle() as handle:
+            _tx_handle = util.call_func(
+                'CfdInitializeTransaction', handle.get_handle(),
+                self.NETWORK, 0, 0, self.hex)
+            with JobHandle(
+                    handle, _tx_handle, self.FREE_FUNC_NAME) as tx_handle:
+                for target in outpoints:
+                    if clear_witness_stack:
+                        util.call_func(
+                            'CfdClearWitnessStack', handle.get_handle(),
+                            tx_handle.get_handle(), str(target.txid),
+                            target.vout)
+                    if clear_scriptsig:
+                        util.call_func(
+                            'CfdUpdateTxInScriptSig', handle.get_handle(),
+                            tx_handle.get_handle(), str(target.txid),
+                            target.vout, '')
+                    if clear_witness_stack or clear_scriptsig:
+                        # update txin
+                        txin, index = self._get_txin(
+                            handle, tx_handle, outpoint=outpoint)
+                        self.txin_list[index] = txin
+                self.hex = util.call_func(
+                    'CfdFinalizeTransaction', handle.get_handle(),
+                    tx_handle.get_handle())
+                self._update_info()
+
+    ##
     # @brief update transaction output amount.
     # @param[in] index      index
     # @param[in] amount     amount
@@ -1020,11 +1061,11 @@ class Transaction(_TransactionBase):
                 error_code=1, message='Error: Invalid utxo_list.')
         util = get_util()
         with util.create_handle() as handle:
-            word_handle = util.call_func(
+            work_handle = util.call_func(
                 'CfdInitializeCoinSelection', handle.get_handle(),
                 len(utxo_list), 1, '', tx_fee_amount, effective_fee_rate,
                 long_term_fee_rate, dust_fee_rate, knapsack_min_change)
-            with JobHandle(handle, word_handle,
+            with JobHandle(handle, work_handle,
                            'CfdFreeCoinSelectionHandle') as tx_handle:
                 for index, utxo in enumerate(utxo_list):
                     util.call_func(
@@ -1135,10 +1176,10 @@ class Transaction(_TransactionBase):
                 network = temp_network.value
 
         with util.create_handle() as handle:
-            word_handle = util.call_func(
+            work_handle = util.call_func(
                 'CfdInitializeFundRawTx', handle.get_handle(),
                 network, 1, '')
-            with JobHandle(handle, word_handle,
+            with JobHandle(handle, work_handle,
                            'CfdFreeFundRawTxHandle') as tx_handle:
                 for utxo in txin_utxo_list:
                     util.call_func(

@@ -370,9 +370,9 @@ class Pubkey:
                 message='Error: Invalid pubkey list.')
         util = get_util()
         with util.create_handle() as handle:
-            word_handle = util.call_func(
+            work_handle = util.call_func(
                 'CfdInitializeCombinePubkey', handle.get_handle())
-            with JobHandle(handle, word_handle,
+            with JobHandle(handle, work_handle,
                            'CfdFreeCombinePubkeyHandle') as key_handle:
                 for pubkey in pubkey_list:
                     util.call_func(
@@ -404,6 +404,16 @@ class Pubkey:
     # @return pubkey hex.
     def __str__(self) -> str:
         return self._hex
+
+    ##
+    # @brief get fingerprint.
+    # @return fingerprint.
+    def get_fingerprint(self) -> 'ByteData':
+        util = get_util()
+        with util.create_handle() as handle:
+            fingerprint = util.call_func(
+                'CfdGetPubkeyFingerprint', handle.get_handle(), self._hex)
+        return ByteData(fingerprint)
 
     ##
     # @brief compress pubkey.
