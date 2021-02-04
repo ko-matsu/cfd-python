@@ -238,7 +238,10 @@ class TxIn:
     # @param[in] sequence   sequence
     # @return sequence number.
     @classmethod
-    def get_sequence_number(cls, locktime: int = 0, sequence: int = SEQUENCE_DISABLE):
+    def get_sequence_number(
+            cls,
+            locktime: int = 0,
+            sequence: int = SEQUENCE_DISABLE):
         if sequence not in [-1, TxIn.SEQUENCE_DISABLE]:
             return sequence
         elif locktime == 0:
@@ -665,8 +668,13 @@ class Transaction(_TransactionBase):
     # @param[in] enable_cache   enable tx cache
     # @return transaction object
     @classmethod
-    def create(cls, version: int, locktime: int, txins: List['TxIn'],
-               txouts: List['TxOut'], enable_cache: bool = True) -> 'Transaction':
+    def create(
+            cls,
+            version: int,
+            locktime: int,
+            txins: List['TxIn'],
+            txouts: List['TxOut'],
+            enable_cache: bool = True) -> 'Transaction':
         util = get_util()
         with util.create_handle() as handle:
             _tx_handle = util.call_func(
@@ -868,8 +876,11 @@ class Transaction(_TransactionBase):
     # @param[in] clear_witness_stack    witness stack clear flag
     # @param[in] clear_scriptsig        scriptsig clear flag
     # @return void
-    def clear_sign_data(self,  outpoint: Optional['OutPoint'] = None,
-                        clear_witness_stack: bool = True, clear_scriptsig: bool = True) -> None:
+    def clear_sign_data(
+            self,
+            outpoint: Optional['OutPoint'] = None,
+            clear_witness_stack: bool = True,
+            clear_scriptsig: bool = True) -> None:
         outpoints = []
         if isinstance(outpoint, OutPoint):
             outpoints = [outpoint]
@@ -1014,8 +1025,14 @@ class Transaction(_TransactionBase):
     # @retval True      signature valid.
     # @retval False     signature invalid.
     def verify_signature(
-            self, outpoint: 'OutPoint', signature, hash_type, pubkey,
-            amount: int = 0, redeem_script='', sighashtype=SigHashType.ALL) -> bool:
+            self,
+            outpoint: 'OutPoint',
+            signature,
+            hash_type,
+            pubkey,
+            amount: int = 0,
+            redeem_script='',
+            sighashtype=SigHashType.ALL) -> bool:
         _signature = to_hex_string(signature)
         _pubkey = to_hex_string(pubkey)
         _script = to_hex_string(redeem_script)
@@ -1050,11 +1067,17 @@ class Transaction(_TransactionBase):
     # @retval [1]      utxo fee.
     # @retval [2]      total tx fee.
     @classmethod
-    def select_coins(cls, utxo_list: List['UtxoData'], tx_fee_amount: int,
-                     target_amount: int, effective_fee_rate: float = 20.0,
-                     long_term_fee_rate: float = 20.0, dust_fee_rate: float = 3.0,
+    def select_coins(cls,
+                     utxo_list: List['UtxoData'],
+                     tx_fee_amount: int,
+                     target_amount: int,
+                     effective_fee_rate: float = 20.0,
+                     long_term_fee_rate: float = 20.0,
+                     dust_fee_rate: float = 3.0,
                      knapsack_min_change: int = -1,
-                     ) -> Tuple[List['UtxoData'], int, int]:
+                     ) -> Tuple[List['UtxoData'],
+                                int,
+                                int]:
         if (isinstance(utxo_list, list) is False) or (
                 len(utxo_list) == 0):
             raise CfdError(
@@ -1151,7 +1174,8 @@ class Transaction(_TransactionBase):
     # @retval [0]      total tx fee.
     # @retval [1]      used reserved address. (None or reserved_address)
     def fund_raw_transaction(
-            self, txin_utxo_list: List['UtxoData'], utxo_list: List['UtxoData'],
+            self, txin_utxo_list: List['UtxoData'],
+            utxo_list: List['UtxoData'],
             reserved_address, target_amount: int = 0,
             effective_fee_rate: float = 20.0,
             long_term_fee_rate: float = 20.0, dust_fee_rate: float = -1.0,

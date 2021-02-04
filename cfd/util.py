@@ -3,7 +3,7 @@
 # @file util.py
 # @brief cfd utility file.
 # @note Copyright 2020 CryptoGarage
-from ctypes import Union, c_int, c_void_p, c_char_p, c_int32, c_int64,\
+from ctypes import c_int, c_void_p, c_char_p, c_int32, c_int64,\
     c_uint32, c_uint64, c_bool, c_double, c_ubyte, \
     CDLL, byref, POINTER, ArgumentError
 from os.path import isfile, abspath

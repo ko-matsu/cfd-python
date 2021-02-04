@@ -9,6 +9,7 @@
 		"python.linting.flake8Enabled": true,
 		"editor.rulers": [
 			80
-		]
+		],
+		"python.linting.mypyEnabled": true
 	}
 }

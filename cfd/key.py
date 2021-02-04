@@ -5,7 +5,8 @@
 # @note Copyright 2020 CryptoGarage
 from typing import Optional, Union
 import typing
-from .util import ByteData, get_util, CfdError, to_hex_string, CfdErrorCode, JobHandle
+from .util import ByteData, get_util, CfdError,\
+    to_hex_string, CfdErrorCode, JobHandle
 import hashlib
 from enum import Enum
 
@@ -222,7 +223,11 @@ class Privkey:
     # @param[in] is_compressed  pubkey compressed
     # @return private key
     @classmethod
-    def from_hex(cls, hex, network=Network.MAINNET, is_compressed: bool = True):
+    def from_hex(
+            cls,
+            hex,
+            network=Network.MAINNET,
+            is_compressed: bool = True):
         return Privkey(hex=hex, network=network,
                        is_compressed=is_compressed)
 
@@ -336,7 +341,10 @@ class Privkey:
     # @param[in] sighash   sighash
     # @param[in] grind_r   grind-r flag
     # @return signature
-    def calculate_ec_signature(self, sighash, grind_r: bool = True) -> 'SignParameter':
+    def calculate_ec_signature(
+            self,
+            sighash,
+            grind_r: bool = True) -> 'SignParameter':
         _sighash = to_hex_string(sighash)
         util = get_util()
         with util.create_handle() as handle:
@@ -482,8 +490,11 @@ class Pubkey:
             util = get_util()
             with util.create_handle() as handle:
                 util.call_func(
-                    'CfdVerifyEcSignature', handle.get_handle(),
-                    to_hex_string(sighash), self._hex, to_hex_string(signature))
+                    'CfdVerifyEcSignature',
+                    handle.get_handle(),
+                    to_hex_string(sighash),
+                    self._hex,
+                    to_hex_string(signature))
             return True
         except CfdError as err:
             if err.error_code == CfdErrorCode.SIGN_VERIFICATION.value:
@@ -519,7 +530,10 @@ class SignParameter:
     # @param[in] sighashtype    sighash type
     # @return der encoded signature
     @classmethod
-    def encode_by_der(cls, signature, sighashtype=SigHashType.ALL) -> 'SignParameter':
+    def encode_by_der(
+            cls,
+            signature,
+            sighashtype=SigHashType.ALL) -> 'SignParameter':
         _signature = to_hex_string(signature)
         _sighashtype = SigHashType.get(sighashtype)
         util = get_util()
@@ -642,7 +656,11 @@ class EcdsaAdaptor:
     # @param[in] adaptor                adaptor bytes
     # @return adaptor secret key
     @classmethod
-    def extract_secret(cls, adaptor_signature, signature, adaptor) -> 'Privkey':
+    def extract_secret(
+            cls,
+            adaptor_signature,
+            signature,
+            adaptor) -> 'Privkey':
         _adaptor_signature = to_hex_string(adaptor_signature)
         _signature = to_hex_string(signature)
         _adaptor = to_hex_string(adaptor)

@@ -64,7 +64,7 @@ class CryptoUtil:
         with util.create_handle() as handle:
             decoded_data = util.call_func(
                 'CfdDecodeBase64', handle.get_handle(), data)
-            if (len(decoded_data) is 0) and (len(data) is not 0):
+            if (len(decoded_data) == 0) and (len(data) != 0):
                 raise CfdError(error_code=1, message='Decode base64 error.')
             return ByteData(decoded_data)
 
@@ -77,7 +77,10 @@ class CryptoUtil:
         util = get_util()
         with util.create_handle() as handle:
             encoded_data = util.call_func(
-                'CfdEncodeBase58', handle.get_handle(), to_hex_string(data), use_checksum)
+                'CfdEncodeBase58',
+                handle.get_handle(),
+                to_hex_string(data),
+                use_checksum)
             return encoded_data
 
     ##
@@ -104,10 +107,15 @@ class HashUtil:
     # @param[in] has_text   message has text.
     # @return hashed data.
     @classmethod
-    def _hash_function(cls, func_name, message, has_text: bool = False) -> 'ByteData':
+    def _hash_function(
+            cls,
+            func_name,
+            message,
+            has_text: bool = False) -> 'ByteData':
         if (has_text is True) and (isinstance(message, str) is False):
             raise CfdError(
-                error_code=1, message='Error: Text mode requires a string message.')
+                error_code=1,
+                message='Error: Text mode requires a string message.')
         util = get_util()
         with util.create_handle() as handle:
             data = message if has_text is True else to_hex_string(message)

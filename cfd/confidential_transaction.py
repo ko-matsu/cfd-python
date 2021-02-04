@@ -54,14 +54,14 @@ class BlindFactor(ReverseByteData):
         super().__init__(data)
         if len(self.hex) != 64:
             raise CfdError(
-                error_code=1, message=f'Error: Invalid blind factor.')
+                error_code=1, message='Error: Invalid blind factor.')
 
     ##
     # @brief check empty.
     # @retval True   empty
     # @retval False  not empty
     def is_empty(self):
-        return True if self.hex == '0'*64 else False
+        return True if self.hex == '0' * 64 else False
 
 
 ##
@@ -544,7 +544,8 @@ class Issuance:
     # @brief get string.
     # @return hex
     def __str__(self) -> str:
-        return '{},{},{}'.format(str(self.entropy), self.asset_value, self.token_value)
+        return '{},{},{}'.format(
+            str(self.entropy), self.asset_value, self.token_value)
 
 
 ##
@@ -724,7 +725,8 @@ class ConfidentialTxOut(TxOut):
     # @param[in] network   network
     # @return address.
     def get_confidential_address(
-            self, network=Network.LIQUID_V1) -> Optional['ConfidentialAddress']:
+            self,
+            network=Network.LIQUID_V1) -> Optional['ConfidentialAddress']:
         addr = self._get_address(network, True)
         return addr if isinstance(addr, ConfidentialAddress) else None
 
@@ -751,8 +753,12 @@ class TargetAmountData:
     # @param[in] amount             amount
     # @param[in] asset              asset
     # @param[in] reserved_address   reserved address
-    def __init__(self, amount: int, asset,
-                 reserved_address: Union[str, 'Address', 'ConfidentialAddress'] = ''):
+    def __init__(self,
+                 amount: int,
+                 asset,
+                 reserved_address: Union[str,
+                                         'Address',
+                                         'ConfidentialAddress'] = ''):
         self.amount = amount
         self.asset = ConfidentialAsset(asset)
         if isinstance(reserved_address, Address) or \
@@ -926,7 +932,10 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] enable_cache   enable tx cache
     # @return transaction object
     @classmethod
-    def from_hex(cls, hex, enable_cache: bool = True) -> 'ConfidentialTransaction':
+    def from_hex(
+            cls,
+            hex,
+            enable_cache: bool = True) -> 'ConfidentialTransaction':
         return ConfidentialTransaction(hex, enable_cache)
 
     ##
@@ -1248,9 +1257,10 @@ class ConfidentialTransaction(_TransactionBase):
         issuance_key_map={},
         confidential_address_list=[],
         direct_confidential_key_map={},
-        minimum_range_value: int = 1, exponent: int = 0, minimum_bits: int = -1,
-        collect_blinder: bool = False,
-    ) -> List[Union['BlindData', 'IssuanceAssetBlindData', 'IssuanceTokenBlindData']]:
+        minimum_range_value: int = 1, exponent: int = 0,
+        minimum_bits: int = -1, collect_blinder: bool = False,
+    ) -> List[Union['BlindData', 'IssuanceAssetBlindData',
+                    'IssuanceTokenBlindData']]:
         if minimum_bits == -1:
             minimum_bits = self.DEFAULT_BLIND_MINIMUM_BITS
 
@@ -1409,8 +1419,14 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] redeem_script  redeem script
     # @param[in] sighashtype    sighash type
     # @return sighash
-    def get_sighash(self, outpoint: 'OutPoint', hash_type, value, pubkey='',
-                    redeem_script='', sighashtype=SigHashType.ALL) -> 'ByteData':
+    def get_sighash(
+            self,
+            outpoint: 'OutPoint',
+            hash_type,
+            value,
+            pubkey='',
+            redeem_script='',
+            sighashtype=SigHashType.ALL) -> 'ByteData':
         _hash_type = HashType.get(hash_type)
         _pubkey = to_hex_string(pubkey)
         _script = to_hex_string(redeem_script)
@@ -1701,7 +1717,8 @@ class ConfidentialTransaction(_TransactionBase):
             long_term_fee_rate: float = -1.0,
             dust_fee_rate: float = -1.0,
             knapsack_min_change: int = -1, is_blind: bool = True,
-            exponent: int = 0, minimum_bits: int = 52) -> typing.Tuple[int, List[str]]:
+            exponent: int = 0,
+            minimum_bits: int = 52) -> typing.Tuple[int, List[str]]:
         util = get_util()
 
         def set_opt(handle, tx_handle, key, i_val=0, f_val=0, b_val=False):

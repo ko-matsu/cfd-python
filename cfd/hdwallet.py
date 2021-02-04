@@ -5,7 +5,8 @@
 # @note Copyright 2020 CryptoGarage
 import typing
 from typing import List, Tuple, Union, Optional
-from .util import ByteData, CfdUtil, get_util, JobHandle, to_hex_string, CfdError
+from .util import ByteData, CfdUtil, get_util, JobHandle,\
+    to_hex_string, CfdError
 from .key import Network, Privkey, Pubkey
 from enum import Enum
 import unicodedata
@@ -590,9 +591,13 @@ class HDWallet:
     # @param[in] strict_check   strict check
     # @return HDWallet
     @classmethod
-    def from_mnemonic(
-            cls, mnemonic: Union[str, List[str]], language='en', passphrase: str = '',
-            network=Network.MAINNET, strict_check: bool = True) -> 'HDWallet':
+    def from_mnemonic(cls,
+                      mnemonic: Union[str,
+                                      List[str]],
+                      language='en',
+                      passphrase: str = '',
+                      network=Network.MAINNET,
+                      strict_check: bool = True) -> 'HDWallet':
         return HDWallet(
             mnemonic=mnemonic, language=language,
             passphrase=passphrase, network=network, strict_check=strict_check)
@@ -689,8 +694,16 @@ class KeyData:
     # @param[in] key            key.
     # @param[in] fingerprint    fingerprint or parent key.
     # @param[in] bip32_path     bip32 path
-    def __init__(self, key: Union['Pubkey', 'Privkey', 'ExtPubkey', 'ExtPrivkey'],
-                 fingerprint: Optional[Union['ByteData', 'Pubkey', 'Privkey', 'ExtPubkey', 'ExtPrivkey']],
+    def __init__(self,
+                 key: Union['Pubkey',
+                            'Privkey',
+                            'ExtPubkey',
+                            'ExtPrivkey'],
+                 fingerprint: Optional[Union['ByteData',
+                                             'Pubkey',
+                                             'Privkey',
+                                             'ExtPubkey',
+                                             'ExtPrivkey']],
                  bip32_path: str = ''):
         if isinstance(key, ExtPrivkey):
             self.ext_privkey = key
@@ -714,7 +727,8 @@ class KeyData:
             self.fingerprint = fingerprint
         elif isinstance(fingerprint, ExtPrivkey):
             self.fingerprint = fingerprint.privkey.pubkey.get_fingerprint()
-        elif isinstance(fingerprint, ExtPubkey) or isinstance(fingerprint, Privkey):
+        elif isinstance(fingerprint, ExtPubkey) or isinstance(
+                fingerprint, Privkey):
             self.fingerprint = fingerprint.pubkey.get_fingerprint()
         elif isinstance(fingerprint, Pubkey):
             self.fingerprint = fingerprint.get_fingerprint()
@@ -735,8 +749,8 @@ class KeyData:
         if len(fp_str) < 8:
             return str(self.pubkey)
         path = self.bip32_path
-        path = path[1:] if path[0] is 'm' else path
-        path = path[1:] if path[0] is '/' else path
+        path = path[1:] if path[0] == 'm' else path
+        path = path[1:] if path[0] == '/' else path
         return f'[{fp_str}/{path}]{self.pubkey._hex}'
 
 

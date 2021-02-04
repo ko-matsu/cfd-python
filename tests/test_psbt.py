@@ -3,7 +3,6 @@ from tests.util import load_json_file,\
     exec_test, assert_equal, assert_error, assert_message, assert_match
 from cfd.util import ByteData, CfdError
 from cfd.address import AddressUtil
-from cfd.crypto import CryptoUtil
 from cfd.hdwallet import KeyData, ExtPubkey
 from cfd.key import Network, Pubkey, SigHashType
 from cfd.psbt import Psbt
@@ -27,13 +26,15 @@ def test_decode_psbt_func(obj, name, case, req, exp, error):
         xpubkeys = psbt.get_global_xpub_list()
         if 'xpubs' in exp:
             assert_match(obj, name, case, len(exp['xpubs']), len(xpubkeys),
-                         f'global:xpubs:num')
+                         'global:xpubs:num')
             for xpub_index, xpub_data in enumerate(exp.get('xpubs', [])):
                 assert_match(obj, name, case, xpub_data['xpub']['base58'], str(
-                    xpubkeys[xpub_index].ext_pubkey), f'global:xpubs{xpub_index}:xpub')
-                assert_match(obj, name, case, xpub_data['master_fingerprint'], str(
-                    xpubkeys[xpub_index].fingerprint),
-                    f'global:xpubs{xpub_index}:master_fingerprint')
+                    xpubkeys[xpub_index].ext_pubkey),
+                    f'global:xpubs{xpub_index}:xpub')
+                assert_match(obj, name, case,
+                             xpub_data['master_fingerprint'], str(
+                                 xpubkeys[xpub_index].fingerprint),
+                             f'global:xpubs{xpub_index}:master_fingerprint')
                 assert_match(obj, name, case, xpub_data['path'], str(
                     xpubkeys[xpub_index].bip32_path),
                     f'global:xpubs{xpub_index}:path')
@@ -58,75 +59,116 @@ def test_decode_psbt_func(obj, name, case, req, exp, error):
         for index in range(in_num):
             exp_input = exp['inputs'][index]
             outpoint = psbt.get_input_outpoint(index)
-            if ('witness_utxo' in exp_input) or ('non_witness_utxo_hex' in exp_input):
+            if ('witness_utxo' in exp_input) or (
+                    'non_witness_utxo_hex' in exp_input):
                 utxo, locking_script, _, full_tx = psbt.get_input_utxo_data(
                     outpoint)
                 if 'witness_utxo' in exp_input:
-                    assert_match(obj, name, case, exp_input['witness_utxo']['amount'],
-                                 utxo.amount, f'input{index}:witness_utxo:amount')
-                    assert_match(obj, name, case, exp_input['witness_utxo']['scriptPubKey']['hex'],
-                                 str(locking_script),
-                                 f'input{index}:witness_utxo:scriptPubKey:hex')
+                    assert_match(
+                        obj,
+                        name,
+                        case,
+                        exp_input['witness_utxo']['amount'],
+                        utxo.amount,
+                        f'input{index}:witness_utxo:amount')
+                    assert_match(
+                        obj,
+                        name,
+                        case,
+                        exp_input['witness_utxo']['scriptPubKey']['hex'],
+                        str(locking_script),
+                        f'input{index}:witness_utxo:scriptPubKey:hex')
                 if 'non_witness_utxo_hex' in exp_input:
-                    assert_match(obj, name, case, exp_input['non_witness_utxo_hex'], str(
-                        str(full_tx)), f'input{index}:non_witness_utxo_hex')
+                    assert_match(
+                        obj, name, case, exp_input['non_witness_utxo_hex'],
+                        str(full_tx), f'input{index}:non_witness_utxo_hex')
             if 'sighash' in exp_input:
                 sighash = psbt.get_input_sighash_type(outpoint)
-                assert_match(obj, name, case, exp_input['sighash'].lower(), str(
-                    str(sighash)), f'input{index}:sighash')
+                assert_match(
+                    obj, name, case, exp_input['sighash'].lower(), str(
+                        sighash), f'input{index}:sighash')
             if 'final_scriptsig' in exp_input:
                 final_scriptsig = psbt.get_input_final_scriptsig(outpoint)
-                assert_match(obj, name, case, exp_input['final_scriptsig']['hex'], str(
-                    final_scriptsig), f'input{index}:final_scriptsig:hex')
+                assert_match(
+                    obj,
+                    name,
+                    case,
+                    exp_input['final_scriptsig']['hex'],
+                    str(final_scriptsig),
+                    f'input{index}:final_scriptsig:hex')
             if 'final_scriptsig' in exp_input:
                 final_scriptsig = psbt.get_input_final_scriptsig(outpoint)
-                assert_match(obj, name, case, exp_input['final_scriptsig']['hex'], str(
-                    final_scriptsig), f'input{index}:final_scriptsig:hex')
+                assert_match(
+                    obj,
+                    name,
+                    case,
+                    exp_input['final_scriptsig']['hex'],
+                    str(final_scriptsig),
+                    f'input{index}:final_scriptsig:hex')
             if 'final_scriptwitness' in exp_input:
                 witness = psbt.get_input_final_witness(outpoint)
                 assert_match(obj, name, case, len(
                     exp_input['final_scriptwitness']), len(witness),
                     f'input{index}:final_scriptwitness:num')
-                for wit_index, stack in enumerate(exp_input.get('final_scriptwitness', [])):
-                    assert_match(obj, name, case, stack, str(
-                        witness[wit_index]), f'input{index}:final_scriptwitness{wit_index}')
+                for wit_index, stack in enumerate(
+                        exp_input.get('final_scriptwitness', [])):
+                    assert_match(
+                        obj, name, case, stack, str(witness[wit_index]),
+                        f'input{index}:final_scriptwitness{wit_index}')
             if 'redeem_script' in exp_input:
                 redeem_script = psbt.get_input_redeem_script(outpoint)
-                assert_match(obj, name, case, exp_input['redeem_script']['hex'], str(
-                    redeem_script), f'input{index}:redeem_script:hex')
+                assert_match(
+                    obj,
+                    name,
+                    case,
+                    exp_input['redeem_script']['hex'],
+                    str(redeem_script),
+                    f'input{index}:redeem_script:hex')
             if 'witness_script' in exp_input:
                 witness_script = psbt.get_input_witness_script(outpoint)
-                assert_match(obj, name, case, exp_input['witness_script']['hex'], str(
-                    witness_script), f'input{index}:witness_script:hex')
+                assert_match(
+                    obj,
+                    name,
+                    case,
+                    exp_input['witness_script']['hex'],
+                    str(witness_script),
+                    f'input{index}:witness_script:hex')
             if 'partial_signatures' in exp_input:
                 sigs = psbt.get_input_signature_list(outpoint)
                 assert_match(obj, name, case, len(
                     exp_input['partial_signatures']), len(sigs),
                     f'input{index}:partial_signatures:num')
-                for sig_index, sig_data in enumerate(exp_input.get('partial_signatures', [])):
-                    assert_match(obj, name, case, sig_data['pubkey'], str(
-                        sigs[sig_index].related_pubkey), f'input{index}:partial_signatures{sig_index}:pubkey')
+                for sig_index, sig_data in enumerate(
+                        exp_input.get('partial_signatures', [])):
+                    assert_match(
+                        obj, name, case, sig_data['pubkey'], str(
+                            sigs[sig_index].related_pubkey),
+                        f'input{index}:partial_signatures{sig_index}:pubkey')
                     assert_match(obj, name, case, sig_data['signature'], str(
                         sigs[sig_index].hex),
-                        f'input{index}:partial_signatures{sig_index}:signature')
+                        f'input{index}:partial_signatures{sig_index}:sig')
             if 'bip32_derivs' in exp_input:
                 pubkeys = psbt.get_input_bip32_list(outpoint)
                 assert_match(obj, name, case, len(
                     exp_input['bip32_derivs']), len(pubkeys),
                     f'input{index}:bip32_derivs:num')
-                for key_index, key_data in enumerate(exp_input.get('bip32_derivs', [])):
+                for key_index, key_data in enumerate(
+                        exp_input.get('bip32_derivs', [])):
                     assert_match(obj, name, case, key_data['pubkey'], str(
-                        pubkeys[key_index].pubkey), f'input{index}:bip32_derivs{key_index}:pubkey')
-                    assert_match(obj, name, case, key_data['master_fingerprint'], str(
-                        pubkeys[key_index].fingerprint),
-                        f'input{index}:bip32_derivs{key_index}:master_fingerprint')
+                        pubkeys[key_index].pubkey),
+                        f'input{index}:bip32_derivs{key_index}:pubkey')
+                    assert_match(
+                        obj, name, case,
+                        key_data['master_fingerprint'], str(
+                            pubkeys[key_index].fingerprint),
+                        f'input{index}:bip32_derivs{key_index}:fingerprint')
                     assert_match(obj, name, case, key_data['path'],
                                  pubkeys[key_index].bip32_path,
                                  f'input{index}:bip32_derivs{key_index}:path')
             if 'unknown' in exp_input:
                 unknown_keys = psbt.get_input_unknown_keys(outpoint)
-                assert_match(obj, name, case, len(exp_input['unknown']), len(unknown_keys),
-                             f'input{index}:unknown:num')
+                assert_match(obj, name, case, len(exp_input['unknown']), len(
+                    unknown_keys), f'input{index}:unknown:num')
                 for unknown_data in exp_input.get('unknown', []):
                     key = unknown_data['key']
                     value = psbt.get_input_record(outpoint, key)
@@ -137,30 +179,44 @@ def test_decode_psbt_func(obj, name, case, req, exp, error):
             exp_output = exp['outputs'][index]
             if 'redeem_script' in exp_output:
                 redeem_script = psbt.get_output_redeem_script(index)
-                assert_match(obj, name, case, exp_output['redeem_script']['hex'], str(
-                    redeem_script), f'output{index}:redeem_script:hex')
+                assert_match(
+                    obj,
+                    name,
+                    case,
+                    exp_output['redeem_script']['hex'],
+                    str(redeem_script),
+                    f'output{index}:redeem_script:hex')
             if 'witness_script' in exp_output:
                 witness_script = psbt.get_output_witness_script(index)
-                assert_match(obj, name, case, exp_output['witness_script']['hex'], str(
-                    witness_script), f'output{index}:witness_script:hex')
+                assert_match(
+                    obj,
+                    name,
+                    case,
+                    exp_output['witness_script']['hex'],
+                    str(witness_script),
+                    f'output{index}:witness_script:hex')
             if 'bip32_derivs' in exp_output:
                 pubkeys = psbt.get_output_bip32_list(index)
                 assert_match(obj, name, case, len(
                     exp_output['bip32_derivs']), len(pubkeys),
                     f'output{index}:bip32_derivs:num')
-                for key_index, key_data in enumerate(exp_output.get('bip32_derivs', [])):
+                for key_index, key_data in enumerate(
+                        exp_output.get('bip32_derivs', [])):
                     assert_match(obj, name, case, key_data['pubkey'], str(
-                        pubkeys[key_index].pubkey), f'output{index}:bip32_derivs{key_index}:pubkey')
-                    assert_match(obj, name, case, key_data['master_fingerprint'], str(
-                        pubkeys[key_index].fingerprint),
-                        f'output{index}:bip32_derivs{key_index}:master_fingerprint')
+                        pubkeys[key_index].pubkey),
+                        f'output{index}:bip32_derivs{key_index}:pubkey')
+                    assert_match(
+                        obj, name, case,
+                        key_data['master_fingerprint'], str(
+                            pubkeys[key_index].fingerprint),
+                        f'output{index}:bip32_derivs{key_index}:fingerprint')
                     assert_match(obj, name, case, key_data['path'],
                                  pubkeys[key_index].bip32_path,
                                  f'output{index}:bip32_derivs{key_index}:path')
             if 'unknown' in exp_output:
                 unknown_keys = psbt.get_output_unknown_keys(index)
-                assert_match(obj, name, case, len(exp_output['unknown']), len(unknown_keys),
-                             f'output{index}:unknown:num')
+                assert_match(obj, name, case, len(exp_output['unknown']), len(
+                    unknown_keys), f'output{index}:unknown:num')
                 for unknown_data in exp_output.get('unknown', []):
                     key = unknown_data['key']
                     value = psbt.get_output_record(index, key)
@@ -291,8 +347,12 @@ def test_psbt_func(obj, name, case, req, exp, error):
     try:
         fee_amount = None
         if name == 'Psbt.CreatePsbt':
-            resp = Psbt.create(req['version'], req['locktime'], network=req.get(
-                'network', Network.MAINNET))
+            resp = Psbt.create(
+                req['version'],
+                req['locktime'],
+                network=req.get(
+                    'network',
+                    Network.MAINNET))
             for txin in req.get('txins', []):
                 resp.add_input(OutPoint(txin['txid'], txin['vout']),
                                sequence=txin.get('sequence', 4294967295))
@@ -320,7 +380,7 @@ def test_psbt_func(obj, name, case, req, exp, error):
                     for stack in input['final_scriptwitness']:
                         try:
                             scripts.append(Script(stack))
-                        except:
+                        except BaseException:
                             scripts.append(Script.from_asm([stack]))
                     psbt.set_input_finalize(outpoint, scripts)
                 if 'finalScriptsig' in input:
@@ -355,16 +415,25 @@ def test_psbt_func(obj, name, case, req, exp, error):
                     if 'address' in input['witnessUtxo']:
                         addr = AddressUtil.parse(
                             input['witnessUtxo']['address'])
-                    utxo = TxOut(input['witnessUtxo']['amount'],
-                                 address=addr,
-                                 locking_script=input['witnessUtxo'].get('directLockingScript', ''))
+                    utxo = TxOut(
+                        input['witnessUtxo']['amount'],
+                        address=addr,
+                        locking_script=input['witnessUtxo'].get(
+                            'directLockingScript',
+                            ''))
                 script = '' if 'redeemScript' not in input else Script(
                     input['redeemScript'])
                 tx = '' if 'utxoFullTx' not in input else Transaction(
                     input['utxoFullTx'])
                 outpoint = OutPoint(txin['txid'], txin['vout'])
-                psbt.add_input(outpoint, utxo=utxo, redeem_script=script,
-                               utxo_tx=tx, sequence=txin.get('sequence', 4294967295))
+                psbt.add_input(
+                    outpoint,
+                    utxo=utxo,
+                    redeem_script=script,
+                    utxo_tx=tx,
+                    sequence=txin.get(
+                        'sequence',
+                        4294967295))
                 for bip32_data in input.get('bip32Derives', []):
                     if 'descriptor' in bip32_data:
                         psbt.set_input_bip32_key(
@@ -386,18 +455,23 @@ def test_psbt_func(obj, name, case, req, exp, error):
                         txout['address'])
                 script = '' if 'redeemScript' not in output else Script(
                     output['redeemScript'])
-                psbt.add_output(txout['amount'],
-                                address=addr,
-                                locking_script=txout.get('directLockingScript', ''), redeem_script=script)
+                psbt.add_output(
+                    txout['amount'],
+                    address=addr,
+                    locking_script=txout.get(
+                        'directLockingScript',
+                        ''),
+                    redeem_script=script)
                 for bip32_data in output.get('bip32Derives', []):
                     if 'descriptor' in bip32_data:
                         psbt.set_output_bip32_key(
                             index, pubkey=bip32_data['descriptor'])
                     else:
                         psbt.set_output_bip32_key(
-                            index,
-                            key_data=KeyData(
-                                Pubkey(bip32_data['pubkey']), fingerprint=ByteData(
+                            index, key_data=KeyData(
+                                Pubkey(
+                                    bip32_data['pubkey']),
+                                fingerprint=ByteData(
                                     bip32_data['master_fingerprint']),
                                 bip32_path=bip32_data['path']))
                 index += 1
@@ -415,8 +489,12 @@ def test_psbt_func(obj, name, case, req, exp, error):
                     if 'address' in input['witnessUtxo']:
                         addr = AddressUtil.parse(
                             input['witnessUtxo']['address'])
-                    utxo = TxOut(input['witnessUtxo']['amount'], addr,
-                                 input['witnessUtxo'].get('directLockingScript', ''))
+                    utxo = TxOut(
+                        input['witnessUtxo']['amount'],
+                        addr,
+                        input['witnessUtxo'].get(
+                            'directLockingScript',
+                            ''))
                 if 'redeemScript' in input:
                     psbt.set_input_script(outpoint, input['redeemScript'])
                 if full_tx or (utxo is not None):
@@ -438,7 +516,7 @@ def test_psbt_func(obj, name, case, req, exp, error):
                         outpoint, SigHashType.get(input['sighash']))
                 for sig_data in input.get('partialSignature', []):
                     psbt.set_input_signature(
-                        outpoint, sig_data['pubkey'],  sig_data['signature'])
+                        outpoint, sig_data['pubkey'], sig_data['signature'])
                 for record in input.get('unknown', []):
                     psbt.set_input_record(
                         outpoint, record['key'], record['value'])
@@ -453,9 +531,10 @@ def test_psbt_func(obj, name, case, req, exp, error):
                             index, pubkey=bip32_data['descriptor'])
                     else:
                         psbt.set_output_bip32_key(
-                            index,
-                            key_data=KeyData(
-                                Pubkey(bip32_data['pubkey']), fingerprint=ByteData(
+                            index, key_data=KeyData(
+                                Pubkey(
+                                    bip32_data['pubkey']),
+                                fingerprint=ByteData(
                                     bip32_data['master_fingerprint']),
                                 bip32_path=bip32_data['path']))
                 for record in output.get('unknown', []):
@@ -470,7 +549,9 @@ def test_psbt_func(obj, name, case, req, exp, error):
                     else:
                         psbt.set_global_xpub(
                             key_data=KeyData(
-                                ExtPubkey(xpub_data['xpub']), fingerprint=ByteData(
+                                ExtPubkey(
+                                    xpub_data['xpub']),
+                                fingerprint=ByteData(
                                     xpub_data['master_fingerprint']),
                                 bip32_path=xpub_data['path']))
                 for record in global_data.get('unknown', []):
@@ -499,8 +580,13 @@ def test_psbt_func(obj, name, case, req, exp, error):
             knapsack_min_change = req['feeInfo']['knapsackMinChange']
             dust_fee_rate = req['feeInfo']['dustFeeRate']
             for utxo in req.get('utxos', []):
-                utxos.append(UtxoData(OutPoint(utxo['txid'], utxo['vout']),
-                                      amount=utxo['amount'], descriptor=utxo['descriptor']))
+                utxos.append(
+                    UtxoData(
+                        OutPoint(
+                            utxo['txid'],
+                            utxo['vout']),
+                        amount=utxo['amount'],
+                        descriptor=utxo['descriptor']))
             fee_amount = psbt.fund(utxos, desc, fee_rate, long_term_fee_rate,
                                    dust_fee_rate, knapsack_min_change)
             resp = psbt
