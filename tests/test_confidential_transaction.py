@@ -548,7 +548,9 @@ def test_ct_transaction_func4(obj, name, case, req, exp, error):
             txout_list = resp['req_output']
             tx = typing.cast('ConfidentialTransaction', resp['tx'])
             blinder_list = typing.cast(
-                typing.List[typing.Union['BlindData', 'IssuanceAssetBlindData', 'IssuanceTokenBlindData']], resp['blinder_list'])
+                typing.List[typing.Union[
+                    'BlindData', 'IssuanceAssetBlindData',
+                    'IssuanceTokenBlindData']], resp['blinder_list'])
             blinding_keys = exp.get('blindingKeys', [])
             issuance_list = exp.get('issuanceList', [])
             txout_index_list = []

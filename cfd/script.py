@@ -115,11 +115,11 @@ class Script:
         _script = to_hex_string(redeem_script)
         util = get_util()
         with util.create_handle() as handle:
-            word_handle = util.call_func(
+            work_handle = util.call_func(
                 'CfdInitializeMultisigScriptSig', handle.get_handle())
             with JobHandle(
                     handle,
-                    word_handle,
+                    work_handle,
                     'CfdFreeMultisigScriptSigHandle') as script_handle:
                 for param in sign_parameter_list:
                     if isinstance(param, SignParameter) is False:
@@ -163,19 +163,22 @@ class Script:
         return self.hex
 
     ##
-    # @brief create multisig scriptsig.
+    # @brief parse script.
     # @param[in] script     script
     # @return script asm
     @classmethod
     def _parse(cls, script):
         util = get_util()
         script_list = []
+        if not script:
+            return ''
+
         with util.create_handle() as handle:
-            word_handle, max_index = util.call_func(
+            work_handle, max_index = util.call_func(
                 'CfdParseScript', handle.get_handle(), script)
             with JobHandle(
                     handle,
-                    word_handle,
+                    work_handle,
                     'CfdFreeScriptItemHandle') as script_handle:
                 for i in range(max_index):
                     item = util.call_func(
