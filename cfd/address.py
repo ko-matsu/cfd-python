@@ -265,12 +265,12 @@ class AddressUtil:
         _network = Network.get(network)
         util = get_util()
         with util.create_handle() as handle:
-            word_handle = util.call_func(
+            work_handle = util.call_func(
                 'CfdInitializeMultisigScript', handle.get_handle(),
                 _network.value, _hash_type.value)
             with JobHandle(
                     handle,
-                    word_handle,
+                    work_handle,
                     'CfdFreeMultisigScriptHandle') as addr_handle:
                 for pubkey in pubkey_list:
                     util.call_func(
@@ -332,12 +332,12 @@ class AddressUtil:
         util = get_util()
         addr_list = []
         with util.create_handle() as handle:
-            word_handle, max_index = util.call_func(
+            work_handle, max_index = util.call_func(
                 'CfdGetAddressesFromMultisig', handle.get_handle(),
                 _script, _network.value, _hash_type.value)
             with JobHandle(
                     handle,
-                    word_handle,
+                    work_handle,
                     'CfdFreeAddressesMultisigHandle') as addr_handle:
                 for i in range(max_index):
                     addr, pubkey = util.call_func(
