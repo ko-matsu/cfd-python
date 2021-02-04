@@ -23,7 +23,7 @@ NOT_PERMIT_SIG_ERR_MSG = \
 
 
 ##
-# @class PsbtDefinitions
+# @class PsbtDefinition
 # @brief Psbt definition class.
 class PsbtDefinition(Enum):
     ##
@@ -126,8 +126,8 @@ class PsbtAppendInputData:
     # redeem script
     redeem_script: str
     ##
-    # @var redeem_script
-    # redeem script
+    # @var is_scripthash
+    # is scripthash
     is_scripthash: bool
 
     ##
@@ -190,8 +190,8 @@ class PsbtAppendOutputData:
     # redeem script
     redeem_script: str
     ##
-    # @var redeem_script
-    # redeem script
+    # @var is_scripthash
+    # is scripthash
     is_scripthash: bool
 
     ##
@@ -347,6 +347,7 @@ class Psbt:
     # @param[in] psbt           psbt string (base64 or bytes)
     # @param[in] network        network
     def __init__(self, psbt, network=Network.MAINNET):
+        self.base64 = ''
         self.network = Network.get(network)
         _psbt = psbt if isinstance(psbt, str) else to_hex_string(psbt)
         if len(_psbt) > 0:
@@ -440,7 +441,8 @@ class Psbt:
 
     ##
     # @brief sign.
-    # @param[in] psbts     psbt (object or list)
+    # @param[in] privkey        privkey
+    # @param[in] has_grind_r    grind-r flag
     # @return void
     def sign(self, privkey, has_grind_r: bool = True) -> None:
         util = get_util()
@@ -714,6 +716,10 @@ class Psbt:
             self._update_base64(util, handle, tx_handle)
             return fee
 
+    ##
+    # @brief get input index.
+    # @param[in] outpoint       outpoint
+    # @return input index
     def get_input_index(self, outpoint: 'OutPoint') -> int:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -723,12 +729,22 @@ class Psbt:
                 tx_handle.get_handle(), str(
                     outpoint.txid), outpoint.vout)
 
+    ##
+    # @brief get input outpoint.
+    # @param[in] index      input index
+    # @return input outpoint
     def get_input_outpoint(self, index: int) -> 'OutPoint':
         tx = self.get_tx()
         if index >= len(tx.txin_list):
             raise CfdError(error_code=3, message='Error: out of range.')
         return tx.txin_list[index].outpoint
 
+    ##
+    # @brief set input utxo.
+    # @param[in] outpoint       outpoint
+    # @param[in] utxo           utxo
+    # @param[in] utxo_tx        utxo full tx
+    # @return void
     def set_input_utxo(self, outpoint: 'OutPoint', utxo: 'TxOut' = TxOut(0),
                        utxo_tx: Union['Transaction', str] = '') -> None:
         _locking_script = utxo.locking_script
@@ -748,6 +764,14 @@ class Psbt:
                 to_hex_string(_locking_script), to_hex_string(utxo_tx))
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief set input bip32 key.
+    # @param[in] outpoint       outpoint
+    # @param[in] pubkey         pubkey or descriptorPubkey
+    # @param[in] fingerprint    fingerprint
+    # @param[in] bip32_path     bip32 path
+    # @param[in] key_data       keyData object
+    # @return void
     def set_input_bip32_key(
             self,
             outpoint: 'OutPoint',
@@ -775,6 +799,13 @@ class Psbt:
                 to_hex_string(fp), str(path))
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief set input signature.
+    # @param[in] outpoint       outpoint
+    # @param[in] pubkey         pubkey or descriptorPubkey
+    # @param[in] signature      signature
+    # @param[in] sign_data      sign parameter object
+    # @return void
     def set_input_signature(
             self,
             outpoint: 'OutPoint',
@@ -804,6 +835,11 @@ class Psbt:
                            to_hex_string(sig))
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief set input sighash type.
+    # @param[in] outpoint       outpoint
+    # @param[in] sighash_type   sighash type
+    # @return void
     def set_input_sighash_type(self, outpoint: 'OutPoint',
                                sighash_type: 'SigHashType') -> None:
         sighash = SigHashType.get(sighash_type)
@@ -816,6 +852,11 @@ class Psbt:
                     outpoint.txid), outpoint.vout, sighash.get_type())
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief set input finalize script.
+    # @param[in] outpoint       outpoint
+    # @param[in] data           finalize script
+    # @return void
     def set_input_finalize(self, outpoint: 'OutPoint',
                            data: Union[List['Script'], Script]) -> None:
         _script = ''
@@ -841,6 +882,12 @@ class Psbt:
                     outpoint.txid), outpoint.vout, to_hex_string(_script))
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief set input finalize script.
+    # @param[in] outpoint       outpoint
+    # @param[in] redeem_script  redeem script
+    # @param[in] index          input index
+    # @return void
     def set_input_script(self, outpoint: Optional['OutPoint'],
                          redeem_script, index: int = 0) -> None:
         util = get_util()
@@ -860,6 +907,13 @@ class Psbt:
                 redeem_script)
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief set input record.
+    # @param[in] outpoint       outpoint
+    # @param[in] key            record key
+    # @param[in] value          record value
+    # @param[in] index          input index
+    # @return void
     def set_input_record(self, outpoint: Optional['OutPoint'],
                          key, value, index: int = 0) -> None:
         util = get_util()
@@ -874,6 +928,12 @@ class Psbt:
                              _PsbtRecordType.INPUT, index, key, value)
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief set input non witness utxo.
+    # @param[in] outpoint       outpoint
+    # @param[in] transaction    non witness utxo.
+    # @param[in] index          input index
+    # @return void
     def set_input_non_witness_utxo(
             self,
             outpoint: 'OutPoint',
@@ -885,6 +945,12 @@ class Psbt:
             transaction,
             index)
 
+    ##
+    # @brief set input redeem script.
+    # @param[in] outpoint       outpoint
+    # @param[in] redeem_script  redeem script
+    # @param[in] index          input index
+    # @return void
     def set_input_redeem_script(
             self,
             outpoint: 'OutPoint',
@@ -896,6 +962,12 @@ class Psbt:
             redeem_script,
             index)
 
+    ##
+    # @brief set input witness script.
+    # @param[in] outpoint           outpoint
+    # @param[in] witness_script     witness script
+    # @param[in] index              input index
+    # @return void
     def set_input_witness_script(
             self,
             outpoint: 'OutPoint',
@@ -907,6 +979,12 @@ class Psbt:
             witness_script,
             index)
 
+    ##
+    # @brief set input final scriptsig.
+    # @param[in] outpoint       outpoint
+    # @param[in] scriptsig      scriptsig
+    # @param[in] index          input index
+    # @return void
     def set_input_final_scriptsig(
             self,
             outpoint: 'OutPoint',
@@ -915,6 +993,10 @@ class Psbt:
         self.set_input_record(
             outpoint, PsbtDefinition.PSBT_IN_FINAL_SCRIPTSIG, scriptsig, index)
 
+    ##
+    # @brief get input sighash type.
+    # @param[in] outpoint       outpoint
+    # @return sighash type
     def get_input_sighash_type(self, outpoint: 'OutPoint') -> 'SigHashType':
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -927,6 +1009,11 @@ class Psbt:
                 raise CfdError(error_code=8, message='Error: not found.')
             return SigHashType.get(sighashtype)
 
+    ##
+    # @brief get input signature.
+    # @param[in] outpoint       outpoint
+    # @param[in] pubkey         pubkey
+    # @return signature
     def get_input_signature(
             self,
             outpoint: 'OutPoint',
@@ -949,6 +1036,12 @@ class Psbt:
                 pubkey)
             return SignParameter(value, related_pubkey=pk)
 
+    ##
+    # @brief find input signature.
+    # @param[in] outpoint       outpoint
+    # @param[in] pubkey         pubkey
+    # @retval true      find
+    # @retval false     not found
     def is_find_input_signature(self, outpoint: 'OutPoint', pubkey) -> bool:
         pk = pubkey if isinstance(
             pubkey, Pubkey) else Pubkey(to_hex_string(pubkey))
@@ -967,6 +1060,10 @@ class Psbt:
                 index,
                 pk)
 
+    ##
+    # @brief get input signatures.
+    # @param[in] outpoint       outpoint
+    # @return signature list
     def get_input_signature_list(
             self, outpoint: 'OutPoint') -> List['SignParameter']:
         util = get_util()
@@ -988,6 +1085,11 @@ class Psbt:
                     value, related_pubkey=Pubkey(key)))
             return sig_list
 
+    ##
+    # @brief get input bip32 key.
+    # @param[in] outpoint       outpoint
+    # @param[in] pubkey         pubkey
+    # @return bip32 key
     def get_input_bip32_data(self, outpoint: 'OutPoint', pubkey) -> 'KeyData':
         pk = pubkey if isinstance(
             pubkey, Pubkey) else Pubkey(to_hex_string(pubkey))
@@ -1003,6 +1105,12 @@ class Psbt:
                 index, pubkey)
             return KeyData(pk, fp, path)
 
+    ##
+    # @brief find input bip32 key.
+    # @param[in] outpoint       outpoint
+    # @param[in] pubkey         pubkey
+    # @retval true      find
+    # @retval false     not found
     def is_find_input_bip32_data(self, outpoint: 'OutPoint', pubkey) -> bool:
         pk = pubkey if isinstance(
             pubkey, Pubkey) else Pubkey(to_hex_string(pubkey))
@@ -1021,6 +1129,10 @@ class Psbt:
                 index,
                 pk)
 
+    ##
+    # @brief get input bip32 keys.
+    # @param[in] outpoint       outpoint
+    # @return bip32 list
     def get_input_bip32_list(self, outpoint: 'OutPoint') -> List['KeyData']:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1059,13 +1171,19 @@ class Psbt:
                             amount=amount, descriptor=descriptor)
             return utxo, scriptpubkey, script, tx
 
-    def get_input_data_by_index(self,
-                                index: int) -> Tuple['OutPoint',
-                                                     int,
-                                                     Optional['Script'],
-                                                     Optional['Script'],
-                                                     str,
-                                                     Optional['Transaction']]:
+    ##
+    # @brief get input data by index.
+    # @param[in] index      input index
+    # @retval [0]   outpoint
+    # @retval [1]   utxo amount
+    # @retval [2]   utxo locking script (or None)
+    # @retval [3]   redeem script (or None)
+    # @retval [4]   descriptor
+    # @retval [5]   utxo full transaction (or None)
+    def get_input_data_by_index(
+        self, index: int) -> Tuple[
+            'OutPoint', int, Optional['Script'],
+            Optional['Script'], str, Optional['Transaction']]:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
                 util, handle) as tx_handle:
@@ -1079,6 +1197,10 @@ class Psbt:
             outpoint = OutPoint(txid, vout)
             return outpoint, amount, scriptpubkey, script, descriptor, tx
 
+    ##
+    # @brief get input final script witness.
+    # @param[in] outpoint       outpoint
+    # @return script witness
     def get_input_final_witness(
             self, outpoint: 'OutPoint') -> List['ByteData']:
         util = get_util()
@@ -1092,6 +1214,10 @@ class Psbt:
                 util, handle, tx_handle,
                 _PsbtRecordKind.INPUT_FINAL_WITNESS, index)
 
+    ##
+    # @brief get input unknown key list.
+    # @param[in] outpoint       outpoint
+    # @return unknown key list
     def get_input_unknown_keys(self, outpoint: 'OutPoint') -> List['ByteData']:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1104,6 +1230,11 @@ class Psbt:
                 util, handle, tx_handle,
                 _PsbtRecordKind.INPUT_UNKNOWN_KEYS, index)
 
+    ##
+    # @brief get input record.
+    # @param[in] outpoint       outpoint
+    # @param[in] key            record key
+    # @return unknown key list
     def get_input_record(self, outpoint: 'OutPoint', key) -> 'ByteData':
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1115,6 +1246,12 @@ class Psbt:
             return self._get_record(util, handle, tx_handle,
                                     _PsbtRecordType.INPUT, index, key)
 
+    ##
+    # @brief find input record.
+    # @param[in] outpoint       outpoint
+    # @param[in] key            record key
+    # @retval true      find
+    # @retval false     not found
     def is_find_input_record(self, outpoint: 'OutPoint', key) -> bool:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1126,21 +1263,37 @@ class Psbt:
             return self._is_find_record(util, handle, tx_handle,
                                         _PsbtRecordType.INPUT, index, key)
 
+    ##
+    # @brief get input redeem script.
+    # @param[in] outpoint       outpoint
+    # @return redeem script
     def get_input_redeem_script(self, outpoint: 'OutPoint') -> 'Script':
         value = self.get_input_record(
             outpoint, PsbtDefinition.PSBT_IN_REDEEM_SCRIPT)
         return Script(value)
 
+    ##
+    # @brief get input witness script.
+    # @param[in] outpoint       outpoint
+    # @return witness script
     def get_input_witness_script(self, outpoint: 'OutPoint') -> 'Script':
         value = self.get_input_record(
             outpoint, PsbtDefinition.PSBT_IN_WITNESS_SCRIPT)
         return Script(value)
 
+    ##
+    # @brief get input final scriptsig.
+    # @param[in] outpoint       outpoint
+    # @return final scriptsig
     def get_input_final_scriptsig(self, outpoint: 'OutPoint') -> 'Script':
         value = self.get_input_record(
             outpoint, PsbtDefinition.PSBT_IN_FINAL_SCRIPTSIG)
         return Script(value)
 
+    ##
+    # @brief clear input sign data.
+    # @param[in] outpoint       outpoint
+    # @return void
     def clear_input_sign_data(self, outpoint: 'OutPoint') -> None:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1151,6 +1304,14 @@ class Psbt:
                     outpoint.txid), outpoint.vout)
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief set output bip32 key data.
+    # @param[in] index          output index
+    # @param[in] pubkey         pubkey or descriptorPubkey
+    # @param[in] fingerprint    fingerprint
+    # @param[in] bip32_path     bip32 path
+    # @param[in] key_data       keyData object
+    # @return void
     def set_output_bip32_key(
             self,
             index: int,
@@ -1181,6 +1342,11 @@ class Psbt:
                 path)
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief set output redeem script (or witness script).
+    # @param[in] index          output index
+    # @param[in] redeem_script  redeem script
+    # @return void
     def set_output_script(self, index: int, redeem_script) -> None:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1194,6 +1360,12 @@ class Psbt:
                 redeem_script)
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief set output record.
+    # @param[in] index          output index
+    # @param[in] key            record key
+    # @param[in] value          record value
+    # @return void
     def set_output_record(self, index: int, key, value) -> None:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1202,14 +1374,29 @@ class Psbt:
                              _PsbtRecordType.OUTPUT, index, key, value)
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief set output redeem script.
+    # @param[in] index          output index
+    # @param[in] redeem_script  redeem script
+    # @return void
     def set_output_redeem_script(self, index: int, redeem_script) -> None:
         self.set_output_record(
             index, PsbtDefinition.PSBT_OUT_REDEEM_SCRIPT, redeem_script)
 
+    ##
+    # @brief set output witness script.
+    # @param[in] index              output index
+    # @param[in] witness_script     witness script
+    # @return void
     def set_output_witness_script(self, index: int, witness_script) -> None:
         self.set_output_record(
             index, PsbtDefinition.PSBT_OUT_WITNESS_SCRIPT, witness_script)
 
+    ##
+    # @brief get output bip32 key data.
+    # @param[in] index          output index
+    # @param[in] pubkey         pubkey
+    # @return keyData object
     def get_output_bip32_data(self, index: int, pubkey) -> 'KeyData':
         pk = pubkey if isinstance(
             pubkey, Pubkey) else Pubkey(to_hex_string(pubkey))
@@ -1221,6 +1408,12 @@ class Psbt:
                 _PsbtRecordKind.OUTPUT_BIP32, index, pubkey)
             return KeyData(pk, fp, path)
 
+    ##
+    # @brief find output bip32 key data.
+    # @param[in] index          output index
+    # @param[in] pubkey         pubkey
+    # @retval true      find
+    # @retval false     not found
     def is_find_output_bip32_data(self, index: int, pubkey) -> bool:
         pk = pubkey if isinstance(
             pubkey, Pubkey) else Pubkey(to_hex_string(pubkey))
@@ -1235,6 +1428,10 @@ class Psbt:
                 index,
                 pk)
 
+    ##
+    # @brief get output bip32 key list.
+    # @param[in] index          output index
+    # @return keyData object list
     def get_output_bip32_list(self, index: int) -> List['KeyData']:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1242,6 +1439,10 @@ class Psbt:
             return self._get_bip32_pubkey_list(
                 util, handle, tx_handle, _PsbtRecordKind.OUTPUT_BIP32, index)
 
+    ##
+    # @brief get output unknown key list.
+    # @param[in] index          output index
+    # @return keyData object list
     def get_output_unknown_keys(self, index: int) -> List['ByteData']:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1250,6 +1451,11 @@ class Psbt:
                 util, handle, tx_handle,
                 _PsbtRecordKind.OUTPUT_UNKNOWN_KEYS, index)
 
+    ##
+    # @brief get output record.
+    # @param[in] index      output index
+    # @param[in] key        record key
+    # @return record value
     def get_output_record(self, index: int, key) -> 'ByteData':
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1257,6 +1463,12 @@ class Psbt:
             return self._get_record(util, handle, tx_handle,
                                     _PsbtRecordType.OUTPUT, index, key)
 
+    ##
+    # @brief find output record.
+    # @param[in] index      output index
+    # @param[in] key        record key
+    # @retval true      find
+    # @retval false     not found
     def is_find_output_record(self, index: int, key) -> bool:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1264,16 +1476,31 @@ class Psbt:
             return self._is_find_record(util, handle, tx_handle,
                                         _PsbtRecordType.OUTPUT, index, key)
 
+    ##
+    # @brief get output redeem script.
+    # @param[in] index      output index
+    # @return redeem script
     def get_output_redeem_script(self, index: int) -> 'Script':
         value = self.get_output_record(
             index, PsbtDefinition.PSBT_OUT_REDEEM_SCRIPT)
         return Script(value)
 
+    ##
+    # @brief get output witness script.
+    # @param[in] index      output index
+    # @return witness script
     def get_output_witness_script(self, index: int) -> 'Script':
         value = self.get_output_record(
             index, PsbtDefinition.PSBT_OUT_WITNESS_SCRIPT)
         return Script(value)
 
+    ##
+    # @brief set global xpub.
+    # @param[in] ext_pubkey     ext pubkey or descriptorExtPubkey
+    # @param[in] fingerprint    fingerprint
+    # @param[in] bip32_path     bip32 path
+    # @param[in] key_data       keyData object
+    # @return void
     def set_global_xpub(
             self,
             ext_pubkey=None,
@@ -1306,6 +1533,11 @@ class Psbt:
                 path)
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief set global record.
+    # @param[in] key            record key
+    # @param[in] value          record value
+    # @return void
     def set_global_record(self, key, value) -> None:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1314,6 +1546,10 @@ class Psbt:
                              _PsbtRecordType.GLOBAL, 0, key, value)
             self._update_base64(util, handle, tx_handle)
 
+    ##
+    # @brief get global xpub.
+    # @param[in] xpub           ext pubkey
+    # @return keyData object
     def get_global_xpub(self, xpub) -> 'KeyData':
         pk = xpub if isinstance(xpub, ExtPubkey) else ExtPubkey(xpub)
         util = get_util()
@@ -1323,6 +1559,11 @@ class Psbt:
                 util, handle, tx_handle, _PsbtRecordKind.GLOBAL_XPUB, 0, pk)
             return KeyData(pk, fp, path)
 
+    ##
+    # @brief find global xpub.
+    # @param[in] xpub           ext pubkey
+    # @retval true      find
+    # @retval false     not found
     def is_find_global_xpub(self, xpub) -> bool:
         pk = xpub if isinstance(xpub, ExtPubkey) else ExtPubkey(xpub)
         util = get_util()
@@ -1331,6 +1572,9 @@ class Psbt:
             return self._is_find_pubkey(
                 util, handle, tx_handle, _PsbtRecordKind.GLOBAL_XPUB, 0, pk)
 
+    ##
+    # @brief get global xpub list.
+    # @return keyData object list
     def get_global_xpub_list(self) -> List['KeyData']:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1338,6 +1582,9 @@ class Psbt:
             return self._get_bip32_pubkey_list(
                 util, handle, tx_handle, _PsbtRecordKind.GLOBAL_XPUB, 0)
 
+    ##
+    # @brief get global unknown list.
+    # @return unknown key list (contains global xpub keys)
     def get_global_unknown_keys(self) -> List['ByteData']:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1346,6 +1593,10 @@ class Psbt:
                 util, handle, tx_handle,
                 _PsbtRecordKind.GLOBAL_UNKNOWN_KEYS, 0)
 
+    ##
+    # @brief get global record.
+    # @param[in] key        record key
+    # @return record value
     def get_global_record(self, key) -> 'ByteData':
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1353,6 +1604,11 @@ class Psbt:
             return self._get_record(util, handle, tx_handle,
                                     _PsbtRecordType.GLOBAL, 0, key)
 
+    ##
+    # @brief find global record.
+    # @param[in] key        record key
+    # @retval true      find
+    # @retval false     not found
     def is_find_global_record(self, key) -> bool:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
@@ -1360,32 +1616,43 @@ class Psbt:
             return self._is_find_record(util, handle, tx_handle,
                                         _PsbtRecordType.GLOBAL, 0, key)
 
+    '''
+    -------------------------------------------------------
+    internal functions
+    -------------------------------------------------------
+    '''
+
+    ##
+    # @brief get pubkey record.
+    # @param[in] util           cfd util object
+    # @param[in] handle         cfd handle
+    # @param[in] psbt_handle    psbt handle
+    # @param[in] kind           record kind
+    # @param[in] index          index
+    # @param[in] pubkey         pubkey
+    # @return value
     def _get_pubkey_record(
-            self,
-            util,
-            handle,
-            psbt_handle,
-            kind: '_PsbtRecordKind',
-            index: int,
-            pubkey) -> str:
+            self, util, handle, psbt_handle, kind: '_PsbtRecordKind',
+            index: int, pubkey) -> str:
         key = str(pubkey) if isinstance(
             pubkey, ExtPubkey) else to_hex_string(pubkey)
         return util.call_func(
-            'CfdGetPsbtPubkeyRecord',
-            handle.get_handle(),
-            psbt_handle.get_handle(),
-            kind.value,
-            index,
-            key)
+            'CfdGetPsbtPubkeyRecord', handle.get_handle(),
+            psbt_handle.get_handle(), kind.value, index, key)
 
-    def _get_pubkey_bip32_data(self,
-                               util,
-                               handle,
-                               psbt_handle,
-                               kind: '_PsbtRecordKind',
-                               index: int,
-                               pubkey) -> Tuple['ByteData',
-                                                str]:
+    ##
+    # @brief get pubkey bip32 data.
+    # @param[in] util           cfd util object
+    # @param[in] handle         cfd handle
+    # @param[in] psbt_handle    psbt handle
+    # @param[in] kind           record kind
+    # @param[in] index          index
+    # @param[in] pubkey         pubkey or extpubkey
+    # @retval [0] fingerprint
+    # @retval [1] bip32 path
+    def _get_pubkey_bip32_data(
+            self, util, handle, psbt_handle, kind: '_PsbtRecordKind',
+            index: int, pubkey) -> Tuple['ByteData', str]:
         key = str(pubkey) if isinstance(
             pubkey, ExtPubkey) else to_hex_string(pubkey)
         fp, path = util.call_func(
@@ -1393,30 +1660,35 @@ class Psbt:
             psbt_handle.get_handle(), kind.value, index, key)
         return ByteData(fp), path
 
+    ##
+    # @brief find pubkey record.
+    # @param[in] util           cfd util object
+    # @param[in] handle         cfd handle
+    # @param[in] psbt_handle    psbt handle
+    # @param[in] kind           record kind
+    # @param[in] index          index
+    # @param[in] pubkey         pubkey or extpubkey
+    # @retval true      find
+    # @retval false     not found
     def _is_find_pubkey(
-            self,
-            util,
-            handle,
-            psbt_handle,
-            kind: '_PsbtRecordKind',
-            index: int,
-            pubkey) -> bool:
+            self, util, handle, psbt_handle, kind: '_PsbtRecordKind',
+            index: int, pubkey) -> bool:
         key = str(pubkey) if isinstance(
             pubkey, ExtPubkey) else to_hex_string(pubkey)
         return util.call_func(
-            'CfdIsFindPsbtPubkeyRecord',
-            handle.get_handle(),
-            psbt_handle.get_handle(),
-            kind.value,
-            index,
-            key)
+            'CfdIsFindPsbtPubkeyRecord', handle.get_handle(),
+            psbt_handle.get_handle(), kind.value, index, key)
 
+    ##
+    # @brief get pubkey bip32 list.
+    # @param[in] util           cfd util object
+    # @param[in] handle         cfd handle
+    # @param[in] psbt_handle    psbt handle
+    # @param[in] kind           record kind
+    # @param[in] index          index
+    # @return keyData list
     def _get_bip32_pubkey_list(
-            self,
-            util,
-            handle,
-            psbt_handle,
-            kind: '_PsbtRecordKind',
+            self, util, handle, psbt_handle, kind: '_PsbtRecordKind',
             index: int) -> List['KeyData']:
         num, work_handle = util.call_func(
             'CfdGetPsbtPubkeyList', handle.get_handle(),
@@ -1439,13 +1711,18 @@ class Psbt:
                                            ByteData(fingerprint), bip32_path))
             return pubkeys
 
-    def _get_pubkey_list(self,
-                         util,
-                         handle,
-                         psbt_handle,
-                         kind: '_PsbtRecordKind',
-                         index: int) -> Tuple[List[str],
-                                              List['ByteData']]:
+    ##
+    # @brief get pubkey list.
+    # @param[in] util           cfd util object
+    # @param[in] handle         cfd handle
+    # @param[in] psbt_handle    psbt handle
+    # @param[in] kind           record kind
+    # @param[in] index          index
+    # @retval [0]   pubkey or extpubkey list
+    # @retval [1]   hex list
+    def _get_pubkey_list(
+            self, util, handle, psbt_handle, kind: '_PsbtRecordKind',
+            index: int) -> Tuple[List[str], List['ByteData']]:
         num, work_handle = util.call_func(
             'CfdGetPsbtPubkeyList', handle.get_handle(),
             psbt_handle.get_handle(), kind.value, index)
@@ -1461,13 +1738,17 @@ class Psbt:
                 hex_pubkeys.append(ByteData(pubkey_hex))
             return pubkeys, hex_pubkeys
 
-    def _get_bytedata_list(self,
-                           util,
-                           handle,
-                           psbt_handle,
-                           kind: '_PsbtRecordKind',
-                           index: int) -> Tuple[List[str],
-                                                List['ByteData']]:
+    ##
+    # @brief get data list.
+    # @param[in] util           cfd util object
+    # @param[in] handle         cfd handle
+    # @param[in] psbt_handle    psbt handle
+    # @param[in] kind           record kind
+    # @param[in] index          index
+    # @return data list
+    def _get_bytedata_list(
+            self, util, handle, psbt_handle, kind: '_PsbtRecordKind',
+            index: int) -> List['ByteData']:
         num, work_handle = util.call_func(
             'CfdGetPsbtByteDataList', handle.get_handle(),
             psbt_handle.get_handle(), kind.value, index)
@@ -1481,36 +1762,50 @@ class Psbt:
                 data_list.append(ByteData(data))
             return data_list
 
+    ##
+    # @brief set redeem script.
+    # @param[in] util           cfd util object
+    # @param[in] handle         cfd handle
+    # @param[in] psbt_handle    psbt handle
+    # @param[in] type           record type
+    # @param[in] index          index
+    # @param[in] redeem_script  redeem script
+    # @return void
     def _set_redeem_script(
-            self,
-            util,
-            handle,
-            psbt_handle,
-            type: '_PsbtRecordType',
-            index: int,
-            redeem_script) -> None:
+            self, util, handle, psbt_handle, type: '_PsbtRecordType',
+            index: int, redeem_script) -> None:
         util.call_func(
-            'CfdSetPsbtRedeemScript',
-            handle.get_handle(),
-            psbt_handle.get_handle(),
-            type.value,
-            index,
+            'CfdSetPsbtRedeemScript', handle.get_handle(),
+            psbt_handle.get_handle(), type.value, index,
             to_hex_string(redeem_script))
 
+    ##
+    # @brief set record.
+    # @param[in] util           cfd util object
+    # @param[in] handle         cfd handle
+    # @param[in] psbt_handle    psbt handle
+    # @param[in] type           record type
+    # @param[in] index          index
+    # @param[in] key            record key
+    # @param[in] value          record value
+    # @return void
     def _set_record(
-            self,
-            util,
-            handle,
-            psbt_handle,
-            type: '_PsbtRecordType',
-            index: int,
-            key,
-            value) -> None:
+            self, util, handle, psbt_handle, type: '_PsbtRecordType',
+            index: int, key, value) -> None:
         _key = key.value if isinstance(key, PsbtDefinition) else key
         util.call_func(
             'CfdAddPsbtRecord', handle.get_handle(), psbt_handle.get_handle(),
             type.value, index, to_hex_string(_key), to_hex_string(value))
 
+    ##
+    # @brief get record.
+    # @param[in] util           cfd util object
+    # @param[in] handle         cfd handle
+    # @param[in] psbt_handle    psbt handle
+    # @param[in] type           record type
+    # @param[in] index          index
+    # @param[in] key            record key
+    # @return record value
     def _get_record(self, util, handle, psbt_handle, type: '_PsbtRecordType',
                     index: int, key) -> 'ByteData':
         _key = key.value if isinstance(key, PsbtDefinition) else key
@@ -1519,21 +1814,23 @@ class Psbt:
             type.value, index, to_hex_string(_key))
         return ByteData(value)
 
+    ##
+    # @brief find record.
+    # @param[in] util           cfd util object
+    # @param[in] handle         cfd handle
+    # @param[in] psbt_handle    psbt handle
+    # @param[in] type           record type
+    # @param[in] index          index
+    # @param[in] key            record key
+    # @retval true      find
+    # @retval false     not found
     def _is_find_record(
-            self,
-            util,
-            handle,
-            psbt_handle,
-            type: '_PsbtRecordType',
-            index: int,
-            key) -> bool:
+            self, util, handle, psbt_handle, type: '_PsbtRecordType',
+            index: int, key) -> bool:
         _key = key.value if isinstance(key, PsbtDefinition) else key
         return util.call_func(
-            'CfdIsFindPsbtRecord',
-            handle.get_handle(),
-            psbt_handle.get_handle(),
-            type.value,
-            index,
+            'CfdIsFindPsbtRecord', handle.get_handle(),
+            psbt_handle.get_handle(), type.value, index,
             to_hex_string(_key))
 
     ##
@@ -1543,9 +1840,7 @@ class Psbt:
     # @param[in] network    network type
     # @return psbt job handle
     def _get_handle(
-            self,
-            util,
-            handle,
+            self, util, handle,
             network: Optional['Network'] = None) -> 'JobHandle':
         _network = Network.get(self.network) if not network else network
         work_handle = util.call_func(
@@ -1554,15 +1849,14 @@ class Psbt:
         return JobHandle(handle, work_handle, 'CfdFreePsbtHandle')
 
     ##
-    # @brief get psbt handle.
+    # @brief update psbt data.
     # @param[in] util           cfd util object
     # @param[in] handle         cfd handle
     # @param[in] psbt_handle    psbt handle
     # @return void
     def _update_base64(self, util, handle, psbt_handle) -> None:
         self.base64, _ = util.call_func(
-            'CfdGetPsbtData', handle.get_handle(),
-            psbt_handle.get_handle())
+            'CfdGetPsbtData', handle.get_handle(), psbt_handle.get_handle())
 
 
 ##

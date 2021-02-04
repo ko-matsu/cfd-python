@@ -70,7 +70,8 @@ class CryptoUtil:
 
     ##
     # @brief Encode base58.
-    # @param[in] data   encode target data
+    # @param[in] data           encode target data
+    # @param[in] use_checksum   use base58 checksum
     # @return base58 encoded data
     @classmethod
     def encode_base58(cls, data, use_checksum: bool = True) -> str:
@@ -85,7 +86,8 @@ class CryptoUtil:
 
     ##
     # @brief Decode base58.
-    # @param[in] data   base58 encoded data
+    # @param[in] data           base58 encoded data
+    # @param[in] use_checksum   use base58 checksum
     # @return data
     @classmethod
     def decode_base58(cls, data: str, use_checksum: bool = True) -> 'ByteData':
