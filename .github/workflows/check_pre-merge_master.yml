@@ -60,7 +60,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-10.15, macos-11.0, windows-2019, ubuntu-18.04, ubuntu-20.04]
+#        os: [macos-10.15, macos-11.0, windows-2019, ubuntu-18.04, ubuntu-20.04]
+        os: [macos-10.15, windows-2019, ubuntu-18.04, ubuntu-20.04]
         py-ver: [3.6, 3.7, 3.8, 3.9, pypy3]
         exclude:
           - os: windows-2019
@@ -69,8 +70,8 @@ jobs:
             py-ver: 3.7
           - os: windows-2019
             py-ver: pypy3
-          - os: macos-11.0
-            py-ver: pypy3
+#          - os: macos-11.0
+#            py-ver: pypy3
 
     steps:
     - uses: actions/checkout@v2
