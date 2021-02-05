@@ -1,3 +1,4 @@
+from typing import Sequence
 from unittest import TestCase
 from tests.util import load_json_file,\
     exec_test, assert_equal, assert_error, assert_message, assert_match
@@ -354,8 +355,12 @@ def test_psbt_func(obj, name, case, req, exp, error):
                     'network',
                     Network.MAINNET))
             for txin in req.get('txins', []):
+                sequence = txin.get('sequence', TxIn.SEQUENCE_DISABLE)
+                if (sequence == TxIn.SEQUENCE_DISABLE) and (
+                        req['locktime'] != 0):
+                    sequence = TxIn.SEQUENCE_FINAL
                 resp.add_input(OutPoint(txin['txid'], txin['vout']),
-                               sequence=txin.get('sequence', 4294967295))
+                               sequence=sequence)
             for txout in req.get('txouts', []):
                 resp.add_output(txout['amount'], address=txout['address'])
         elif name == 'Psbt.ConvertToPsbt':
