@@ -3,7 +3,7 @@
 # @file confidential_transaction.py
 # @brief elements confidential transaction function implements file.
 # @note Copyright 2020 CryptoGarage
-from typing import AnyStr, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 import typing
 from .util import ReverseByteData, CfdError, JobHandle,\
     CfdErrorCode, to_hex_string, get_util, ByteData
@@ -341,7 +341,7 @@ class ElementsUtxoData(UtxoData):
     # @brief equal method.
     # @param[in] other      other object.
     # @return true or false.
-    def __eq__(self, other: 'ElementsUtxoData') -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, ElementsUtxoData):
             return NotImplemented
         return self.outpoint == other.outpoint
@@ -359,7 +359,7 @@ class ElementsUtxoData(UtxoData):
     # @brief equal method.
     # @param[in] other      other object.
     # @return true or false.
-    def __ne__(self, other: 'ElementsUtxoData') -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     ##
@@ -391,7 +391,7 @@ class UnblindData:
     ##
     # @var asset
     # asset
-    asset: Union[AnyStr, 'ConfidentialAsset']
+    asset: Union[str, 'ConfidentialAsset']
     ##
     # @var value
     # value
@@ -622,11 +622,11 @@ class ConfidentialTxOut(TxOut):
     ##
     # @var surjectionproof
     # surjection proof
-    surjectionproof: Union[List[int], AnyStr, 'ByteData']
+    surjectionproof: Union[List[int], str, 'ByteData']
     ##
     # @var rangeproof
     # range proof
-    rangeproof: Union[List[int], AnyStr, 'ByteData']
+    rangeproof: Union[List[int], str, 'ByteData']
 
     ##
     # @brief get destroy amount txout.
@@ -718,7 +718,10 @@ class ConfidentialTxOut(TxOut):
     # @param[in] network   network
     # @return address.
     def get_address(self, network=Network.LIQUID_V1) -> 'Address':
-        return self._get_address(network, False)
+        ret = self._get_address(network, False)
+        if isinstance(ret, Address):
+            return ret
+        raise CfdError(error_code=-2, message='Error: Internal error.')
 
     ##
     # @brief get confidential address.
@@ -1319,7 +1322,8 @@ class ConfidentialTransaction(_TransactionBase):
                     'CfdFinalizeBlindTx', handle.get_handle(),
                     tx_handle.get_handle(), self.hex)
                 self._update_tx_all()
-                blinder_list = []
+                blinder_list: List[Union['BlindData', 'IssuanceAssetBlindData',
+                                         'IssuanceTokenBlindData']] = []
                 if bool(collect_blinder):
                     try:
                         i = 0
@@ -1373,7 +1377,7 @@ class ConfidentialTransaction(_TransactionBase):
     # @retval [0]   asset unblind data
     # @retval [1]   token unblind data
     def unblind_issuance(self, index: int, asset_key,
-                         token_key='') -> 'UnblindData':
+                         token_key='') -> Tuple['UnblindData', 'UnblindData']:
         util = get_util()
         with util.create_handle() as handle:
             asset, asset_amount, asset_blinder, amount_blinder, token,\

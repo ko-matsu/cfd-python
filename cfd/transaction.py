@@ -3,7 +3,7 @@
 # @file transaction.py
 # @brief transaction function implements file.
 # @note Copyright 2020 CryptoGarage
-from typing import AnyStr, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 import typing
 from .util import get_util, JobHandle, CfdError, to_hex_string,\
     CfdErrorCode, ReverseByteData, ByteData
@@ -65,7 +65,7 @@ class OutPoint:
     # @brief equal method.
     # @param[in] other      other object.
     # @return true or false.
-    def __eq__(self, other: 'OutPoint') -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, OutPoint):
             return NotImplemented
         return (self.txid.hex == other.txid.hex) and (
@@ -84,7 +84,7 @@ class OutPoint:
     # @brief equal method.
     # @param[in] other      other object.
     # @return true or false.
-    def __ne__(self, other: 'OutPoint') -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     ##
@@ -128,7 +128,7 @@ class UtxoData:
     ##
     # @var scriptsig_template
     # scriptsig template
-    scriptsig_template: Union['Script', 'ByteData', AnyStr]
+    scriptsig_template: Union['Script', 'ByteData', str]
 
     ##
     # @brief constructor.
@@ -142,7 +142,7 @@ class UtxoData:
             self, outpoint: Optional['OutPoint'] = None,
             txid='', vout: int = 0,
             amount: int = 0, descriptor: Union[str, 'Descriptor'] = '',
-            scriptsig_template: Union['Script', 'ByteData', AnyStr] = ''):
+            scriptsig_template: Union['Script', 'ByteData', str] = ''):
         if isinstance(outpoint, OutPoint):
             self.outpoint = outpoint
         else:
@@ -223,7 +223,7 @@ class TxIn:
     ##
     # @var witness_stack
     # witness stack
-    witness_stack: List[Union['Script', 'ByteData', AnyStr]]
+    witness_stack: List[Union['Script', 'ByteData', str]]
 
     ##
     # sequence disable.
@@ -364,6 +364,13 @@ class _TransactionBase:
     def _update_tx_all(self):
         if self.enable_cache:
             self.get_tx_all()
+
+    ##
+    # @brief update transaction input cache.
+    # @param[in] outpoint   OutPoint
+    # @return void
+    def _update_txin(self, outpoint: 'OutPoint'):
+        pass
 
     ##
     # @brief get transaction input.
@@ -1179,7 +1186,7 @@ class Transaction(_TransactionBase):
             reserved_address, target_amount: int = 0,
             effective_fee_rate: float = 20.0,
             long_term_fee_rate: float = 20.0, dust_fee_rate: float = -1.0,
-            knapsack_min_change: int = -1) -> Tuple[int, str]:
+            knapsack_min_change: int = -1) -> Tuple[int, Optional[str]]:
         util = get_util()
 
         def set_opt(handle, tx_handle, key, i_val=0, f_val=0, b_val=False):
@@ -1249,7 +1256,7 @@ class Transaction(_TransactionBase):
 
                 self.hex = _new_hex
                 self._update_tx_all()
-                return _tx_fee, used_addr
+                return int(_tx_fee), used_addr
 
 
 ##

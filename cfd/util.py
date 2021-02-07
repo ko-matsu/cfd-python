@@ -163,7 +163,7 @@ class ReverseByteData:
             self.hex = ''.join(new_list)
         elif isinstance(data, list):
             new_list = data[::-1]
-            self.hex = ''.join("%02x" % b for b in new_list)
+            self.hex = ''.join("%02x" % int(b) for b in new_list)
         else:
             self.hex = str(data).lower()
             if self.hex != '':
@@ -675,7 +675,7 @@ class CfdUtil:
     ##
     # @brief get instance.
     # @return utility instance.
-    @classmethod
+    @ classmethod
     def get_instance(cls):
         if not hasattr(cls, "_instance"):
             cls._instance = cls()

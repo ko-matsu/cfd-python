@@ -326,7 +326,7 @@ class ExtPrivkey(Extkey):
     # @param[in] number_list    bip32 number list
     # @return ExtPubkey
     def derive_pubkey(self, path: str = '', number: int = 0,
-                      number_list: typing.List[int] = []) -> 'ExtPrivkey':
+                      number_list: typing.List[int] = []) -> 'ExtPubkey':
         return self.derive(
             path=path,
             number=number,

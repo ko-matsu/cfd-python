@@ -3,7 +3,7 @@
 # @file key.py
 # @brief key function implements file.
 # @note Copyright 2020 CryptoGarage
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 import typing
 from .util import ByteData, get_util, CfdError,\
     to_hex_string, CfdErrorCode, JobHandle
@@ -723,7 +723,7 @@ class SchnorrPubkey:
     # @retval [0] SchnorrPubkey
     # @retval [1] parity flag
     @classmethod
-    def from_privkey(cls, privkey) -> 'SchnorrPubkey':
+    def from_privkey(cls, privkey) -> Tuple['SchnorrPubkey', bool]:
         if isinstance(privkey, Privkey):
             _privkey = privkey.hex
         elif isinstance(privkey, str) and (len(privkey) != 64):
@@ -744,7 +744,7 @@ class SchnorrPubkey:
     # @retval [0] SchnorrPubkey
     # @retval [1] parity flag
     @classmethod
-    def from_pubkey(cls, pubkey) -> 'SchnorrPubkey':
+    def from_pubkey(cls, pubkey) -> Tuple['SchnorrPubkey', bool]:
         _pubkey = to_hex_string(pubkey)
         util = get_util()
         with util.create_handle() as handle:
@@ -761,7 +761,8 @@ class SchnorrPubkey:
     # @retval [1] tweaked parity flag
     # @retval [2] tweaked Privkey
     @classmethod
-    def add_tweak_from_privkey(cls, privkey, tweak) -> 'SchnorrPubkey':
+    def add_tweak_from_privkey(
+            cls, privkey, tweak) -> Tuple['SchnorrPubkey', bool, 'Privkey']:
         if isinstance(privkey, Privkey):
             _privkey = privkey.hex
         elif isinstance(privkey, str) and (len(privkey) != 64):
@@ -798,7 +799,7 @@ class SchnorrPubkey:
     # @param[in] tweak      tweak data
     # @retval [0] tweaked SchnorrPubkey
     # @retval [1] tweaked parity flag
-    def add_tweak(self, tweak) -> 'SchnorrPubkey':
+    def add_tweak(self, tweak) -> Tuple['SchnorrPubkey', bool]:
         _tweak = to_hex_string(tweak)
         util = get_util()
         with util.create_handle() as handle:
