@@ -345,7 +345,7 @@ class Psbt:
 
     ##
     # @brief decode psbt.
-    # @param[in] psbts          psbt (object or list)
+    # @param[in] psbt           psbt
     # @param[in] network        network type
     # @param[in] has_detail     detail output flag
     # @param[in] has_simple     simple output flag
