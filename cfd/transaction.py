@@ -640,6 +640,9 @@ class Transaction(_TransactionBase):
     locktime: int
 
     ##
+    # default transaction version.
+    DEFAULT_VERSION: int = 2
+    ##
     # bitcoin network value.
     NETWORK = Network.MAINNET.value
     ##
@@ -677,10 +680,10 @@ class Transaction(_TransactionBase):
     @classmethod
     def create(
             cls,
-            version: int,
-            locktime: int,
-            txins: List['TxIn'],
-            txouts: List['TxOut'],
+            version: int = DEFAULT_VERSION,
+            locktime: int = 0,
+            txins: List['TxIn'] = [],
+            txouts: List['TxOut'] = [],
             enable_cache: bool = True) -> 'Transaction':
         util = get_util()
         with util.create_handle() as handle:
