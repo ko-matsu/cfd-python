@@ -412,8 +412,9 @@ def test_psbt(test_obj):
     psbt21.sign(fee_sk)
     for key in key_list:
         psbt22.sign(key)
-    psbt2_str = btc_rpc.combinepsbt([str(psbt21), str(psbt22)])
-    psbt2 = Psbt(psbt2_str, network=NETWORK)
+    # psbt2_str = btc_rpc.combinepsbt([str(psbt21), str(psbt22)])
+    # psbt2 = Psbt(psbt2_str, network=NETWORK)
+    psbt2 = Psbt.combine_psbts([str(psbt21), psbt22])
     tx2 = psbt2.extract(True)
     print(Transaction.parse_to_json(str(tx2), network=NETWORK))
     txid = btc_rpc.sendrawtransaction(str(tx2))
