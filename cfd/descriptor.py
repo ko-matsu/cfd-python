@@ -229,7 +229,7 @@ class DescriptorScriptData:
     ##
     # @var key_data
     # key data
-    key_data: Optional['DescriptorKeyType']
+    key_data: Optional['DescriptorKeyData']
     ##
     # @var key_list
     # key list
@@ -256,7 +256,7 @@ class DescriptorScriptData:
             locking_script,
             redeem_script='',
             key_data: Optional['DescriptorKeyData'] = None,
-            key_list: List['DescriptorKeyType'] = [],
+            key_list: List['DescriptorKeyData'] = [],
             multisig_require_num: int = 0):
         self.script_type = script_type
         self.depth = depth

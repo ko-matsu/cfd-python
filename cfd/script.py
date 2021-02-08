@@ -3,7 +3,7 @@
 # @file script.py
 # @brief bitcoin script function implements file.
 # @note Copyright 2020 CryptoGarage
-from typing import List
+from typing import List, Union
 from .util import CfdError, to_hex_string, get_util, JobHandle
 from .key import SignParameter, SigHashType
 from enum import Enum
@@ -89,7 +89,7 @@ class Script:
     # @param[in] script_items  asm strings (list or string)
     # @return script object
     @classmethod
-    def from_asm(cls, script_items: List[str]) -> 'Script':
+    def from_asm(cls, script_items: Union[List[str], str]) -> 'Script':
         _asm = script_items
         if isinstance(script_items, list):
             _asm = ' '.join(script_items)

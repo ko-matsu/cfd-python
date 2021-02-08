@@ -146,7 +146,7 @@ class PsbtAppendInputData:
                  sequence: int = TxIn.SEQUENCE_DISABLE,
                  network=Network.MAINNET):
         _network = Network.get(network)
-        _locking_script = utxo.locking_script
+        _locking_script: Union['Script', str] = utxo.locking_script
         if utxo.address:
             if isinstance(utxo.address, Address):
                 _locking_script = utxo.address.locking_script
@@ -747,7 +747,7 @@ class Psbt:
     # @return void
     def set_input_utxo(self, outpoint: 'OutPoint', utxo: 'TxOut' = TxOut(0),
                        utxo_tx: Union['Transaction', str] = '') -> None:
-        _locking_script = utxo.locking_script
+        _locking_script: Union['Script', str] = utxo.locking_script
         if utxo.address:
             if isinstance(utxo.address, Address):
                 _locking_script = utxo.address.locking_script
@@ -812,7 +812,7 @@ class Psbt:
             pubkey=None,
             signature=None,
             sign_data: Optional['SignParameter'] = None) -> None:
-        if isinstance(sign_data, 'SignParameter'):
+        if isinstance(sign_data, SignParameter):
             pk = sign_data.related_pubkey
             sig = sign_data.hex
         elif pubkey is None:
@@ -859,7 +859,7 @@ class Psbt:
     # @return void
     def set_input_finalize(self, outpoint: 'OutPoint',
                            data: Union[List['Script'], Script]) -> None:
-        _script = ''
+        _script: Union['Script', str] = ''
         if isinstance(data, list):
             script_list = []
             for script in data:

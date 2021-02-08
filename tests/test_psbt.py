@@ -1,4 +1,3 @@
-from typing import Sequence
 from unittest import TestCase
 from tests.util import load_json_file,\
     exec_test, assert_equal, assert_error, assert_message, assert_match
