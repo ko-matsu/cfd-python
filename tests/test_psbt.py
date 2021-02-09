@@ -353,9 +353,13 @@ def test_psbt_func(obj, name, case, req, exp, error):
                 network=req.get(
                     'network',
                     Network.MAINNET))
+            if req['locktime'] != 0:
+                def_seq = TxIn.SEQUENCE_FINAL
+            else:
+                def_seq = TxIn.SEQUENCE_DISABLE
             for txin in req.get('txins', []):
                 resp.add_input(OutPoint(txin['txid'], txin['vout']),
-                               sequence=txin.get('sequence', 4294967295))
+                               sequence=txin.get('sequence', def_seq))
             for txout in req.get('txouts', []):
                 resp.add_output(txout['amount'], address=txout['address'])
         elif name == 'Psbt.ConvertToPsbt':
