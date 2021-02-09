@@ -1986,8 +1986,8 @@
                     "tx": "0200000000010000000000000000220020c5ae4ff17cec055e964b573601328f3f879fa441e53ef88acdfd4d8e8df429ef00000000"
                 },
                 "expect": {
-                    "psbt": "cHNidP8BAAoCAAAAAAAAAAAAAA==",
-                    "hex": "70736274ff01000a0200000000000000000000"
+                    "psbt": "cHNidP8BADUCAAAAAAEAAAAAAAAAACIAIMWuT/F87AVelktXNgEyjz+Hn6RB5T74is39TY6N9CnvAAAAAAAA",
+                    "hex": "70736274ff0100350200000000010000000000000000220020c5ae4ff17cec055e964b573601328f3f879fa441e53ef88acdfd4d8e8df429ef000000000000"
                 }
             },
             {
