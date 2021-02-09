@@ -146,7 +146,7 @@ class PsbtAppendInputData:
                  sequence: int = TxIn.SEQUENCE_DISABLE,
                  network=Network.MAINNET):
         _network = Network.get(network)
-        _locking_script = utxo.locking_script
+        _locking_script: Union['Script', str] = utxo.locking_script
         if utxo.address:
             if isinstance(utxo.address, Address):
                 _locking_script = utxo.address.locking_script
@@ -249,7 +249,8 @@ class Psbt:
     # @param[in] network        network type
     # @return psbt object
     @classmethod
-    def create(cls, tx_version: int, locktime: int = 0,
+    def create(cls, tx_version: int = Transaction.DEFAULT_VERSION,
+               locktime: int = 0,
                network=Network.MAINNET) -> 'Psbt':
         _network = Network.get(network)
         util = get_util()
@@ -343,13 +344,46 @@ class Psbt:
         return psbt
 
     ##
+    # @brief decode psbt.
+    # @param[in] psbt           psbt
+    # @param[in] network        network type
+    # @param[in] has_detail     detail output flag
+    # @param[in] has_simple     simple output flag
+    # @return json string
+    @classmethod
+    def parse_to_json(
+            cls, psbt, network=Network.MAINNET,
+            has_detail: bool = False, has_simple: bool = False) -> str:
+        _network = Network.get(network)
+        network_str = 'mainnet'
+        if _network == Network.TESTNET:
+            network_str = 'testnet'
+        elif _network == Network.REGTEST:
+            network_str = 'regtest'
+        has_detail_str = 'true' if has_detail else 'false'
+        has_simple_str = 'true' if has_simple else 'false'
+        request_json = \
+            f'{{"psbt":"{str(psbt)}","network":"{network_str}",' + \
+            f'"hasDetail":{has_detail_str},"hasSimple":{has_simple_str}}}'
+        util = get_util()
+        with util.create_handle() as handle:
+            return util.call_func(
+                'CfdRequestExecuteJson', handle.get_handle(),
+                'DecodePsbt', request_json)
+
+    ##
     # @brief constructor.
     # @param[in] psbt           psbt string (base64 or bytes)
     # @param[in] network        network
     def __init__(self, psbt, network=Network.MAINNET):
         self.base64 = ''
         self.network = Network.get(network)
-        _psbt = psbt if isinstance(psbt, str) else to_hex_string(psbt)
+        if isinstance(psbt, str):
+            _psbt = psbt
+        elif isinstance(psbt, Psbt):
+            _psbt = psbt.base64
+        else:
+            _psbt = to_hex_string(psbt)
         if len(_psbt) > 0:
             util = get_util()
             with util.create_handle() as handle:
@@ -747,7 +781,7 @@ class Psbt:
     # @return void
     def set_input_utxo(self, outpoint: 'OutPoint', utxo: 'TxOut' = TxOut(0),
                        utxo_tx: Union['Transaction', str] = '') -> None:
-        _locking_script = utxo.locking_script
+        _locking_script: Union['Script', str] = utxo.locking_script
         if utxo.address:
             if isinstance(utxo.address, Address):
                 _locking_script = utxo.address.locking_script
@@ -812,7 +846,7 @@ class Psbt:
             pubkey=None,
             signature=None,
             sign_data: Optional['SignParameter'] = None) -> None:
-        if isinstance(sign_data, 'SignParameter'):
+        if isinstance(sign_data, SignParameter):
             pk = sign_data.related_pubkey
             sig = sign_data.hex
         elif pubkey is None:
@@ -859,7 +893,7 @@ class Psbt:
     # @return void
     def set_input_finalize(self, outpoint: 'OutPoint',
                            data: Union[List['Script'], Script]) -> None:
-        _script = ''
+        _script: Union['Script', str] = ''
         if isinstance(data, list):
             script_list = []
             for script in data:
