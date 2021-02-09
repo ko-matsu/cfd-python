@@ -224,10 +224,7 @@
                         }
                     ],
                     "fee": 399995000
-                },
-                "exclude": [
-                    "python"
-                ]
+                }
             },
             {
                 "case": "Detail",
@@ -1834,8 +1831,8 @@
                     ]
                 },
                 "expect": {
-                    "psbt": "cHNidP8BAF4CAAAAAUzerac325evM08PpOh0MtYGh1nuplowZ9HxSpeeWp3qAAAAAAD/////AQBAB1rwdQcAIgAgGGMUPBTFFmgEvRkgM1baE2yYVnjNTSehuMYylgSQMmJkAAAAAAAA",
-                    "hex": "70736274ff01005e02000000014cdeada737db97af334f0fa4e87432d6068759eea65a3067d1f14a979e5a9dea0000000000ffffffff010040075af07507002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326264000000000000"
+                    "psbt": "cHNidP8BAF4CAAAAAUzerac325evM08PpOh0MtYGh1nuplowZ9HxSpeeWp3qAAAAAAD+////AQBAB1rwdQcAIgAgGGMUPBTFFmgEvRkgM1baE2yYVnjNTSehuMYylgSQMmJkAAAAAAAA",
+                    "hex": "70736274ff01005e02000000014cdeada737db97af334f0fa4e87432d6068759eea65a3067d1f14a979e5a9dea0000000000feffffff010040075af07507002200201863143c14c5166804bd19203356da136c985678cd4d27a1b8c632960490326264000000000000"
                 }
             },
             {
@@ -1989,8 +1986,8 @@
                     "tx": "0200000000010000000000000000220020c5ae4ff17cec055e964b573601328f3f879fa441e53ef88acdfd4d8e8df429ef00000000"
                 },
                 "expect": {
-                    "psbt": "cHNidP8BAAoCAAAAAAAAAAAAAA==",
-                    "hex": "70736274ff01000a0200000000000000000000"
+                    "psbt": "cHNidP8BADUCAAAAAAEAAAAAAAAAACIAIMWuT/F87AVelktXNgEyjz+Hn6RB5T74is39TY6N9CnvAAAAAAAA",
+                    "hex": "70736274ff0100350200000000010000000000000000220020c5ae4ff17cec055e964b573601328f3f879fa441e53ef88acdfd4d8e8df429ef000000000000"
                 }
             },
             {
