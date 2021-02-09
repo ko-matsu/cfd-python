@@ -5,7 +5,8 @@ from cfd.key import SigHashType
 from cfd.hdwallet import HDWallet
 from cfd.script import HashType
 from cfd.descriptor import parse_descriptor
-from cfd.transaction import Transaction, TxIn, TxOut, UtxoData
+from cfd.psbt import Psbt, PsbtAppendInputData, PsbtAppendOutputData
+from cfd.transaction import OutPoint, Transaction, TxIn, TxOut, UtxoData
 from decimal import Decimal
 import logging
 import time
@@ -42,14 +43,17 @@ def search_utxos(test_obj, utxo_list, outpoint):
     test_obj.assertTrue(False, 'UTXO is empty. outpoint={}'.format(outpoint))
 
 
-def create_bitcoin_address(test_obj):
+def create_bitcoin_address(test_obj: 'TestBitcoin'):
+    root_pk = test_obj.hdwallet.ext_privkey.get_extpubkey().pubkey
+    fp = root_pk.get_fingerprint()
     # fee address
     pk = str(test_obj.hdwallet.get_pubkey(path=FEE_PATH).pubkey)
     addr = AddressUtil.p2wpkh(pk, network=NETWORK)
     test_obj.path_dic[str(addr)] = FEE_PATH
     test_obj.addr_dic['fee'] = addr
     test_obj.desc_dic[str(addr)] = parse_descriptor(
-        'wpkh({})'.format(str(pk)), network=NETWORK)
+        'wpkh([{}{}]{})'.format(str(fp), FEE_PATH[1:], str(pk)),
+        network=NETWORK)
     print('set fee addr: ' + str(addr))
 
     # wpkh main address
@@ -59,7 +63,8 @@ def create_bitcoin_address(test_obj):
     test_obj.path_dic[str(addr)] = path
     test_obj.addr_dic['main'] = addr
     test_obj.desc_dic[str(addr)] = parse_descriptor(
-        'wpkh({})'.format(str(pk)), network=NETWORK)
+        'wpkh([{}{}]{})'.format(str(fp), path[1:], str(pk)),
+        network=NETWORK)
     print('set main addr: ' + str(addr))
     # pkh address
     path = '{}/0/1'.format(ROOT_PATH)
@@ -68,7 +73,8 @@ def create_bitcoin_address(test_obj):
     test_obj.path_dic[str(addr)] = path
     test_obj.addr_dic['p2pkh'] = addr
     test_obj.desc_dic[str(addr)] = parse_descriptor(
-        'pkh({})'.format(str(pk)), network=NETWORK)
+        'pkh([{}{}]{})'.format(str(fp), path[1:], str(pk)),
+        network=NETWORK)
     print('set p2pkh addr: ' + str(addr))
     # wpkh address
     path = '{}/0/2'.format(ROOT_PATH)
@@ -77,7 +83,8 @@ def create_bitcoin_address(test_obj):
     test_obj.path_dic[str(addr)] = path
     test_obj.addr_dic['p2wpkh'] = addr
     test_obj.desc_dic[str(addr)] = parse_descriptor(
-        'wpkh({})'.format(str(pk)), network=NETWORK)
+        'wpkh([{}{}]{})'.format(str(fp), path[1:], str(pk)),
+        network=NETWORK)
     print('set p2wpkh addr: ' + str(addr))
     # p2sh-p2wpkh address
     path = '{}/0/3'.format(ROOT_PATH)
@@ -86,7 +93,8 @@ def create_bitcoin_address(test_obj):
     test_obj.path_dic[str(addr)] = path
     test_obj.addr_dic['p2sh-p2wpkh'] = addr
     test_obj.desc_dic[str(addr)] = parse_descriptor(
-        'sh(wpkh({}))'.format(str(pk)), network=NETWORK)
+        'sh(wpkh([{}{}]{}))'.format(str(fp), path[1:], str(pk)),
+        network=NETWORK)
     print('set p2sh-p2wpkh addr: ' + str(addr))
 
     # multisig_key
@@ -328,7 +336,98 @@ def test_bitcoin_multisig(test_obj):
     print('UTXO: {}'.format(utxos))
 
 
+def test_psbt(test_obj):
+    btc_rpc = test_obj.conn.get_rpc()
+    fee_addr = str(test_obj.addr_dic['fee'])
+    fee_sk = test_obj.hdwallet.get_privkey(path=FEE_PATH).privkey
+    main_addr = test_obj.addr_dic['main']
+    utxos = get_utxo(btc_rpc, [str(fee_addr)])  # listunspent
+    utxo_list = convert_bitcoin_utxos(test_obj, utxos)
+    txouts = [
+        PsbtAppendOutputData(
+            100000000,
+            address=test_obj.addr_dic['p2pkh'],
+            descriptor=test_obj.desc_dic[str(test_obj.addr_dic['p2pkh'])]),
+        PsbtAppendOutputData(
+            100000000,
+            address=str(test_obj.addr_dic['p2wpkh']),
+            descriptor=test_obj.desc_dic[str(test_obj.addr_dic['p2wpkh'])]),
+        PsbtAppendOutputData(
+            100000000,
+            address=str(test_obj.addr_dic['p2sh-p2wpkh']),
+            descriptor=test_obj.desc_dic[str(
+                test_obj.addr_dic['p2sh-p2wpkh'])],
+        ),
+    ]
+    psbt = Psbt.create(tx_version=2, network=NETWORK)
+    psbt.add(outputs=txouts)
+    psbt.fund(
+        utxo_list=utxo_list,
+        reserved_address_descriptor=test_obj.desc_dic[str(fee_addr)],
+        effective_fee_rate=2.0, long_term_fee_rate=2.0, knapsack_min_change=0)
+    psbt.sign(fee_sk)
+    # bitcoinrpc: finalize extract
+    ret = btc_rpc.finalizepsbt(str(psbt), True)
+    tx_hex = ret['hex'] if 'hex' in ret else ''
+    if not ret.get('complete', True):
+        raise AssertionError("finalizepsbt not complete.")
+    print(Transaction.parse_to_json(tx_hex, network=NETWORK))
+    txid = btc_rpc.sendrawtransaction(tx_hex)
+    tx = Transaction(tx_hex)
+    # generate block
+    btc_rpc.generatetoaddress(2, fee_addr)
+    time.sleep(2)
+    utxos = get_utxo(btc_rpc, [str(main_addr)])
+    print('UTXO: {}'.format(utxos))
+
+    txid = tx.txid
+    txin_list = []
+    key_list = []
+    for index, _ in enumerate(txouts):
+        txout = tx.txout_list[index]
+        addr = txout.get_address(network=NETWORK)
+        desc = test_obj.desc_dic[str(addr)]
+        txin_list.append(PsbtAppendInputData(
+            outpoint=OutPoint(txid, index),
+            utxo=txout, descriptor=str(desc),
+            utxo_tx=tx_hex))
+        path = test_obj.path_dic[str(addr)]
+        key_list.append(test_obj.hdwallet.get_privkey(path=path).privkey)
+    txouts2 = [
+        TxOut(300000000, str(test_obj.addr_dic['main'])),
+    ]
+    tx2 = Transaction.create(2, 0, [], txouts2)
+    psbt2 = Psbt.from_transaction(transaction=tx2, network=NETWORK)
+    psbt2.set_output_bip32_key(0, pubkey=str(
+        test_obj.desc_dic[str(txouts2[0].address)]))
+    psbt2.add(inputs=txin_list)
+    utxos = get_utxo(btc_rpc, [str(fee_addr)])  # listunspent
+    utxo_list2 = convert_bitcoin_utxos(test_obj, utxos)
+    psbt2.fund(
+        utxo_list=utxo_list2,
+        reserved_address_descriptor=test_obj.desc_dic[str(fee_addr)],
+        effective_fee_rate=2.0, long_term_fee_rate=2.0, knapsack_min_change=0)
+    psbt21 = Psbt(str(psbt2), network=NETWORK)
+    psbt22 = Psbt(str(psbt2), network=NETWORK)
+    psbt21.sign(fee_sk)
+    for key in key_list:
+        psbt22.sign(key)
+    # psbt2_str = btc_rpc.combinepsbt([str(psbt21), str(psbt22)])
+    # psbt2 = Psbt(psbt2_str, network=NETWORK)
+    psbt2 = Psbt.combine_psbts([str(psbt21), psbt22])
+    tx2 = psbt2.extract(True)
+    print(Transaction.parse_to_json(str(tx2), network=NETWORK))
+    txid = btc_rpc.sendrawtransaction(str(tx2))
+    # generate block
+    btc_rpc.generatetoaddress(2, fee_addr)
+    time.sleep(2)
+    utxos = get_utxo(btc_rpc, [str(main_addr)])
+    print('UTXO: {}'.format(utxos))
+
+
 class TestBitcoin(unittest.TestCase):
+    hdwallet: 'HDWallet'
+
     def setUp(self):
         logging.basicConfig()
         logging.getLogger("BitcoinRPC").setLevel(logging.DEBUG)
@@ -351,6 +450,7 @@ class TestBitcoin(unittest.TestCase):
         test_generate(self)
         test_bitcoin_pkh(self)
         test_bitcoin_multisig(self)
+        test_psbt(self)
 
 
 if __name__ == "__main__":
