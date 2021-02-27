@@ -721,6 +721,9 @@ class TestElements(unittest.TestCase):
             port=18443, rpc_user='bitcoinrpc', rpc_password='password')
         self.elmConn = RpcWrapper(
             port=18447, rpc_user='elementsrpc', rpc_password='password')
+        # init command
+        btc_rpc = self.btcConn.get_rpc()
+        btc_rpc.settxfee(0.00001)
 
     def test_elements(self):
         '''
