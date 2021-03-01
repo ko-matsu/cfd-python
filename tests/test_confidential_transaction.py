@@ -833,6 +833,8 @@ def test_elements_tx_func(obj, name, case, req, exp, error):
             assert_equal(obj, name, case, exp, txout_fee, 'txoutFeeAmount')
             assert_equal(obj, name, case, exp, utxo_fee, 'utxoFeeAmount')
         elif name == 'Elements.FundTransaction':
+            if resp['hex'] != exp['hex']:
+                print(resp['hex'])
             assert_equal(obj, name, case, exp, resp['hex'], 'hex')
             assert_equal(obj, name, case, exp, resp['feeAmount'], 'feeAmount')
             exp_addr_list = exp['usedAddresses']
