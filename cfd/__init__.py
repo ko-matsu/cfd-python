@@ -19,5 +19,6 @@ __all__ = [
 'psbt',
 'script',
 'transaction',
+'taproot',
 'util'
 """
