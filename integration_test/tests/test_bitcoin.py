@@ -723,9 +723,9 @@ def test_taproot_tapscript(test_obj: 'TestBitcoin'):
 
 class TestBitcoin(unittest.TestCase):
     hdwallet: 'HDWallet'
-    addr_dic: dict[str, 'Address']
-    desc_dic: dict[str, 'Descriptor']
-    path_dic: dict[str, Union[str, List[str]]]
+    # addr_dic: dict[str, 'Address']
+    # desc_dic: dict[str, 'Descriptor']
+    # path_dic: dict[str, Union[str, List[str]]]
     conn: 'RpcWrapper'
 
     def setUp(self):
