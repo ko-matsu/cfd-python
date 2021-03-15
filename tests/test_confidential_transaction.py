@@ -130,7 +130,7 @@ def test_ct_transaction_func2(obj, name, case, req, exp, error):
             hash_type = HashType.P2SH
             if txin.get('isWitness', True):
                 hash_type = HashType.P2WSH
-            for param in txin.get('signParam', []):
+            for param in txin.get('signParams', []):
                 _sighashtype = SigHashType.get(
                     param.get('sighashType', 'all'),
                     param.get('sighashAnyoneCanPay', False))
@@ -182,7 +182,7 @@ def test_ct_transaction_func2(obj, name, case, req, exp, error):
         elif name == 'ConfidentialTransaction.AddScriptHashSign':
             resp, txin = get_tx()
             signature_list = []
-            for param in txin.get('signParam', []):
+            for param in txin.get('signParams', []):
                 _sighashtype = SigHashType.get(
                     param.get('sighashType', 'all'),
                     param.get('sighashAnyoneCanPay', False))
@@ -265,6 +265,8 @@ def test_ct_transaction_func2(obj, name, case, req, exp, error):
         elif name == 'ConfidentialTransaction.VerifySignature':
             assert_equal(obj, name, case, exp, resp, 'success')
         else:
+            if str(resp) != exp['hex']:
+                print(str(resp))
             assert_equal(obj, name, case, exp, str(resp), 'hex')
 
     except CfdError as err:

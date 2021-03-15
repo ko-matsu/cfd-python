@@ -1031,27 +1031,35 @@ class ConfidentialTransaction(_TransactionBase):
     ##
     # @brief update transaction input.
     # @param[in] outpoint       outpoint
+    # @param[in] handle         cfd handle
+    # @param[in] tx_handle      tx handle
+    # @return void
+    def _update_txin_internal(self, handle, tx_handle, outpoint: 'OutPoint'):
+        if self.enable_cache is False:
+            return
+        util = get_util()
+        self.txid, self.wtxid, self.wit_hash, self.size, self.vsize,\
+            self.weight, self.version, self.locktime = util.call_func(
+                'CfdGetConfidentialTxInfoByHandle',
+                handle.get_handle(), tx_handle.get_handle())
+        self.txid = Txid(self.txid)
+        self.wtxid = Txid(self.wtxid)
+        # update txin
+        txin, index = self._get_txin(
+            handle, tx_handle, outpoint=outpoint)
+        self.txin_list[index] = txin
+
+    ##
+    # @brief update transaction input.
+    # @param[in] outpoint       outpoint
     # @return void
     def _update_txin(self, outpoint: 'OutPoint'):
         if self.enable_cache is False:
             return
         util = get_util()
-        with util.create_handle() as handle:
-            _tx_handle = util.call_func(
-                'CfdInitializeTxDataHandle', handle.get_handle(),
-                self.NETWORK, self.hex)
-            with JobHandle(handle, _tx_handle,
-                           self.FREE_FUNC_NAME) as tx_handle:
-                self.txid, self.wtxid, self.wit_hash, self.size, self.vsize,\
-                    self.weight, self.version, self.locktime = util.call_func(
-                        'CfdGetConfidentialTxInfoByHandle',
-                        handle.get_handle(), tx_handle.get_handle())
-                self.txid = Txid(self.txid)
-                self.wtxid = Txid(self.wtxid)
-                # update txin
-                txin, index = self._get_txin(
-                    handle, tx_handle, outpoint=outpoint)
-                self.txin_list[index] = txin
+        with util.create_handle() as handle, super()._get_handle(
+                handle, self.network) as tx_handle:
+            self._update_txin_internal(handle, tx_handle, outpoint)
 
     ##
     # @brief get transaction all data.
@@ -1087,22 +1095,17 @@ class ConfidentialTransaction(_TransactionBase):
             return txout_list
 
         util = get_util()
-        with util.create_handle() as handle:
-            _tx_handle = util.call_func(
-                'CfdInitializeTxDataHandle', handle.get_handle(),
-                self.NETWORK, self.hex)
-            with JobHandle(
-                    handle, _tx_handle,
-                    self.FREE_FUNC_NAME) as tx_handle:
-                self.txid, self.wtxid, self.wit_hash, self.size, self.vsize,\
-                    self.weight, self.version, self.locktime = util.call_func(
-                        'CfdGetConfidentialTxInfoByHandle',
-                        handle.get_handle(), tx_handle.get_handle())
-                self.txid = Txid(self.txid)
-                self.wtxid = Txid(self.wtxid)
-                self.txin_list = get_txin_list(handle, tx_handle)
-                self.txout_list = get_txout_list(handle, tx_handle)
-                return self.txin_list, self.txout_list
+        with util.create_handle() as handle, super()._get_handle(
+                handle, self.network) as tx_handle:
+            self.txid, self.wtxid, self.wit_hash, self.size, self.vsize,\
+                self.weight, self.version, self.locktime = util.call_func(
+                    'CfdGetConfidentialTxInfoByHandle',
+                    handle.get_handle(), tx_handle.get_handle())
+            self.txid = Txid(self.txid)
+            self.wtxid = Txid(self.wtxid)
+            self.txin_list = get_txin_list(handle, tx_handle)
+            self.txout_list = get_txout_list(handle, tx_handle)
+            return self.txin_list, self.txout_list
 
     ##
     # @brief get transaction output fee index.
@@ -1165,38 +1168,34 @@ class ConfidentialTransaction(_TransactionBase):
     def add(self, txins: List['ConfidentialTxIn'],
             txouts: List['ConfidentialTxOut']) -> None:
         util = get_util()
-        with util.create_handle() as handle:
-            _tx_handle = util.call_func(
-                'CfdInitializeTransaction', handle.get_handle(),
-                self.NETWORK, 0, 0, self.hex)
-            with JobHandle(
-                    handle, _tx_handle, self.FREE_FUNC_NAME) as tx_handle:
-                for txin in txins:
-                    sec = TxIn.get_sequence_number(
-                        self.locktime, txin.sequence)
-                    util.call_func(
-                        'CfdAddTransactionInput', handle.get_handle(),
-                        tx_handle.get_handle(), str(txin.outpoint.txid),
-                        txin.outpoint.vout, sec)
-                for txout in txouts:
-                    util.call_func(
-                        'CfdAddConfidentialTxOutput',
-                        handle.get_handle(),
-                        tx_handle.get_handle(), txout.amount,
-                        str(txout.address),
-                        str(txout.locking_script),
-                        str(txout.asset), str(txout.nonce))
-                self.hex = util.call_func(
-                    'CfdFinalizeTransaction', handle.get_handle(),
-                    tx_handle.get_handle())
-                self.txid, self.wtxid, self.wit_hash, self.size, self.vsize,\
-                    self.weight, self.version, self.locktime = util.call_func(
-                        'CfdGetConfidentialTxInfoByHandle',
-                        handle.get_handle(), tx_handle.get_handle())
-                self.txid = Txid(self.txid)
-                self.wtxid = Txid(self.wtxid)
-                self.txin_list += copy.deepcopy(txins)
-                self.txout_list += copy.deepcopy(txouts)
+        with util.create_handle() as handle, super()._get_handle(
+                handle, self.network) as tx_handle:
+            for txin in txins:
+                sec = TxIn.get_sequence_number(
+                    self.locktime, txin.sequence)
+                util.call_func(
+                    'CfdAddTransactionInput', handle.get_handle(),
+                    tx_handle.get_handle(), str(txin.outpoint.txid),
+                    txin.outpoint.vout, sec)
+            for txout in txouts:
+                util.call_func(
+                    'CfdAddConfidentialTxOutput',
+                    handle.get_handle(),
+                    tx_handle.get_handle(), txout.amount,
+                    str(txout.address),
+                    str(txout.locking_script),
+                    str(txout.asset), str(txout.nonce))
+            self.hex = util.call_func(
+                'CfdFinalizeTransaction', handle.get_handle(),
+                tx_handle.get_handle())
+            self.txid, self.wtxid, self.wit_hash, self.size, self.vsize,\
+                self.weight, self.version, self.locktime = util.call_func(
+                    'CfdGetConfidentialTxInfoByHandle',
+                    handle.get_handle(), tx_handle.get_handle())
+            self.txid = Txid(self.txid)
+            self.wtxid = Txid(self.wtxid)
+            self.txin_list += copy.deepcopy(txins)
+            self.txout_list += copy.deepcopy(txouts)
 
     ##
     # @brief update transaction output amount.

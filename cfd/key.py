@@ -91,6 +91,9 @@ class Network(Enum):
 # @brief Signature hash type
 class SigHashType(Enum):
     ##
+    # SigHashType: default
+    DEFAULT = 0
+    ##
     # SigHashType: all
     ALL = 1
     ##

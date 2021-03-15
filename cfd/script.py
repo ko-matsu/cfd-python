@@ -31,6 +31,12 @@ class HashType(Enum):
     ##
     # HashType: p2sh-p2wpkh
     P2SH_P2WPKH = 6
+    ##
+    # HashType: taproot
+    TAPROOT = 7
+    ##
+    # HashType: unknown
+    UNKNOWN = 255
 
     ##
     # @brief get string.
