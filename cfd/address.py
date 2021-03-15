@@ -87,6 +87,7 @@ class Address:
         self.hash_type = HashType.get(hash_type)
         self.network = Network.get(network)
         self.witness_version = -1
+        self.taproot_script_tree = None
         if p2sh_wrapped_script and len(p2sh_wrapped_script) > 2:
             if int(p2sh_wrapped_script[0:2], 16) == 0:
                 self.witness_version = 0
@@ -196,8 +197,10 @@ class AddressUtil:
 
     ##
     # @brief get taproot address.
-    # @param[in] pubkey     schnorr public key (or taproot script tree)
+    # @param[in] pubkey     schnorr public key
+    #   (or taproot script tree contain internal pubkey)
     # @param[in] network    network
+    # @param[in] script_tree    taproot script tree
     # @return address object.
     @classmethod
     def taproot(

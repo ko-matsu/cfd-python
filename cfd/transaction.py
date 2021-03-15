@@ -18,8 +18,7 @@ import copy
 
 
 ##
-# @var CODE_SEPARATOR_POSITION_FINAL
-# OP_CODESEPARATOR final position.
+# @brief OP_CODESEPARATOR final position.
 CODE_SEPARATOR_POSITION_FINAL: int = 0xffffffff
 
 
@@ -1057,6 +1056,10 @@ class Transaction(_TransactionBase):
     # @param[in] pubkey         pubkey
     # @param[in] redeem_script  redeem script
     # @param[in] sighashtype    sighash type
+    # @param[in] utxos          utxo list (need if taproot)
+    # @param[in] tapleaf_hash   tapleaf hash
+    # @param[in] annex          annex bytes
+    # @param[in] codeseparator_pos    tapscript codeseparator position
     # @return sighash
     def get_sighash(
         self,
@@ -1115,6 +1118,9 @@ class Transaction(_TransactionBase):
     # @param[in] amount         amount
     # @param[in] sighashtype    sighash type
     # @param[in] grind_r        grind-R flag
+    # @param[in] utxos          utxo list (need if taproot)
+    # @param[in] aux_rand       random byte for taproot
+    # @param[in] annex          annex bytes
     # @return void
     def sign_with_privkey(
             self,
