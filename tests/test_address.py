@@ -237,3 +237,16 @@ class TestAddress(TestCase):
 
     def test_address(self):
         exec_test(self, 'Address', test_address_func)
+
+    def test_scripttree(self):
+        tree = TaprootScriptTree.create(Script('51'))
+        tree.add_branch(Script('51'))
+        tree.add_branch(Script('51'))
+        pk = '0000000000000000000000000000000000000000000000000000000000000001'
+        tweakedPk, _, _, ctrlBlock = tree.get_taproot_data(SchnorrPubkey(pk))
+        self.assertEqual(
+            'e3f3b67db1123a90fa960119099ae04c18b0f6e1f437157739222cd233b21212',
+            tweakedPk.hex)
+        self.assertEqual(
+            'c10000000000000000000000000000000000000000000000000000000000000001a85b2107f791b26a84e7586c28cec7cb61202ed3d01944d832500f363782d675a85b2107f791b26a84e7586c28cec7cb61202ed3d01944d832500f363782d675',  # noqa: E501
+            ctrlBlock.hex)
