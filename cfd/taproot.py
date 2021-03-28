@@ -45,6 +45,37 @@ class TapBranch:
     taget_node_str: str
 
     ##
+    # @brief get tapbranch from string.
+    # @param[in] tree_str           tree string.
+    # @return tapbranch object
+    @classmethod
+    def from_string(cls, tree_str: str) -> 'TapBranch':
+        result = TapBranch()
+        util = get_util()
+        with util.create_handle() as handle, TapBranch._get_handle(
+                util, handle) as tree_handle:
+            util.call_func(
+                'CfdSetScriptTreeFromString', handle.get_handle(),
+                tree_handle.get_handle(), tree_str, '', 0, '')
+            result.tree_str = util.call_func(
+                'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
+                tree_handle.get_handle())
+            branch_data = TapBranch._load_tree(handle, tree_handle)
+            result.tree_str = branch_data.tree_str
+            result.branches = branch_data.branches
+            result.hash = branch_data.hash
+            result.tapscript = branch_data.tapscript
+            result.leaf_version = branch_data.leaf_version
+            result.taget_node_str = ''
+            for branch in result.branches:
+                if isinstance(branch, TapBranch):
+                    result.taget_node_str += to_hex_string(
+                        branch.get_current_hash())
+                else:
+                    result.taget_node_str += to_hex_string(branch)
+            return result
+
+    ##
     # @brief constructor.
     # @param[in] hash           branch hash only
     # @param[in] tapscript      tapscript
@@ -59,7 +90,7 @@ class TapBranch:
             self.hash = hash
         else:
             self.hash = ByteData(hash)
-        if isinstance(tapscript, Script):
+        if isinstance(tapscript, Script) and tapscript.hex:
             self.tapscript = tapscript
         else:
             self.tapscript = None
@@ -67,7 +98,15 @@ class TapBranch:
         self.tree_str = ''
         self.leaf_version = leaf_version
         if tree_str or self.tapscript or self.hash.hex:
-            self._load(str(tree_str))
+            if tree_str:
+                temp_tree_str = tree_str
+            elif self.tapscript and self.tapscript.hex:
+                temp_tree_str = f'tl({self.tapscript.hex})'
+            elif self.hash.hex:
+                temp_tree_str = self.hash.hex
+            else:
+                temp_tree_str = ''
+            self._load(temp_tree_str)
 
     ##
     # @brief get string.
@@ -137,7 +176,7 @@ class TapBranch:
     # @brief has tapscript.
     # @return True or False
     def has_tapscript(self) -> bool:
-        return True if self.tapscript else False
+        return True if self.tapscript and self.tapscript.hex else False
 
     ##
     # @brief get tapscript.
@@ -148,9 +187,9 @@ class TapBranch:
         return self.tapscript
 
     ##
-    # @brief get root hash.
-    # @return root hash.
-    def get_root_hash(self) -> 'ByteData':
+    # @brief get base hash.
+    # @return base hash.
+    def get_base_hash(self) -> 'ByteData':
         return self.hash
 
     ##
@@ -174,6 +213,24 @@ class TapBranch:
             hash, _, _, _ = util.call_func(
                 'CfdGetTapBranchData', handle.get_handle(),
                 tree_handle.get_handle(), count - 1, True)
+            return ByteData(hash)
+
+    ##
+    # @brief get branch hash.
+    # @param[in] index      target index from tapleaf.
+    # @return branch hash.
+    def get_branch_hash(self, index: int) -> 'ByteData':
+        util = get_util()
+        with util.create_handle() as handle, self._get_handle(
+                util, handle) as tree_handle:
+            tapscript = self.tapscript.hex if self.tapscript else ''
+            util.call_func(
+                'CfdSetScriptTreeFromString', handle.get_handle(),
+                tree_handle.get_handle(), self.tree_str,
+                tapscript, self.leaf_version, '')
+            hash, _, _, _ = util.call_func(
+                'CfdGetTapBranchData', handle.get_handle(),
+                tree_handle.get_handle(), index, True)
             return ByteData(hash)
 
     ##
@@ -201,9 +258,11 @@ class TapBranch:
                     tree_handle.get_handle(), self.hash.hex)
             else:
                 return  # do nothing
-            self.leaf_version, _, hash = util.call_func(
+            self.leaf_version, script, hash = util.call_func(
                 'CfdGetBaseTapLeaf', handle.get_handle(),
                 tree_handle.get_handle())
+            if self.leaf_version != 0:
+                self.tapscript = Script(script)
             self.hash = ByteData(hash)
             self.tree_str = util.call_func(
                 'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
@@ -385,7 +444,7 @@ class TaprootScriptTree(TapBranch):
                             branch.get_current_hash())
                     else:
                         result.taget_node_str += to_hex_string(branch)
-            result.tapscript = tapscript
+            result.tapscript = branch_data.tapscript
             if isinstance(internal_pubkey, SchnorrPubkey):
                 result.internal_pubkey = internal_pubkey
             return result
