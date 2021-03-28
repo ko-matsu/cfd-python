@@ -645,7 +645,7 @@ class CfdUtil:
         ("CfdAddTapBranchByScriptTree", c_int, [c_void_p, c_void_p, c_void_p]),  # noqa: E501
         ("CfdAddTapBranchByScriptTreeString", c_int, [c_void_p, c_void_p, c_char_p]),  # noqa: E501
         ("CfdAddTapBranchByTapLeaf", c_int, [c_void_p, c_void_p, c_char_p, c_uint8]),  # noqa: E501
-        ("CfdGetRootTapLeaf", c_int, [c_void_p, c_void_p, c_uint8_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetBaseTapLeaf", c_int, [c_void_p, c_void_p, c_uint8_p, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdGetTapBranchCount", c_int, [c_void_p, c_void_p, c_uint32_p]),  # noqa: E501
         ("CfdGetTapBranchData", c_int, [c_void_p, c_void_p, c_uint8, c_bool, c_char_p_p, c_uint8_p, c_char_p_p, c_uint8_p]),  # noqa: E501
         ("CfdGetTapBranchHandle", c_int, [c_void_p, c_void_p, c_uint8, c_char_p_p, c_void_p_p]),  # noqa: E501

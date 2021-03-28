@@ -202,7 +202,7 @@ class TapBranch:
             else:
                 return  # do nothing
             self.leaf_version, _, hash = util.call_func(
-                'CfdGetRootTapLeaf', handle.get_handle(),
+                'CfdGetBaseTapLeaf', handle.get_handle(),
                 tree_handle.get_handle())
             self.hash = ByteData(hash)
             self.tree_str = util.call_func(
@@ -230,7 +230,7 @@ class TapBranch:
                 child = cls._load_tree(handle, br_hdl)
                 branch.branches.append(child)
         branch.leaf_version, tapscript, hash = util.call_func(
-            'CfdGetRootTapLeaf', handle.get_handle(),
+            'CfdGetBaseTapLeaf', handle.get_handle(),
             tree_handle.get_handle())
         if branch.leaf_version != 0:
             branch.tapscript = Script(tapscript)
