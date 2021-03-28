@@ -1,6 +1,6 @@
 from unittest import TestCase
 from tests.util import load_json_file, exec_test,\
-    assert_equal, assert_error, assert_match
+    assert_equal, assert_error, assert_match, assert_message
 from cfd.address import AddressUtil
 from cfd.key import Network, SchnorrPubkey, Privkey
 from cfd.script import HashType, Script
@@ -69,7 +69,7 @@ def test_address_func(obj, name, case, req, exp, error):
                 tree = TaprootScriptTree.create(
                     Script(req['tree'][0]['tapscript']), nodes, pk)
                 if 'internalPubkey' not in req:
-                    tapleaf_hash = tree.get_root_hash()
+                    tapleaf_hash = tree.get_base_hash()
                     resp = {
                         'tapLeafHash': tapleaf_hash,
                         'tapscript': tree.tapscript,
@@ -152,7 +152,7 @@ def test_address_func(obj, name, case, req, exp, error):
                     tweak_privkey = tree.get_privkey(
                         Privkey(hex=req['internalPrivkey']))
                     resp['tweakedPrivkey'] = tweak_privkey
-                resp['tapLeafHash'] = tree.get_root_hash()
+                resp['tapLeafHash'] = tree.get_base_hash()
                 resp['tapscript'] = tree.tapscript
                 nodes = []
                 for node in tree.branches:
@@ -166,11 +166,72 @@ def test_address_func(obj, name, case, req, exp, error):
             resp['topBranchHash'] = tree.get_current_hash()
             resp['treeString'] = tree.as_str()
 
+        elif name == 'Address.GetTapBranchInfo':
+            resp = {}
+            nodes = [ByteData(node) for node in req.get('nodes', [])]
+            tree = TaprootScriptTree.from_string(
+                req['treeString'], Script(req.get('tapscript', '')), nodes)
+            branch = tree.branches[req.get('index', 0)]
+            resp['tapLeafHash'] = branch.get_base_hash()
+            nodes = []
+            for node in branch.branches:
+                if isinstance(node, TapBranch):
+                    nodes.append(node.get_current_hash())
+                else:
+                    nodes.append(str(node))
+            resp['nodes'] = nodes
+            resp['topBranchHash'] = branch.get_current_hash()
+            resp['treeString'] = branch.as_str()
+
+        elif name == 'Address.AnalyzeTapScriptTree':
+            resp = []
+
+            def collect_branch(branch):
+                count = len(branch.branches)
+                for index, child in enumerate(branch.branches):
+                    collect_branch(child)
+                    br = TapBranch(hash=branch.get_branch_hash(
+                        count - index - 1))
+                    resp.append(br)
+
+                if not branch.branches:
+                    resp.append(branch)
+                elif branch.has_tapscript():
+                    br = TapBranch(tapscript=branch.tapscript)
+                    resp.append(br)
+                else:
+                    br = TapBranch(hash=branch.get_base_hash())
+                    resp.append(br)
+
+            tree = TapBranch.from_string(req['treeString'])
+            collect_branch(tree)
+
         else:
             raise Exception('unknown name: ' + name)
         assert_error(obj, name, case, error)
 
-        if isinstance(resp, dict):
+        if name == 'Address.AnalyzeTapScriptTree':
+            exp_dict = {}
+            for exp_data in exp['branches']:
+                exp_dict[exp_data['tapBranchHash']] = exp_data
+            assert_match(obj, name, case, len(exp['branches']),
+                         len(resp), 'list length')
+            ret_dict = {}
+            for ret_data in resp:
+                hash_val = str(ret_data.get_current_hash())
+                exp_data = exp_dict.get(hash_val, None)
+                if exp_data is None:
+                    assert_message(obj, name, case,
+                                   f'hash {hash_val} not found.'
+                                   + str(exp_dict))
+                elif 'tapscript' in exp_data:
+                    assert_equal(obj, name, case, exp_data,
+                                 str(ret_data.tapscript), 'tapscript')
+                ret_dict[hash_val] = ret_data
+            assert_match(obj, name, case, len(exp_dict),
+                         len(ret_dict), 'hash list length')
+
+        elif isinstance(resp, dict):
             for key, val in resp.items():
                 if isinstance(val, list):
                     assert_match(obj, name, case, len(exp[key]),

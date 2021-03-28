@@ -2692,5 +2692,286 @@
                 }
             }
         ]
+    },
+    {
+        "name": "Address.GetTapBranchInfo",
+        "cases": [
+            {
+                "case": "by tree search 1",
+                "request": {
+                    "treeString": "{{{tl(51),{tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac),tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac)}},{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)}},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}",
+                    "tapscript": "51",
+                    "nodes": [
+                        "aaf9ea4cbd2f4606a31a35d563fa371bc630d9d7bcc50f62d064a3d84e0e3086",
+                        "aeeaab89d953f80ff117b3a94142c859f885c2d942ec13536f72dac0c961f27e",
+                        "d7b0b8d070638ff4f0b7e7d2aa930c58ec2d39853fd04c29c4c6688fdcb2ae75"
+                    ],
+                    "index": 0
+                },
+                "expect": {
+                    "topBranchHash": "aaf9ea4cbd2f4606a31a35d563fa371bc630d9d7bcc50f62d064a3d84e0e3086",
+                    "nodes": [
+                        "e82da59bb829eb21f7cb8eb9eb128626da9a9a31f3dfdeb29766faf14468e996"
+                    ],
+                    "treeString": "{tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac),tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac)}"
+                }
+            },
+            {
+                "case": "by tree search 2",
+                "request": {
+                    "treeString": "{{{tl(51),{tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac),tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac)}},{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)}},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}",
+                    "tapscript": "51",
+                    "nodes": [
+                        "aaf9ea4cbd2f4606a31a35d563fa371bc630d9d7bcc50f62d064a3d84e0e3086",
+                        "aeeaab89d953f80ff117b3a94142c859f885c2d942ec13536f72dac0c961f27e",
+                        "d7b0b8d070638ff4f0b7e7d2aa930c58ec2d39853fd04c29c4c6688fdcb2ae75"
+                    ],
+                    "index": 1
+                },
+                "expect": {
+                    "topBranchHash": "aeeaab89d953f80ff117b3a94142c859f885c2d942ec13536f72dac0c961f27e",
+                    "nodes": [
+                        "4b3bb79ea92e0b4f2bfa7e8c88d81133e347da393d72a37fe9cdcf1f5f56b5e0",
+                        "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb"
+                    ],
+                    "treeString": "{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)}},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}"
+                }
+            },
+            {
+                "case": "by tree search 3",
+                "request": {
+                    "treeString": "{{{tl(51),{tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac),tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac)}},{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)}},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}",
+                    "tapscript": "51",
+                    "nodes": [
+                        "aaf9ea4cbd2f4606a31a35d563fa371bc630d9d7bcc50f62d064a3d84e0e3086",
+                        "aeeaab89d953f80ff117b3a94142c859f885c2d942ec13536f72dac0c961f27e",
+                        "d7b0b8d070638ff4f0b7e7d2aa930c58ec2d39853fd04c29c4c6688fdcb2ae75"
+                    ],
+                    "index": 2
+                },
+                "expect": {
+                    "topBranchHash": "d7b0b8d070638ff4f0b7e7d2aa930c58ec2d39853fd04c29c4c6688fdcb2ae75",
+                    "nodes": [],
+                    "treeString": "tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)"
+                }
+            },
+            {
+                "case": "by tapbranch",
+                "request": {
+                    "treeString": "{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}",
+                    "index": 1
+                },
+                "expect": {
+                    "topBranchHash": "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb",
+                    "nodes": [],
+                    "treeString": "tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)"
+                }
+            }
+        ]
+    },
+    {
+        "name": "Address.AnalyzeTapScriptTree",
+        "cases": [
+            {
+                "case": "multi branch tree",
+                "request": {
+                    "treeString": "{{{tl(51),{tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac),tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac)}},{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)}},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}"
+                },
+                "expect": {
+                    "branches": [
+                        {
+                            "depth": 3,
+                            "tapBranchHash": "a85b2107f791b26a84e7586c28cec7cb61202ed3d01944d832500f363782d675",
+                            "tapscript": "51",
+                            "leafVersion": 192
+                        },
+                        {
+                            "depth": 2,
+                            "tapBranchHash": "32a0a039ec1412be2803fd7b5f5444c03d498e5e8e107ee431a9597c7b5b3a7c",
+                            "relatedBranchHash": [
+                                "a85b2107f791b26a84e7586c28cec7cb61202ed3d01944d832500f363782d675",
+                                "aaf9ea4cbd2f4606a31a35d563fa371bc630d9d7bcc50f62d064a3d84e0e3086"
+                            ]
+                        },
+                        {
+                            "depth": 4,
+                            "tapBranchHash": "1aac269b1edaa45c69fb8d1a703a1bb69e90129cef7b7cfe9e676b28e6d1175d",
+                            "tapscript": "204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac",
+                            "leafVersion": 192
+                        },
+                        {
+                            "depth": 3,
+                            "tapBranchHash": "aaf9ea4cbd2f4606a31a35d563fa371bc630d9d7bcc50f62d064a3d84e0e3086",
+                            "relatedBranchHash": [
+                                "1aac269b1edaa45c69fb8d1a703a1bb69e90129cef7b7cfe9e676b28e6d1175d",
+                                "e82da59bb829eb21f7cb8eb9eb128626da9a9a31f3dfdeb29766faf14468e996"
+                            ]
+                        },
+                        {
+                            "depth": 4,
+                            "tapBranchHash": "e82da59bb829eb21f7cb8eb9eb128626da9a9a31f3dfdeb29766faf14468e996",
+                            "tapscript": "2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac",
+                            "leafVersion": 192
+                        },
+                        {
+                            "depth": 1,
+                            "tapBranchHash": "0ae6aed84487410216ab1a6af0c7fe38b190cb7bdd6c898c5b04482fdec43f94",
+                            "relatedBranchHash": [
+                                "32a0a039ec1412be2803fd7b5f5444c03d498e5e8e107ee431a9597c7b5b3a7c",
+                                "aeeaab89d953f80ff117b3a94142c859f885c2d942ec13536f72dac0c961f27e"
+                            ]
+                        },
+                        {
+                            "depth": 4,
+                            "tapBranchHash": "4691fbb1196f4675241c8958a7ab6378a63aa0cc008ed03d216fd038357f52fd",
+                            "tapscript": "20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac",
+                            "leafVersion": 192
+                        },
+                        {
+                            "depth": 3,
+                            "tapBranchHash": "7da36533760cede4c164d5c00eb1500a27dd86ca76914a9874112c43e0c1b945",
+                            "relatedBranchHash": [
+                                "4691fbb1196f4675241c8958a7ab6378a63aa0cc008ed03d216fd038357f52fd",
+                                "4b3bb79ea92e0b4f2bfa7e8c88d81133e347da393d72a37fe9cdcf1f5f56b5e0"
+                            ]
+                        },
+                        {
+                            "depth": 5,
+                            "tapBranchHash": "06b46c960d6824f0da5af71d9ecc55714de5b2d2da51be60bd12c77df20a20df",
+                            "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac",
+                            "leafVersion": 192
+                        },
+                        {
+                            "depth": 4,
+                            "tapBranchHash": "4b3bb79ea92e0b4f2bfa7e8c88d81133e347da393d72a37fe9cdcf1f5f56b5e0",
+                            "relatedBranchHash": [
+                                "06b46c960d6824f0da5af71d9ecc55714de5b2d2da51be60bd12c77df20a20df",
+                                "a85b2107f791b26a84e7586c28cec7cb61202ed3d01944d832500f363782d675"
+                            ]
+                        },
+                        {
+                            "depth": 5,
+                            "tapBranchHash": "a85b2107f791b26a84e7586c28cec7cb61202ed3d01944d832500f363782d675",
+                            "tapscript": "51",
+                            "leafVersion": 192
+                        },
+                        {
+                            "depth": 2,
+                            "tapBranchHash": "aeeaab89d953f80ff117b3a94142c859f885c2d942ec13536f72dac0c961f27e",
+                            "relatedBranchHash": [
+                                "7da36533760cede4c164d5c00eb1500a27dd86ca76914a9874112c43e0c1b945",
+                                "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb"
+                            ]
+                        },
+                        {
+                            "depth": 3,
+                            "tapBranchHash": "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb",
+                            "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac",
+                            "leafVersion": 192
+                        },
+                        {
+                            "depth": 0,
+                            "tapBranchHash": "0c1bebfc9a508bf4d5835d401d96d71b72f1873fd338aebfff06d7adbe0c0cc3",
+                            "relatedBranchHash": [
+                                "0ae6aed84487410216ab1a6af0c7fe38b190cb7bdd6c898c5b04482fdec43f94",
+                                "d7b0b8d070638ff4f0b7e7d2aa930c58ec2d39853fd04c29c4c6688fdcb2ae75"
+                            ]
+                        },
+                        {
+                            "depth": 1,
+                            "tapBranchHash": "d7b0b8d070638ff4f0b7e7d2aa930c58ec2d39853fd04c29c4c6688fdcb2ae75",
+                            "tapscript": "2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac",
+                            "leafVersion": 192
+                        }
+                    ]
+                }
+            },
+            {
+                "case": "simple branch",
+                "request": {
+                    "treeString": "{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}"
+                },
+                "expect": {
+                    "branches": [
+                        {
+                            "depth": 2,
+                            "tapBranchHash": "4691fbb1196f4675241c8958a7ab6378a63aa0cc008ed03d216fd038357f52fd",
+                            "tapscript": "20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac",
+                            "leafVersion": 192
+                        },
+                        {
+                            "depth": 1,
+                            "tapBranchHash": "af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4",
+                            "relatedBranchHash": [
+                                "4691fbb1196f4675241c8958a7ab6378a63aa0cc008ed03d216fd038357f52fd",
+                                "a85b2107f791b26a84e7586c28cec7cb61202ed3d01944d832500f363782d675"
+                            ]
+                        },
+                        {
+                            "depth": 2,
+                            "tapBranchHash": "a85b2107f791b26a84e7586c28cec7cb61202ed3d01944d832500f363782d675",
+                            "tapscript": "51",
+                            "leafVersion": 192
+                        },
+                        {
+                            "depth": 0,
+                            "tapBranchHash": "a625d1251a1100263fa9a77b81e9e6f46c2eb8d44b9f27b629875cc102efb0ec",
+                            "relatedBranchHash": [
+                                "af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4",
+                                "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb"
+                            ]
+                        },
+                        {
+                            "depth": 1,
+                            "tapBranchHash": "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb",
+                            "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac",
+                            "leafVersion": 192
+                        }
+                    ]
+                }
+            },
+            {
+                "case": "hash only branch",
+                "request": {
+                    "treeString": "{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)},e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb}"
+                },
+                "expect": {
+                    "branches": [
+                        {
+                            "depth": 2,
+                            "tapBranchHash": "4691fbb1196f4675241c8958a7ab6378a63aa0cc008ed03d216fd038357f52fd",
+                            "tapscript": "20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac",
+                            "leafVersion": 192
+                        },
+                        {
+                            "depth": 1,
+                            "tapBranchHash": "af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4",
+                            "relatedBranchHash": [
+                                "4691fbb1196f4675241c8958a7ab6378a63aa0cc008ed03d216fd038357f52fd",
+                                "a85b2107f791b26a84e7586c28cec7cb61202ed3d01944d832500f363782d675"
+                            ]
+                        },
+                        {
+                            "depth": 2,
+                            "tapBranchHash": "a85b2107f791b26a84e7586c28cec7cb61202ed3d01944d832500f363782d675",
+                            "tapscript": "51",
+                            "leafVersion": 192
+                        },
+                        {
+                            "depth": 0,
+                            "tapBranchHash": "a625d1251a1100263fa9a77b81e9e6f46c2eb8d44b9f27b629875cc102efb0ec",
+                            "relatedBranchHash": [
+                                "af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4",
+                                "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb"
+                            ]
+                        },
+                        {
+                            "depth": 1,
+                            "tapBranchHash": "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb"
+                        }
+                    ]
+                }
+            }
+        ]
     }
 ]
