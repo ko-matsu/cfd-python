@@ -6,10 +6,10 @@
 	],
 	"settings": {
 		"editor.formatOnSave": true,
-		"python.linting.flake8Enabled": true,
 		"editor.rulers": [
 			80
 		],
+		"python.linting.flake8Enabled": true,
 		"python.linting.mypyEnabled": true
 	}
 }

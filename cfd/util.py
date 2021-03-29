@@ -4,14 +4,14 @@
 # @brief cfd utility file.
 # @note Copyright 2020 CryptoGarage
 from ctypes import c_int, c_void_p, c_char_p, c_int32, c_int64,\
-    c_uint32, c_uint64, c_bool, c_double, c_ubyte, \
+    c_uint32, c_uint64, c_uint8, c_bool, c_double, c_ubyte, \
     CDLL, byref, POINTER, ArgumentError
 from os.path import isfile, abspath
 from enum import Enum
 import platform
 import os
 import re
-from typing import List
+from typing import List, Union
 
 ################
 # Public class #
@@ -79,10 +79,13 @@ class CfdError(Exception):
     # @param[in] message        error message
     def __init__(
         self,
-        error_code: int = CfdErrorCode.UNKNOWN.value,
+        error_code: Union[int, 'CfdErrorCode'] = CfdErrorCode.UNKNOWN,
         message: str = '',
     ) -> None:
-        self.error_code = error_code
+        if isinstance(error_code, CfdErrorCode):
+            self.error_code = error_code.value
+        else:
+            self.error_code = int(error_code)
         self.message = message
 
     ##
@@ -202,7 +205,9 @@ class ReverseByteData:
 # @param[in] value      data
 # @return hex string.
 def to_hex_string(value) -> str:
-    if isinstance(value, bytes):
+    if value is None:
+        return ''
+    elif isinstance(value, bytes):
         return value.hex()
     elif isinstance(value, bytearray):
         return value.hex()
@@ -256,6 +261,13 @@ class CIntP(object):
 
 
 ##
+# @class CUint8P
+# @brief uint8 pointer class.
+class CUint8P(object):
+    pass
+
+
+##
 # @class CUint32P
 # @brief uint32 pointer class.
 class CUint32P(object):
@@ -295,6 +307,9 @@ c_bool_p = CBoolP()
 ##
 # @brief int pointer.
 c_int_p = CIntP()
+##
+# @brief uint8 pointer.
+c_uint8_p = CUint8P()
 ##
 # @brief uint32 pointer.
 c_uint32_p = CUint32P()
@@ -519,6 +534,8 @@ class CfdUtil:
         ("CfdCheckTweakAddFromSchnorrPubkey", c_int, [c_void_p, c_char_p, c_bool, c_char_p, c_char_p]),  # noqa: E501
         ("CfdSignSchnorr", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdSignSchnorrWithNonce", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdAddSighashTypeInSchnorrSignature", c_int, [c_void_p, c_char_p, c_int, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdGetSighashTypeFromSchnorrSignature", c_int, [c_void_p, c_char_p, c_int_p, c_bool_p]),  # noqa: E501
         ("CfdComputeSchnorrSigPoint", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdVerifySchnorr", c_int, [c_void_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
         ("CfdSplitSchnorrSignature", c_int, [c_void_p, c_char_p, c_char_p_p, c_char_p_p]),  # noqa: E501
@@ -619,11 +636,36 @@ class CfdUtil:
         ("CfdAddMultisigScriptSigDataToDer", c_int, [c_void_p, c_void_p, c_char_p, c_int, c_bool, c_char_p]),  # noqa: E501
         ("CfdFinalizeMultisigScriptSig", c_int, [c_void_p, c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdFreeMultisigScriptSigHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdInitializeTaprootScriptTree", c_int, [c_void_p, c_void_p_p]),  # noqa: E501
+        ("CfdSetInitialTapLeaf", c_int, [c_void_p, c_void_p, c_char_p, c_uint8]),  # noqa: E501
+        ("CfdSetInitialTapBranchByHash", c_int, [c_void_p, c_void_p, c_char_p]),  # noqa: E501
+        ("CfdSetScriptTreeFromString", c_int, [c_void_p, c_void_p, c_char_p, c_char_p, c_uint8, c_char_p]),  # noqa: E501
+        ("CfdSetTapScriptByWitnessStack", c_int, [c_void_p, c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdAddTapBranchByHash", c_int, [c_void_p, c_void_p, c_char_p]),  # noqa: E501
+        ("CfdAddTapBranchByScriptTree", c_int, [c_void_p, c_void_p, c_void_p]),  # noqa: E501
+        ("CfdAddTapBranchByScriptTreeString", c_int, [c_void_p, c_void_p, c_char_p]),  # noqa: E501
+        ("CfdAddTapBranchByTapLeaf", c_int, [c_void_p, c_void_p, c_char_p, c_uint8]),  # noqa: E501
+        ("CfdGetBaseTapLeaf", c_int, [c_void_p, c_void_p, c_uint8_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetTapBranchCount", c_int, [c_void_p, c_void_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetTapBranchData", c_int, [c_void_p, c_void_p, c_uint8, c_bool, c_char_p_p, c_uint8_p, c_char_p_p, c_uint8_p]),  # noqa: E501
+        ("CfdGetTapBranchHandle", c_int, [c_void_p, c_void_p, c_uint8, c_char_p_p, c_void_p_p]),  # noqa: E501
+        ("CfdGetTaprootScriptTreeHash", c_int, [c_void_p, c_void_p, c_char_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetTaprootTweakedPrivkey", c_int, [c_void_p, c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetTaprootScriptTreeSrting", c_int, [c_void_p, c_void_p, c_char_p_p]),  # noqa: E501
+        ("CfdFreeTaprootScriptTreeHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
         ("CfdInitializeTransaction", c_int, [c_void_p, c_int, c_uint32, c_uint32, c_char_p, c_void_p_p]),  # noqa: E501
         ("CfdAddTransactionInput", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_uint32]),  # noqa: E501
         ("CfdAddTransactionOutput", c_int, [c_void_p, c_void_p, c_int64, c_char_p, c_char_p, c_char_p]),  # noqa: E501
         ("CfdClearWitnessStack", c_int, [c_void_p, c_void_p, c_char_p, c_uint32]),  # noqa: E501
         ("CfdUpdateTxInScriptSig", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p]),  # noqa: E501
+        ("CfdSetTransactionUtxoData", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p, c_bool]),  # noqa: E501
+        ("CfdCreateSighashByHandle", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int, c_bool, c_char_p, c_char_p, c_char_p, c_uint32, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdAddSignWithPrivkeyByHandle", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_int, c_bool, c_bool, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdVerifyTxSignByHandle", c_int, [c_void_p, c_void_p, c_char_p, c_uint32]),  # noqa: E501
+        ("CfdAddTxSignByHandle", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int, c_char_p, c_bool, c_int, c_bool, c_bool]),  # noqa: E501
+        ("CfdAddTaprootSignByHandle", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddPubkeyHashSignByHandle", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int, c_char_p, c_char_p, c_bool, c_int, c_bool]),  # noqa: E501
+        ("CfdAddScriptHashLastSignByHandle", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int, c_char_p]),  # noqa: E501
         ("CfdFinalizeTransaction", c_int, [c_void_p, c_void_p, c_char_p_p]),  # noqa: E501
         ("CfdFreeTransactionHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
         ("CfdUpdateTxOutAmount", c_int, [c_void_p, c_int, c_char_p, c_uint32, c_int64, c_char_p_p]),  # noqa: E501
@@ -839,6 +881,9 @@ class CfdUtil:
         def make_uint32_fn(fn):
             return lambda *args: value_fn_wrapper(c_uint32(), fn, *args)
 
+        def make_uint8_fn(fn):
+            return lambda *args: value_fn_wrapper(c_uint8(), fn, *args)
+
         def make_int32_fn(fn):
             return lambda *args: value_fn_wrapper(c_int32(), fn, *args)
 
@@ -862,6 +907,8 @@ class CfdUtil:
             int32_pos = [i for (i, t) in enumerate(argtypes) if t == c_int32_p]
             uint32_pos = [i for (i, t) in enumerate(
                 argtypes) if t == c_uint32_p]
+            uint8_pos = [i for (i, t) in enumerate(
+                argtypes) if t == c_uint8_p]
             int64_pos = [i for (i, t) in enumerate(argtypes) if t == c_int64_p]
             uint64_pos = [i for (i, t) in enumerate(
                 argtypes) if t == c_uint64_p]
@@ -878,6 +925,8 @@ class CfdUtil:
                     argtypes[i] = POINTER(c_int32)
                 elif isinstance(argtypes[i], CUint32P):
                     argtypes[i] = POINTER(c_uint32)
+                elif isinstance(argtypes[i], CUint8P):
+                    argtypes[i] = POINTER(c_uint8)
                 elif isinstance(argtypes[i], CInt64P):
                     argtypes[i] = POINTER(c_int64)
                 elif isinstance(argtypes[i], CUint64P):
@@ -899,6 +948,8 @@ class CfdUtil:
                     fn = make_int32_fn(fn)
                 elif len(uint32_pos) > 0 and i in uint32_pos:
                     fn = make_uint32_fn(fn)
+                elif len(uint8_pos) > 0 and i in uint8_pos:
+                    fn = make_uint8_fn(fn)
                 elif len(int64_pos) > 0 and i in int64_pos:
                     fn = make_int64_fn(fn)
                 elif len(uint64_pos) > 0 and i in uint64_pos:
