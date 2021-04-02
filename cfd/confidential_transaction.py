@@ -1443,7 +1443,7 @@ class ConfidentialTransaction(_TransactionBase):
                 'CfdCreateConfidentialSighash', handle.get_handle(),
                 self.hex, str(outpoint.txid), outpoint.vout,
                 _hash_type.value, _pubkey, _script,
-                _value.amount, _value.hex, _sighashtype.get_type(),
+                _value.amount, _value.hex, _sighashtype.value,
                 _sighashtype.anyone_can_pay())
             return ByteData(sighash)
 
@@ -1478,7 +1478,7 @@ class ConfidentialTransaction(_TransactionBase):
                 handle.get_handle(), self.hex, str(outpoint.txid),
                 outpoint.vout, _hash_type.value, str(_pubkey),
                 str(_privkey), _value.amount, _value.hex,
-                _sighashtype.get_type(),
+                _sighashtype.value,
                 _sighashtype.anyone_can_pay(), grind_r)
             self._update_txin(outpoint)
 
@@ -1533,7 +1533,7 @@ class ConfidentialTransaction(_TransactionBase):
                     'CfdVerifySignature', handle.get_handle(),
                     self.NETWORK, self.hex, _signature, _hash_type.value,
                     _pubkey, _script, str(outpoint.txid),
-                    outpoint.vout, _sighashtype.get_type(),
+                    outpoint.vout, _sighashtype.value,
                     _sighashtype.anyone_can_pay(), _value.amount, _value.hex)
                 return True
         except CfdError as err:
