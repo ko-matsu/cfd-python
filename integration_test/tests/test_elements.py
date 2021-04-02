@@ -456,12 +456,14 @@ def test_elements_pkh(test_obj):
         blind_utxo_list.append(search_utxos(
             test_obj, utxo_list, txin.outpoint))
     tx.blind_txout(blind_utxo_list)
+    print('before sign_with_privkey tx')
+    print(str(tx))
     # add sign
     for txin in tx.txin_list:
         utxo = search_utxos(test_obj, utxo_list, txin.outpoint)
         tx.sign_with_privkey(txin.outpoint, fee_desc.data.hash_type, fee_sk,
                              value=utxo.value,
-                             sighashtype=SigHashType.ALL)
+                             sighashtype=SigHashType.ALL_PLUS_RANGEPROOF)
     # broadcast
     print(ConfidentialTransaction.parse_to_json(str(tx), network=NETWORK))
     txid = elm_rpc.sendrawtransaction(str(tx))
@@ -523,6 +525,8 @@ def test_elements_pkh(test_obj):
         blind_utxo_list.append(search_utxos(
             test_obj, join_utxo_list, txin.outpoint))
     tx2.blind_txout(blind_utxo_list)
+    print('before sign_with_privkey')
+    print(ConfidentialTransaction.parse_to_json(str(tx2), network=NETWORK))
     # add sign
     for txin in tx2.txin_list:
         utxo = search_utxos(test_obj, blind_utxo_list, txin.outpoint)
@@ -530,7 +534,7 @@ def test_elements_pkh(test_obj):
         sk = test_obj.hdwallet.get_privkey(path=path).privkey
         tx2.sign_with_privkey(txin.outpoint, utxo.descriptor.data.hash_type,
                               sk, value=utxo.value,
-                              sighashtype=SigHashType.ALL)
+                              sighashtype=SigHashType.ALL_PLUS_RANGEPROOF)
     # broadcast
     print(ConfidentialTransaction.parse_to_json(str(tx2), network=NETWORK))
     txid = elm_rpc.sendrawtransaction(str(tx2))
