@@ -96,7 +96,8 @@ def test_transaction_func2(obj, name, case, req, exp, error):
             utxos = load_utxo_list(req)
             _sighashtype = SigHashType.get(
                 txin.get('sighashType', 'all'),
-                txin.get('sighashAnyoneCanPay', False))
+                anyone_can_pay=txin.get('sighashAnyoneCanPay', False),
+                is_rangeproof=txin.get('sighashRangeproof', False))
             resp.sign_with_privkey(
                 OutPoint(txin['txid'], txin['vout']),
                 txin['hashType'],
@@ -114,7 +115,8 @@ def test_transaction_func2(obj, name, case, req, exp, error):
             for param in txin.get('signParams', []):
                 _sighashtype = SigHashType.get(
                     param.get('sighashType', 'all'),
-                    param.get('sighashAnyoneCanPay', False))
+                    anyone_can_pay=param.get('sighashAnyoneCanPay', False),
+                    is_rangeproof=param.get('sighashRangeproof', False))
                 encode_der = False
                 if param.get('type', '') == 'sign':
                     encode_der = True
@@ -130,7 +132,8 @@ def test_transaction_func2(obj, name, case, req, exp, error):
             param = txin['signParam']
             _sighashtype = SigHashType.get(
                 param.get('sighashType', 'all'),
-                param.get('sighashAnyoneCanPay', False))
+                anyone_can_pay=param.get('sighashAnyoneCanPay', False),
+                is_rangeproof=param.get('sighashRangeproof', False))
             resp.add_pubkey_hash_sign(
                 OutPoint(txin['txid'], txin['vout']),
                 txin['hashType'],
@@ -144,7 +147,8 @@ def test_transaction_func2(obj, name, case, req, exp, error):
             for param in txin.get('signParams', []):
                 _sighashtype = SigHashType.get(
                     param.get('sighashType', 'all'),
-                    param.get('sighashAnyoneCanPay', False))
+                    anyone_can_pay=param.get('sighashAnyoneCanPay', False),
+                    is_rangeproof=param.get('sighashRangeproof', False))
                 sign = SignParameter(
                     param['hex'],
                     sighashtype=_sighashtype,
@@ -163,7 +167,8 @@ def test_transaction_func2(obj, name, case, req, exp, error):
             for param in txin.get('signParams', []):
                 _sighashtype = SigHashType.get(
                     param.get('sighashType', 'all'),
-                    param.get('sighashAnyoneCanPay', False))
+                    anyone_can_pay=param.get('sighashAnyoneCanPay', False),
+                    is_rangeproof=param.get('sighashRangeproof', False))
                 try:
                     sign = SignParameter(
                         param['hex'],
@@ -184,7 +189,8 @@ def test_transaction_func2(obj, name, case, req, exp, error):
         elif name == 'Transaction.AddTaprootSchnorrSign':
             _sighashtype = SigHashType.get(
                 txin.get('sighashType', 'default'),
-                txin.get('sighashAnyoneCanPay', False))
+                anyone_can_pay=txin.get('sighashAnyoneCanPay', False),
+                is_rangeproof=txin.get('sighashRangeproof', False))
             resp.add_taproot_sign(
                 OutPoint(txin['txid'], txin['vout']),
                 signature=txin['signature'],
@@ -196,7 +202,8 @@ def test_transaction_func2(obj, name, case, req, exp, error):
             for param in txin.get('signParams', []):
                 _sighashtype = SigHashType.get(
                     param.get('sighashType', 'default'),
-                    param.get('sighashAnyoneCanPay', False))
+                    anyone_can_pay=param.get('sighashAnyoneCanPay', False),
+                    is_rangeproof=param.get('sighashRangeproof', False))
                 try:
                     sign = SignParameter(
                         param['hex'],
@@ -247,7 +254,8 @@ def test_transaction_func2(obj, name, case, req, exp, error):
                 pubkey = txin['pubkey'] if not script else ''
                 _sighashtype = SigHashType.get(
                     txin.get('sighashType', 'all'),
-                    txin.get('sighashAnyoneCanPay', False))
+                    anyone_can_pay=txin.get('sighashAnyoneCanPay', False),
+                    is_rangeproof=txin.get('sighashRangeproof', False))
                 sighash = resp.get_sighash(
                     OutPoint(txin['txid'], txin['vout']),
                     txin['hashType'],
@@ -318,7 +326,8 @@ def test_transaction_func3(obj, name, case, req, exp, error):
             script = key_data['hex'] if key_data['type'] != 'pubkey' else ''
             _sighashtype = SigHashType.get(
                 txin.get('sighashType', 'all'),
-                txin.get('sighashAnyoneCanPay', False))
+                anyone_can_pay=txin.get('sighashAnyoneCanPay', False),
+                is_rangeproof=txin.get('sighashRangeproof', False))
             resp = resp.get_sighash(
                 OutPoint(txin['txid'], txin['vout']),
                 txin['hashType'],
