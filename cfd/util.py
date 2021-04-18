@@ -427,6 +427,7 @@ class CfdUtil:
         ("CfdFinalizeMultisigScript", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdFreeMultisigScriptHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
         ("CfdParseDescriptor", c_int, [c_void_p, c_char_p, c_int, c_char_p, c_void_p_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetDescriptorRootData", c_int, [c_void_p, c_void_p, c_int_p, c_char_p_p, c_char_p_p, c_int_p, c_char_p_p, c_int_p, c_char_p_p, c_char_p_p, c_char_p_p, c_char_p_p, c_char_p_p, c_bool_p, c_uint32_p, c_uint32_p]),  # noqa: E501
         ("CfdGetDescriptorData", c_int, [c_void_p, c_void_p, c_uint32, c_uint32_p, c_uint32_p, c_int_p, c_char_p_p, c_char_p_p, c_int_p, c_char_p_p, c_int_p, c_char_p_p, c_char_p_p, c_char_p_p, c_bool_p, c_uint32_p, c_uint32_p]),  # noqa: E501
         ("CfdGetDescriptorMultisigKey", c_int, [c_void_p, c_void_p, c_uint32, c_int_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdFreeDescriptorHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
