@@ -6125,48 +6125,6 @@
                 }
             },
             {
-                "case": "(deleted)",
-                "request": {
-                    "version": 2,
-                    "locktime": 0,
-                    "txins": [
-                        {
-                            "isPegin": true,
-                            "txid": "f393f3eb0c3c4642ae586301dcf9299d78d3bb0f4f1ddad0f4c2fd5093292679",
-                            "vout": 0,
-                            "sequence": 4294967295,
-                            "peginwitness": {
-                                "amount": 10000000000,
-                                "asset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225",
-                                "mainchainGenesisBlockHash": "0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206",
-                                "claimScript": "00146189ff6662996ba56b0d8e1fd5942655046add8b",
-                                "mainchainRawTransaction": "0200000000010a945efd42ce42de413aa7398a95c35facc14ec5d35bb23e5f980014e94ab96a620000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffffe50b46ecadb5cc52a7ef149a23323464353415f02d7b4a943963b26a9beb2a030000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff67173609ca4c13662356a2507c71e5d497baeff56a3c42af989f3b270bc870560000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff784a9fd151fe2808949fae18afcf52244a77702b9a83950bc7ec52a8239104850000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff259618278cecbae1bed8b7806133d14987c3c6118d2744707f509c58ea2c0e870000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff5c30c2fdcb6ce0b666120777ec18ce5211dd4741f40f033648432694b0919da50000000017160014a8a7c0032d1d283e39889861b3f05156e379cfb6feffffffbb0f857d4b143c74c7fdb678bf41b65e7e3f2e7644b3613ae6370d21c0882ad60000000017160014a8a7c0032d1d283e39889861b3f05156e379cfb6feffffffbce488c283e07bf364edb5057e020aa3d137d8d6130711dc12f03f35564945680000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff258cb927989780ac92a3952ffd1f54e9b65e59fb07219eb106840b5d76b547fb0000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffffe98ec686efbca9bdd18ae85a3a8235a607e1cfb6138bac1461d400cbbabbe00f0000000017160014a8a7c0032d1d283e39889861b3f05156e379cfb6feffffff0100e40b540200000017a91472c44f957fc011d97e3406667dca5b1c930c4026870247304402206b4de54956e864dfe3ff3a4957e329cf171e919498bb8f98c242bef7b0d5e3350220505355401a500aabf193b93492d6bceb93c3b183034f252d65a139245c7486a601210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f40247304402200fc48c7b5bd6de74c951250c60e8e6c9d3a605dc557bdc93ce86e85d2f27834a02205d2a8768adad669683416d1126c8537ab1eb36b0e83d5d9e6a583297b7f9d2cb01210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f40247304402207ad97500fbe6049d559a1e10586cd0b1f02baeb98dc641a971a506a57288aa0002202a6646bc4262904f6d1a9288c12ff586b5a674f5a351dfaba2698c8b8265366f01210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f4024730440220271e41a1e8f953b6817333e43d6a5e2924b291d52120011a5f7f1fb8049ae41b02200f1a25ed9da813122caadf8edf8d01da190f9407c2b61c27d4b671e07136bce701210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f402473044022050291184dcd4733de6e6a43d9efb1e21e7d2c563e9138481f04010f3acbb139f02206c01c3bfe4e5b71c4aac524a18f35e25ae7306ca110b3c3b079ae6da2b0a0a5701210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f402473044022045a188c10aec4f1a3a6c8a3a3c9f7d4dc63b9eacc011839c907d1c5da206a1390220399ca60516204efd9d220eaa0c804867137133c4d70780223fdde699288af3790121031c01fd031bc09b385d138b3b2f44ec04c03934b66f6485f37a17b4899f1b8d7802473044022053621a5c74b313c648d179041c154152372060941d9c9080340eb913358b705602201ac178f639360356ca7d75656d92bd7801d976e74bd5d2e30d6310a94940d0bc0121031c01fd031bc09b385d138b3b2f44ec04c03934b66f6485f37a17b4899f1b8d780247304402207b4a7a271a8fc03e8045ca367cb64046fa06e5b13a105e67efe7dd6571503fcb022072852e1c3f87eeac039601a0df855fb5d65bbdcd3ad95ff96bfc7b534fd89f7601210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f402473044022037e9f0943a79e155a57526e251cfd39e004552b76c0de892448eb939d2d12fdf02203a02f0045e8f90739eddc06c026c95b4a653aeb89528d851ab75952fd7db07b801210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f402473044022057a9953ba83d5e710fc64e1c533d81b0913f434b3e1c865cebd6cb106e09fa77022012930afe63ae7f1115a2f3b13039e71387fc2d4ed0e36eaa7be55a754c8c84830121031c01fd031bc09b385d138b3b2f44ec04c03934b66f6485f37a17b4899f1b8d78130e0000",
-                                "mainchainTxoutproof": "00000020fe3b574c1ce6d5cb68fc518e86f7976e599fafc0a2e5754aace7ca16d97a7c78ef9325b8d4f0a4921e060fc5e71435f46a18fa339688142cd4b028c8488c9f8dd1495b5dffff7f200200000002000000024a180a6822abffc3b1080c49016899c6dac25083936df14af12f58db11958ef27926299350fdc2f4d0da1d4f0fbbd3789d29f9dc016358ae42463c0cebf393f30105"
-                            }
-                        }
-                    ],
-                    "txouts": [
-                        {
-                            "address": "XDEmgYUeUH7BunVkTnXGccU3PG7oFv8j6N",
-                            "amount": 9999985020,
-                            "asset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225"
-                        }
-                    ],
-                    "fee": {
-                        "amount": 14980,
-                        "asset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225"
-                    }
-                },
-                "error": {
-                    "code": 1,
-                    "type": "illegal_argument",
-                    "message": ""
-                },
-                "exclude": [
-                    "json"
-                ]
-            },
-            {
                 "case": "with empty txins.txid",
                 "request": {
                     "version": 2,
@@ -6204,41 +6162,6 @@
                     "type": "illegal_argument",
                     "message": "Txid size Invalid."
                 }
-            },
-            {
-                "case": "with empty txins.peginwitness (deleted)",
-                "request": {
-                    "version": 2,
-                    "locktime": 0,
-                    "txins": [
-                        {
-                            "isPegin": true,
-                            "txid": "f393f3eb0c3c4642ae586301dcf9299d78d3bb0f4f1ddad0f4c2fd5093292679",
-                            "vout": 0,
-                            "sequence": 4294967295,
-                            "peginwitness": {}
-                        }
-                    ],
-                    "txouts": [
-                        {
-                            "address": "XDEmgYUeUH7BunVkTnXGccU3PG7oFv8j6N",
-                            "amount": 9999985020,
-                            "asset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225"
-                        }
-                    ],
-                    "fee": {
-                        "amount": 14980,
-                        "asset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225"
-                    }
-                },
-                "error": {
-                    "code": 1,
-                    "type": "illegal_argument",
-                    "message": ""
-                },
-                "exclude": [
-                    "json"
-                ]
             },
             {
                 "case": "with empty txins.peginwitness.asset",
@@ -6436,90 +6359,6 @@
                 }
             },
             {
-                "case": "with wrong txins.peginwitness.mainchainRawTransaction (deleted)",
-                "request": {
-                    "version": 2,
-                    "locktime": 0,
-                    "txins": [
-                        {
-                            "isPegin": true,
-                            "txid": "f393f3eb0c3c4642ae586301dcf9299d78d3bb0f4f1ddad0f4c2fd5093292679",
-                            "vout": 0,
-                            "sequence": 4294967295,
-                            "peginwitness": {
-                                "amount": 10000000000,
-                                "asset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225",
-                                "mainchainGenesisBlockHash": "0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206",
-                                "claimScript": "00146189ff6662996ba56b0d8e1fd5942655046add8b",
-                                "mainchainRawTransaction": "ffffffff0200000000010a945efd42ce42de413aa7398a95c35facc14ec5d35bb23e5f980014e94ab96a620000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffffe50b46ecadb5cc52a7ef149a23323464353415f02d7b4a943963b26a9beb2a030000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff67173609ca4c13662356a2507c71e5d497baeff56a3c42af989f3b270bc870560000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff784a9fd151fe2808949fae18afcf52244a77702b9a83950bc7ec52a8239104850000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff259618278cecbae1bed8b7806133d14987c3c6118d2744707f509c58ea2c0e870000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff5c30c2fdcb6ce0b666120777ec18ce5211dd4741f40f033648432694b0919da50000000017160014a8a7c0032d1d283e39889861b3f05156e379cfb6feffffffbb0f857d4b143c74c7fdb678bf41b65e7e3f2e7644b3613ae6370d21c0882ad60000000017160014a8a7c0032d1d283e39889861b3f05156e379cfb6feffffffbce488c283e07bf364edb5057e020aa3d137d8d6130711dc12f03f35564945680000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff258cb927989780ac92a3952ffd1f54e9b65e59fb07219eb106840b5d76b547fb0000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffffe98ec686efbca9bdd18ae85a3a8235a607e1cfb6138bac1461d400cbbabbe00f0000000017160014a8a7c0032d1d283e39889861b3f05156e379cfb6feffffff0100e40b540200000017a91472c44f957fc011d97e3406667dca5b1c930c4026870247304402206b4de54956e864dfe3ff3a4957e329cf171e919498bb8f98c242bef7b0d5e3350220505355401a500aabf193b93492d6bceb93c3b183034f252d65a139245c7486a601210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f40247304402200fc48c7b5bd6de74c951250c60e8e6c9d3a605dc557bdc93ce86e85d2f27834a02205d2a8768adad669683416d1126c8537ab1eb36b0e83d5d9e6a583297b7f9d2cb01210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f40247304402207ad97500fbe6049d559a1e10586cd0b1f02baeb98dc641a971a506a57288aa0002202a6646bc4262904f6d1a9288c12ff586b5a674f5a351dfaba2698c8b8265366f01210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f4024730440220271e41a1e8f953b6817333e43d6a5e2924b291d52120011a5f7f1fb8049ae41b02200f1a25ed9da813122caadf8edf8d01da190f9407c2b61c27d4b671e07136bce701210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f402473044022050291184dcd4733de6e6a43d9efb1e21e7d2c563e9138481f04010f3acbb139f02206c01c3bfe4e5b71c4aac524a18f35e25ae7306ca110b3c3b079ae6da2b0a0a5701210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f402473044022045a188c10aec4f1a3a6c8a3a3c9f7d4dc63b9eacc011839c907d1c5da206a1390220399ca60516204efd9d220eaa0c804867137133c4d70780223fdde699288af3790121031c01fd031bc09b385d138b3b2f44ec04c03934b66f6485f37a17b4899f1b8d7802473044022053621a5c74b313c648d179041c154152372060941d9c9080340eb913358b705602201ac178f639360356ca7d75656d92bd7801d976e74bd5d2e30d6310a94940d0bc0121031c01fd031bc09b385d138b3b2f44ec04c03934b66f6485f37a17b4899f1b8d780247304402207b4a7a271a8fc03e8045ca367cb64046fa06e5b13a105e67efe7dd6571503fcb022072852e1c3f87eeac039601a0df855fb5d65bbdcd3ad95ff96bfc7b534fd89f7601210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f402473044022037e9f0943a79e155a57526e251cfd39e004552b76c0de892448eb939d2d12fdf02203a02f0045e8f90739eddc06c026c95b4a653aeb89528d851ab75952fd7db07b801210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f402473044022057a9953ba83d5e710fc64e1c533d81b0913f434b3e1c865cebd6cb106e09fa77022012930afe63ae7f1115a2f3b13039e71387fc2d4ed0e36eaa7be55a754c8c84830121031c01fd031bc09b385d138b3b2f44ec04c03934b66f6485f37a17b4899f1b8d78130e0000",
-                                "mainchainTxoutproof": "00000020fe3b574c1ce6d5cb68fc518e86f7976e599fafc0a2e5754aace7ca16d97a7c78ef9325b8d4f0a4921e060fc5e71435f46a18fa339688142cd4b028c8488c9f8dd1495b5dffff7f200200000002000000024a180a6822abffc3b1080c49016899c6dac25083936df14af12f58db11958ef27926299350fdc2f4d0da1d4f0fbbd3789d29f9dc016358ae42463c0cebf393f30105"
-                            }
-                        }
-                    ],
-                    "txouts": [
-                        {
-                            "address": "XDEmgYUeUH7BunVkTnXGccU3PG7oFv8j6N",
-                            "amount": 9999985020,
-                            "asset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225"
-                        }
-                    ],
-                    "fee": {
-                        "amount": 14980,
-                        "asset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225"
-                    }
-                },
-                "error": {
-                    "code": 1,
-                    "type": "illegal_argument",
-                    "message": ""
-                },
-                "exclude": [
-                    "json"
-                ]
-            },
-            {
-                "case": "with wrong txins.peginwitness.mainchainTxoutproof (deleted)",
-                "request": {
-                    "version": 2,
-                    "locktime": 0,
-                    "txins": [
-                        {
-                            "isPegin": true,
-                            "txid": "f393f3eb0c3c4642ae586301dcf9299d78d3bb0f4f1ddad0f4c2fd5093292679",
-                            "vout": 0,
-                            "sequence": 4294967295,
-                            "peginwitness": {
-                                "amount": 10000000000,
-                                "asset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225",
-                                "mainchainGenesisBlockHash": "0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206",
-                                "claimScript": "00146189ff6662996ba56b0d8e1fd5942655046add8b",
-                                "mainchainRawTransaction": "0200000000010a945efd42ce42de413aa7398a95c35facc14ec5d35bb23e5f980014e94ab96a620000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffffe50b46ecadb5cc52a7ef149a23323464353415f02d7b4a943963b26a9beb2a030000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff67173609ca4c13662356a2507c71e5d497baeff56a3c42af989f3b270bc870560000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff784a9fd151fe2808949fae18afcf52244a77702b9a83950bc7ec52a8239104850000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff259618278cecbae1bed8b7806133d14987c3c6118d2744707f509c58ea2c0e870000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff5c30c2fdcb6ce0b666120777ec18ce5211dd4741f40f033648432694b0919da50000000017160014a8a7c0032d1d283e39889861b3f05156e379cfb6feffffffbb0f857d4b143c74c7fdb678bf41b65e7e3f2e7644b3613ae6370d21c0882ad60000000017160014a8a7c0032d1d283e39889861b3f05156e379cfb6feffffffbce488c283e07bf364edb5057e020aa3d137d8d6130711dc12f03f35564945680000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffff258cb927989780ac92a3952ffd1f54e9b65e59fb07219eb106840b5d76b547fb0000000017160014ca2041536307bbe086e8c7fe8563e1c9b9b6eb84feffffffe98ec686efbca9bdd18ae85a3a8235a607e1cfb6138bac1461d400cbbabbe00f0000000017160014a8a7c0032d1d283e39889861b3f05156e379cfb6feffffff0100e40b540200000017a91472c44f957fc011d97e3406667dca5b1c930c4026870247304402206b4de54956e864dfe3ff3a4957e329cf171e919498bb8f98c242bef7b0d5e3350220505355401a500aabf193b93492d6bceb93c3b183034f252d65a139245c7486a601210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f40247304402200fc48c7b5bd6de74c951250c60e8e6c9d3a605dc557bdc93ce86e85d2f27834a02205d2a8768adad669683416d1126c8537ab1eb36b0e83d5d9e6a583297b7f9d2cb01210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f40247304402207ad97500fbe6049d559a1e10586cd0b1f02baeb98dc641a971a506a57288aa0002202a6646bc4262904f6d1a9288c12ff586b5a674f5a351dfaba2698c8b8265366f01210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f4024730440220271e41a1e8f953b6817333e43d6a5e2924b291d52120011a5f7f1fb8049ae41b02200f1a25ed9da813122caadf8edf8d01da190f9407c2b61c27d4b671e07136bce701210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f402473044022050291184dcd4733de6e6a43d9efb1e21e7d2c563e9138481f04010f3acbb139f02206c01c3bfe4e5b71c4aac524a18f35e25ae7306ca110b3c3b079ae6da2b0a0a5701210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f402473044022045a188c10aec4f1a3a6c8a3a3c9f7d4dc63b9eacc011839c907d1c5da206a1390220399ca60516204efd9d220eaa0c804867137133c4d70780223fdde699288af3790121031c01fd031bc09b385d138b3b2f44ec04c03934b66f6485f37a17b4899f1b8d7802473044022053621a5c74b313c648d179041c154152372060941d9c9080340eb913358b705602201ac178f639360356ca7d75656d92bd7801d976e74bd5d2e30d6310a94940d0bc0121031c01fd031bc09b385d138b3b2f44ec04c03934b66f6485f37a17b4899f1b8d780247304402207b4a7a271a8fc03e8045ca367cb64046fa06e5b13a105e67efe7dd6571503fcb022072852e1c3f87eeac039601a0df855fb5d65bbdcd3ad95ff96bfc7b534fd89f7601210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f402473044022037e9f0943a79e155a57526e251cfd39e004552b76c0de892448eb939d2d12fdf02203a02f0045e8f90739eddc06c026c95b4a653aeb89528d851ab75952fd7db07b801210281465587e09d80f5a7b8ce94bab4a4571dc8cff4483cc9eb89e76ecfa650b6f402473044022057a9953ba83d5e710fc64e1c533d81b0913f434b3e1c865cebd6cb106e09fa77022012930afe63ae7f1115a2f3b13039e71387fc2d4ed0e36eaa7be55a754c8c84830121031c01fd031bc09b385d138b3b2f44ec04c03934b66f6485f37a17b4899f1b8d78130e0000",
-                                "mainchainTxoutproof": "ffffffffff"
-                            }
-                        }
-                    ],
-                    "txouts": [
-                        {
-                            "address": "XDEmgYUeUH7BunVkTnXGccU3PG7oFv8j6N",
-                            "amount": 9999985020,
-                            "asset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225"
-                        }
-                    ],
-                    "fee": {
-                        "amount": 14980,
-                        "asset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225"
-                    }
-                },
-                "error": {
-                    "code": 1,
-                    "type": "illegal_argument",
-                    "message": ""
-                },
-                "exclude": [
-                    "json"
-                ]
-            },
-            {
                 "case": "with empty txouts.address",
                 "request": {
                     "version": 2,
@@ -6633,7 +6472,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "Empty AssetId is invalid."
+                    "message": "Empty AssetId is invalid.",
+                    "capi": "Failed to parameter. asset is null or empty."
                 }
             },
             {
@@ -6672,7 +6512,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "AssetId size Invalid."
+                    "message": "AssetId size Invalid.",
+                    "python": "Error: Invalid asset."
                 }
             },
             {
@@ -6711,7 +6552,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "Empty AssetId is invalid."
+                    "message": "Empty AssetId is invalid.",
+                    "capi": "Failed to parameter. asset is null or empty."
                 }
             },
             {
@@ -6750,7 +6592,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "AssetId size Invalid."
+                    "message": "AssetId size Invalid.",
+                    "python": "Error: Invalid asset."
                 }
             }
         ]
@@ -6874,7 +6717,10 @@
                 },
                 "expect": {
                     "hex": "020000000001a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000fdffffff030125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a01000000000bebc2000017a91414b71442e11941fd7807a82eabee13d6ec171ed9870125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000005f5e100003a6a2006226e46111a0b59caaf126043eb5bbf28c34f3a5e332a1fc7b2b73cf188910f17a9142b5c52984be57e8221e1103f3917092016b88c1c870125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c84000000000000"
-                }
+                },
+                "exclude": [
+                    "python"
+                ]
             },
             {
                 "case": "regtest auto-btcaddress privkey hex",
@@ -7084,7 +6930,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "Txid size Invalid."
+                    "message": "Txid size Invalid.",
+                    "python": "Error: Invalid txid."
                 }
             },
             {
@@ -7170,7 +7017,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "AssetId size Invalid."
+                    "message": "AssetId size Invalid.",
+                    "python": "Error: Invalid asset."
                 }
             },
             {
@@ -7256,7 +7104,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "Invalid network_type passed. network_type must be \"mainnet\" or \"testnet\" or \"regtest\"."
+                    "message": "Invalid network_type passed. network_type must be \"mainnet\" or \"testnet\" or \"regtest\".",
+                    "capi": "Invalid mainchain network type."
                 }
             },
             {
@@ -7343,7 +7192,10 @@
                     "code": 1,
                     "type": "illegal_argument",
                     "message": "Unknown address prefix."
-                }
+                },
+                "exclude": [
+                    "python"
+                ]
             },
             {
                 "case": "with invalid pegout.onlinePubkey",
@@ -7428,7 +7280,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "Error WIF to Private key."
+                    "message": "Error WIF to Private key.",
+                    "capi": "Illegal online key error."
                 }
             },
             {
@@ -7557,7 +7410,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "Failed to analyze descriptor."
+                    "message": "Failed to analyze descriptor.",
+                    "capi": "Failed to get parameter. descriptor is null or empty."
                 }
             },
             {
@@ -7600,7 +7454,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "AssetId size Invalid."
+                    "message": "AssetId size Invalid.",
+                    "python": "Error: Invalid asset."
                 }
             },
             {
@@ -7643,7 +7498,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "Error WIF to Private key."
+                    "json": "Error WIF to Private key.",
+                    "message": "bitcoin_descriptor is not of any type supported: pkh(<xpub>)"
                 }
             }
         ]
@@ -8519,7 +8375,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "transaction data invalid."
+                    "message": "transaction data invalid.",
+                    "capi": "Failed to parameter. pointer is null."
                 }
             },
             {
@@ -8630,7 +8487,11 @@
                             "token": "be27be791402c9389c8c18f0c251107ca6d047c15e4e4a13689bf65fcf14c6b4"
                         }
                     ]
-                }
+                },
+                "exclude": [
+                    "python"
+                ],
+                "fixme": "cfd v0.3.12"
             },
             {
                 "case": "tokenAddress is err.",

@@ -37,6 +37,20 @@ class Txid(ReverseByteData):
 
 
 ##
+# @class BlockHash
+# @brief BlockHash class.
+class BlockHash(ReverseByteData):
+    ##
+    # @brief constructor.
+    # @param[in] txid   txid
+    def __init__(self, txid):
+        super().__init__(txid)
+        if len(self.hex) != 64:
+            raise CfdError(
+                error_code=1, message='Error: Invalid block hash.')
+
+
+##
 # @class OutPoint
 # @brief OutPoint class.
 class OutPoint:

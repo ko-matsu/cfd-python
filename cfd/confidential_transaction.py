@@ -8,11 +8,11 @@ import typing
 from .util import ReverseByteData, CfdError, JobHandle,\
     CfdErrorCode, to_hex_string, get_util, ByteData
 from .address import Address, AddressUtil
-from .descriptor import Descriptor
+from .descriptor import Descriptor, parse_descriptor
 from .key import Network, SigHashType, Privkey, Pubkey
 from .script import HashType, Script
 from .transaction import UtxoData, OutPoint, Txid, TxIn, TxOut, _FundTxOpt,\
-    _TransactionBase
+    _TransactionBase, BlockHash, Transaction
 from .confidential_address import ConfidentialAddress
 from enum import Enum
 import copy
@@ -1220,6 +1220,95 @@ class ConfidentialTransaction(_TransactionBase):
             self.txout_list += copy.deepcopy(txouts)
 
     ##
+    # @brief add pegin input.
+    # @param[in] outpoint           mainchain utxo outpoint
+    # @param[in] amount             amount (satoshi)
+    # @param[in] asset              asset
+    # @param[in] mainchain_genesis_block_hash   genesis block hash
+    # @param[in] claim_script       claim script
+    # @param[in] mainchain_tx       mainchain transaction
+    # @param[in] txout_proof        utxo txout proof
+    # @param[in] txid               mainchain outpoint txid
+    # @param[in] vout               mainchain outpoint vout
+    # @return void
+    def add_pegin_input(self, outpoint: Optional['OutPoint'],
+                        amount: int,
+                        asset: Union['ConfidentialAsset', str],
+                        mainchain_genesis_block_hash: Union['BlockHash', str],
+                        claim_script: Union['Script', str],
+                        mainchain_tx: Union['Transaction', 'ByteData', str],
+                        txout_proof: Union['ByteData', str],
+                        txid='', vout: int = 0):
+        util = get_util()
+        _txid = txid
+        _vout = vout
+        if outpoint:
+            _txid = outpoint.txid
+            _vout = outpoint.vout
+        with util.create_handle() as handle, self._get_handle(
+                handle, self.network) as tx_handle:
+            util.call_func(
+                'CfdAddTxPeginInput', handle.get_handle(),
+                tx_handle.get_handle(), to_hex_string(_txid), _vout,
+                amount, to_hex_string(asset),
+                to_hex_string(mainchain_genesis_block_hash),
+                to_hex_string(claim_script), to_hex_string(mainchain_tx),
+                to_hex_string(txout_proof))
+            self.hex = util.call_func(
+                'CfdFinalizeTransaction', handle.get_handle(),
+                tx_handle.get_handle())
+        self._update_tx_all()
+
+    ##
+    # @brief add pegout output.
+    # @param[in] asset              asset
+    # @param[in] amount             amount (satoshi)
+    # @param[in] mainchain_network_type     mainchain network type
+    # @param[in] elements_network_type      elements network type
+    # @param[in] mainchain_genesis_block_hash   genesis block hash
+    # @param[in] online_pubkey      online pubkey
+    # @param[in] master_online_key  online privkey
+    # @param[in] mainchain_output_descriptor    mainchain address descriptor
+    # @param[in] bip32_counter                  address descriptor counter
+    # @param[in] whitelist                      pegout whitelist
+    # @return mainchain address
+    def add_pegout_output(self,
+                          asset: Union['ConfidentialAsset', str],
+                          amount: int,
+                          mainchain_network_type,
+                          elements_network_type,
+                          mainchain_genesis_block_hash: Union['BlockHash', str],
+                          online_pubkey: Union['Pubkey', str],
+                          master_online_key: Union['Privkey', str],
+                          mainchain_output_descriptor: Union['Descriptor', str],
+                          bip32_counter: int,
+                          whitelist: Union['ByteData', str]) -> 'Address':
+        util = get_util()
+        mainchain_nw = Network.get(mainchain_network_type)
+        elements_nw = Network.get(elements_network_type)
+        if isinstance(mainchain_output_descriptor, Descriptor):
+            addr_type = mainchain_output_descriptor.data.hash_type
+        else:
+            desc = parse_descriptor(mainchain_output_descriptor,
+                                    mainchain_nw, path=str(bip32_counter))
+            addr_type = desc.data.hash_type
+        with util.create_handle() as handle, self._get_handle(
+                handle, self.network) as tx_handle:
+            addr = util.call_func(
+                'CfdAddTxPegoutOutput', handle.get_handle(),
+                tx_handle.get_handle(), to_hex_string(asset), amount,
+                mainchain_nw.value, elements_nw.value,
+                to_hex_string(mainchain_genesis_block_hash),
+                to_hex_string(online_pubkey), str(master_online_key),
+                str(mainchain_output_descriptor), bip32_counter,
+                to_hex_string(whitelist))
+            self.hex = util.call_func(
+                'CfdFinalizeTransaction', handle.get_handle(),
+                tx_handle.get_handle())
+        self._update_tx_all()
+        return AddressUtil.parse(addr, hash_type=addr_type)
+
+    ##
     # @brief update transaction output amount.
     # @param[in] index      index
     # @param[in] amount     amount
@@ -1446,26 +1535,93 @@ class ConfidentialTransaction(_TransactionBase):
             return asset_data, token_data
 
     ##
+    # @brief set issuance asset.
+    # @param[in] outpoint           mainchain utxo outpoint
+    # @param[in] asset_amount       issuance asset amount (satoshi)
+    # @param[in] asset_address      sending asset address
+    # @param[in] token_amount       issuance token amount (satoshi)
+    # @param[in] token_address      sending token address
+    # @param[in] is_blind_asset     use blind issuance asset
+    # @param[in] contract_hash      contract hash (32-byte)
+    # @param[in] asset_locking_script      sending asset by locking script
+    # @param[in] token_locking_script      sending token by locking script
+    # @param[in] txid               mainchain outpoint txid
+    # @param[in] vout               mainchain outpoint vout
+    # @retval [0] entropy
+    # @retval [1] issuance asset
+    # @retval [2] token asset
+    def set_raw_issue_asset(
+        self, outpoint: Optional['OutPoint'],
+        asset_amount: Union[int, 'ConfidentialValue'],
+        asset_address: Union['Address', 'ConfidentialAddress', str],
+        token_amount: Union[int, 'ConfidentialValue'],
+        token_address: Union['Address', 'ConfidentialAddress', str],
+        is_blind_asset: bool = False,
+        contract_hash: Union['ByteData', str] = '',
+        asset_locking_script: Union['Script', str] = '',
+        token_locking_script: Union['Script', str] = '',
+        txid='', vout: int = 0,
+    ) -> Tuple['BlindFactor', 'ConfidentialAsset', 'ConfidentialAsset']:
+        util = get_util()
+        _asset_amount = asset_amount
+        if isinstance(asset_amount, ConfidentialValue):
+            _asset_amount = asset_amount.amount
+        _token_amount = token_amount
+        if isinstance(token_amount, ConfidentialValue):
+            _token_amount = token_amount.amount
+        _txid = txid
+        _vout = vout
+        if outpoint:
+            _txid = outpoint.txid
+            _vout = outpoint.vout
+        with util.create_handle() as handle, self._get_handle(
+                handle, self.network) as tx_handle:
+            entropy, asset, token = util.call_func(
+                'CfdSetIssueAsset', handle.get_handle(),
+                tx_handle.get_handle(), to_hex_string(_txid), _vout,
+                to_hex_string(contract_hash), _asset_amount,
+                str(asset_address), to_hex_string(asset_locking_script),
+                _token_amount, str(token_address),
+                to_hex_string(token_locking_script), is_blind_asset)
+            self.hex = util.call_func(
+                'CfdFinalizeTransaction', handle.get_handle(),
+                tx_handle.get_handle())
+            self._update_txin_internal(
+                handle, tx_handle, OutPoint(_txid, _vout))
+            return BlindFactor(entropy), ConfidentialAsset(
+                asset), ConfidentialAsset(token)
+
+    ##
     # @brief set reissue asset.
     # @param[in] utxo           utxo data
     # @param[in] amount         amount
     # @param[in] address        address
     # @param[in] entropy        entropy
+    # @param[in] locking_script     direct locking_script
     # @return reissue asset
-    def set_raw_reissue_asset(self, utxo: 'ElementsUtxoData', amount: int,
-                              address, entropy) -> 'ConfidentialAsset':
+    def set_raw_reissue_asset(self, utxo: 'ElementsUtxoData',
+                              amount: Union[int, 'ConfidentialValue'],
+                              address, entropy,
+                              locking_script='') -> 'ConfidentialAsset':
         _amount = amount
         if isinstance(amount, ConfidentialValue):
             _amount = amount.amount
+        _txid = to_hex_string(utxo.outpoint.txid)
         util = get_util()
-        with util.create_handle() as handle:
-            _asset, self.hex = util.call_func(
-                'CfdSetRawReissueAsset', handle.get_handle(),
-                self.hex, to_hex_string(utxo.outpoint.txid),
-                utxo.outpoint.vout, _amount,
-                to_hex_string(utxo.asset_blinder),
-                to_hex_string(entropy), str(address), '')
-            return ConfidentialAsset(_asset)
+        with util.create_handle() as handle, self._get_handle(
+                handle, self.network) as tx_handle:
+            asset = util.call_func(
+                'CfdSetReissueAsset', handle.get_handle(),
+                tx_handle.get_handle(), _txid, utxo.outpoint.vout,
+                _amount, to_hex_string(utxo.asset_blinder),
+                to_hex_string(entropy),
+                str(address), to_hex_string(locking_script))
+            self.hex = util.call_func(
+                'CfdFinalizeTransaction', handle.get_handle(),
+                tx_handle.get_handle())
+            self._update_txin_internal(
+                handle, tx_handle, OutPoint(_txid, utxo.outpoint.vout))
+            return ConfidentialAsset(asset)
 
     ##
     # @brief get signature hash.
