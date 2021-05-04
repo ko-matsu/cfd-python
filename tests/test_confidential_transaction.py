@@ -50,7 +50,12 @@ def test_ct_transaction_func1(obj, name, case, req, exp, error):
                 req['version'], req['locktime'], txins, txouts)
         elif name == 'ConfidentialTransaction.Add':
             resp, txins, txouts = get_tx()
-            if len(txins) + len(txouts) == 1:
+            is_pegin = True if len(req.get('peginTxins', [])) > 0 else False
+            is_pegout = True if len(req.get('pegoutTxouts', [])) > 0 else False
+            is_destroy = True if len(
+                req.get('destroyAmountTxouts', [])) > 0 else False
+            if (len(txins) + len(txouts) == 1) or (
+                    is_pegin or is_pegout or is_destroy):
                 for input in req.get('txins', []):
                     resp.add_txin(txid=input['txid'], vout=input['vout'],
                                   sequence=input.get('sequence',
@@ -61,6 +66,44 @@ def test_ct_transaction_func1(obj, name, case, req, exp, error):
                         locking_script=output.get('directLockingScript', ''),
                         asset=output.get('asset', ''),
                         nonce=output.get('directNonce', ''))
+                for input in req.get('peginTxins', []):
+                    pegin = input['peginwitness']
+                    block_hash = pegin['mainchainGenesisBlockHash']
+                    resp.add_pegin_input(
+                        outpoint=None,
+                        txid=input['txid'], vout=input['vout'],
+                        amount=pegin['amount'],
+                        asset=pegin['asset'],
+                        mainchain_genesis_block_hash=block_hash,
+                        claim_script=pegin['claimScript'],
+                        mainchain_tx=pegin['mainchainRawTransaction'],
+                        txout_proof=pegin['mainchainTxoutproof'])
+                btc_addresses = []
+                for pegout in req.get('pegoutTxouts', []):
+                    block_hash = pegout['mainchainGenesisBlockHash']
+                    network = pegout.get('network', Network.MAINNET)
+                    elements_network = pegout.get(
+                        'elementsNetwork', Network.LIQUID_V1)
+                    if elements_network == 'regtest':
+                        elements_network = Network.ELEMENTS_REGTEST
+                    elif not elements_network:
+                        _nw = Network.get(network)
+                        if _nw == Network.MAINNET:
+                            elements_network = Network.LIQUID_V1
+                        else:
+                            elements_network = Network.ELEMENTS_REGTEST
+                    addr = resp.add_pegout_output(
+                        asset=pegout['asset'],
+                        amount=pegout['amount'],
+                        mainchain_network_type=network,
+                        elements_network_type=elements_network,
+                        mainchain_genesis_block_hash=block_hash,
+                        online_pubkey=pegout['onlinePubkey'],
+                        master_online_key=pegout['masterOnlineKey'],
+                        mainchain_output_descriptor=pegout['bitcoinDescriptor'],
+                        bip32_counter=pegout['bip32Counter'],
+                        whitelist=pegout['whitelist'])
+                    btc_addresses.append(addr)
                 for output in req.get('destroyAmountTxouts', []):
                     resp.add_destroy_amount_txout(
                         output['amount'], output.get('asset', ''),
