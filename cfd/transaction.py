@@ -454,6 +454,38 @@ class _TransactionBase:
             return index
 
     ##
+    # @brief get transaction output index list.
+    # @param[in] address            address
+    # @param[in] locking_script     locking_script
+    # @return index list
+    def get_txout_indexes(self, address='', locking_script='') -> List[int]:
+        _script = to_hex_string(locking_script)
+        util = get_util()
+        with util.create_handle() as handle, self._get_handle(
+                handle, self.network) as tx_handle:
+            list = []
+            offset = 0
+            index = util.call_func(
+                'CfdGetTxOutIndexWithOffsetByHandle', handle.get_handle(),
+                tx_handle.get_handle(), offset, str(address), _script)
+            list.append(index)
+            offset = index + 1
+            while True:
+                try:
+                    index = util.call_func(
+                        'CfdGetTxOutIndexWithOffsetByHandle',
+                        handle.get_handle(), tx_handle.get_handle(),
+                        offset, str(address), _script)
+                    list.append(index)
+                    offset = index + 1
+                except CfdError as err:
+                    if err.error_code == CfdErrorCode.OUT_OF_RANGE.value:
+                        break
+                    else:
+                        raise err
+            return list
+
+    ##
     # @brief add pubkey hash sign.
     # @param[in] outpoint       outpoint
     # @param[in] hash_type      hash type
@@ -1047,6 +1079,37 @@ class Transaction(_TransactionBase):
                 self.NETWORK, self.hex, index, amount)
             self._update_info()
             self.txout_list[index].amount = amount
+
+    ##
+    # @brief split transaction output.
+    # @param[in] index              target txout index
+    # @param[in] txout_list         append split data list
+    # @return void
+    def split_txout(self, index: int, txout_list: List['TxOut']):
+        util = get_util()
+
+        def get_split_handle(handle, tx_handle) -> 'JobHandle':
+            work_handle = util.call_func(
+                'CfdCreateSplitTxOutHandle', handle.get_handle(),
+                tx_handle.get_handle())
+            return JobHandle(handle, work_handle, 'CfdFreeSplitTxOutHandle')
+
+        with util.create_handle() as handle, self._get_handle(
+                handle, self.network) as tx_handle, get_split_handle(
+                    handle, tx_handle) as split_handle:
+            for txout in txout_list:
+                _script = '' if txout.address else txout.locking_script
+                util.call_func(
+                    'CfdAddSplitTxOutData', handle.get_handle(),
+                    split_handle.get_handle(), txout.amount,
+                    str(txout.address), to_hex_string(_script), '')
+            util.call_func(
+                'CfdSplitTxOut', handle.get_handle(),
+                tx_handle.get_handle(), split_handle.get_handle(), index)
+            self.hex = util.call_func(
+                'CfdFinalizeTransaction', handle.get_handle(),
+                tx_handle.get_handle())
+        self._update_tx_all()
 
     ##
     # @brief get signature hash.

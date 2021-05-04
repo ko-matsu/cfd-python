@@ -4328,6 +4328,356 @@
         ]
     },
     {
+        "name": "ConfidentialTransaction.SplitTxOut",
+        "cases": [
+            {
+                "case": "split index=0, output+2 Address",
+                "request": {
+                    "tx": "02000000000109c4149d4e59119f2b11b3e160b02694bc4ecbf56f6de4ab587128f86bf4e7d30000000000ffffffff0201f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f010000000005ee3fe00374eb131b54a7b528e5449b3827bcaa5069c259346810f20cf9079bd17b32fe481976a914d753351535a2a55f33ab39bbd6c70a55d46904e788ac01f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f01000000000007a120000000000000",
+                    "isElements": true,
+                    "index": 0,
+                    "txouts": [
+                        {
+                            "amount": 9000000,
+                            "address": "ert1qz33wef9ehrvd7c64p27jf5xtvn50946xeekx50"
+                        },
+                        {
+                            "amount": 500000,
+                            "address": "XWMioJVK77vhKHgnSpaCcSBDgf93LFHzYg"
+                        }
+                    ]
+                },
+                "expect": {
+                    "hex": "02000000000109c4149d4e59119f2b11b3e160b02694bc4ecbf56f6de4ab587128f86bf4e7d30000000000ffffffff0401f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f0100000000055d4a800374eb131b54a7b528e5449b3827bcaa5069c259346810f20cf9079bd17b32fe481976a914d753351535a2a55f33ab39bbd6c70a55d46904e788ac01f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f01000000000007a120000001f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f010000000000895440001600141462eca4b9b8d8df63550abd24d0cb64e8f2d74601f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f01000000000007a1200017a914d081b8e259b744aa903e1831cfce8956941273ce8700000000"
+                }
+            },
+            {
+                "case": "split index=1, output+2 Address+Nonce",
+                "request": {
+                    "tx": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff020125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac00000000",
+                    "isElements": true,
+                    "index": 1,
+                    "txouts": [
+                        {
+                            "amount": 9997999992700,
+                            "address": "ex1q7s3nr3qcaaz30wnyfttwnlyedqddgwfhclhncc",
+                            "directNonce": "027592aab5d43618dda13fba71e3993cd7517a712d3da49664c06ee1bd3d1f70af"
+                        },
+                        {
+                            "amount": 1000000000,
+                            "address": "XRpicZNrFZumBMhRV5BSYW28pGX7JyY1ua",
+                            "directNonce": "027592aab5d43618dda13fba71e3993cd7517a712d3da49664c06ee1bd3d1f70af"
+                        }
+                    ]
+                },
+                "expect": {
+                    "hex": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff040125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000b5e620f4800003f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac0125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a0100000917d73cef7c027592aab5d43618dda13fba71e3993cd7517a712d3da49664c06ee1bd3d1f70af160014f42331c418ef4517ba644ad6e9fc99681ad439370125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a01000000003b9aca00027592aab5d43618dda13fba71e3993cd7517a712d3da49664c06ee1bd3d1f70af17a9149ec42b6cfa1b0bc3f55f07af29867057cb0b8a2e8700000000"
+                }
+            },
+            {
+                "case": "split index=1, output+2 lockingScript+Nonce",
+                "request": {
+                    "tx": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff020125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac00000000",
+                    "isElements": true,
+                    "index": 1,
+                    "txouts": [
+                        {
+                            "amount": 9997999992700,
+                            "directLockingScript": "0014f42331c418ef4517ba644ad6e9fc99681ad43937",
+                            "directNonce": "027592aab5d43618dda13fba71e3993cd7517a712d3da49664c06ee1bd3d1f70af"
+                        },
+                        {
+                            "amount": 1000000000,
+                            "directLockingScript": "a9149ec42b6cfa1b0bc3f55f07af29867057cb0b8a2e87",
+                            "directNonce": "027592aab5d43618dda13fba71e3993cd7517a712d3da49664c06ee1bd3d1f70af"
+                        }
+                    ]
+                },
+                "expect": {
+                    "hex": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff040125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000b5e620f4800003f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac0125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a0100000917d73cef7c027592aab5d43618dda13fba71e3993cd7517a712d3da49664c06ee1bd3d1f70af160014f42331c418ef4517ba644ad6e9fc99681ad439370125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a01000000003b9aca00027592aab5d43618dda13fba71e3993cd7517a712d3da49664c06ee1bd3d1f70af17a9149ec42b6cfa1b0bc3f55f07af29867057cb0b8a2e8700000000"
+                }
+            },
+            {
+                "case": "split index=1, output+2 ConfidentialAddress",
+                "request": {
+                    "tx": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff020125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac00000000",
+                    "isElements": true,
+                    "index": 1,
+                    "txouts": [
+                        {
+                            "amount": 9997999992700,
+                            "address": "lq1qqf6e92446smp3hdp87a8rcue8nt4z7n39576f9nycphwr0farac2laprx8zp3m69z7axgjkka87fj6q66sunwxxytxeqzrd9w"
+                        },
+                        {
+                            "amount": 1000000000,
+                            "address": "Azpn9vbC1Sjvwc2evnjaZjEHPdQxvdr4sTew6psnwxoomvdDBfpfDJNXU4Zthvhy1TkUgX4USjTZpjSL"
+                        }
+                    ]
+                },
+                "expect": {
+                    "hex": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff040125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000b5e620f4800003f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac0125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a0100000917d73cef7c027592aab5d43618dda13fba71e3993cd7517a712d3da49664c06ee1bd3d1f70af160014f42331c418ef4517ba644ad6e9fc99681ad439370125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a01000000003b9aca00027592aab5d43618dda13fba71e3993cd7517a712d3da49664c06ee1bd3d1f70af17a9149ec42b6cfa1b0bc3f55f07af29867057cb0b8a2e8700000000"
+                }
+            },
+            {
+                "case": "error: split index=0, no input",
+                "request": {
+                    "tx": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff020125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac00000000",
+                    "isElements": true,
+                    "index": 1,
+                    "txouts": []
+                },
+                "error": {
+                    "code": 1,
+                    "type": "illegal_argument",
+                    "message": "list is empty.",
+                    "capi": "Invalid split output handle state. list is null"
+                }
+            },
+            {
+                "case": "error: invalid index",
+                "request": {
+                    "tx": "02000000000109c4149d4e59119f2b11b3e160b02694bc4ecbf56f6de4ab587128f86bf4e7d30000000000ffffffff0201f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f010000000005ee3fe00374eb131b54a7b528e5449b3827bcaa5069c259346810f20cf9079bd17b32fe481976a914d753351535a2a55f33ab39bbd6c70a55d46904e788ac01f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f01000000000007a120000000000000",
+                    "isElements": true,
+                    "index": 5,
+                    "txouts": [
+                        {
+                            "amount": 9000000,
+                            "address": "ert1qz33wef9ehrvd7c64p27jf5xtvn50946xeekx50"
+                        },
+                        {
+                            "amount": 500000,
+                            "address": "XWMioJVK77vhKHgnSpaCcSBDgf93LFHzYg"
+                        }
+                    ]
+                },
+                "error": {
+                    "code": 1,
+                    "type": "illegal_argument",
+                    "message": "vout out_of_range error."
+                }
+            },
+            {
+                "case": "error: amount over",
+                "request": {
+                    "tx": "02000000000109c4149d4e59119f2b11b3e160b02694bc4ecbf56f6de4ab587128f86bf4e7d30000000000ffffffff0201f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f010000000005ee3fe00374eb131b54a7b528e5449b3827bcaa5069c259346810f20cf9079bd17b32fe481976a914d753351535a2a55f33ab39bbd6c70a55d46904e788ac01f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f01000000000007a120000000000000",
+                    "isElements": true,
+                    "index": 0,
+                    "txouts": [
+                        {
+                            "amount": 99000000,
+                            "address": "ert1qz33wef9ehrvd7c64p27jf5xtvn50946xeekx50"
+                        },
+                        {
+                            "amount": 500000,
+                            "address": "XWMioJVK77vhKHgnSpaCcSBDgf93LFHzYg"
+                        }
+                    ]
+                },
+                "error": {
+                    "code": 1,
+                    "type": "illegal_argument",
+                    "message": "The Amount is too large."
+                }
+            },
+            {
+                "case": "error: empty locking script",
+                "request": {
+                    "tx": "02000000000109c4149d4e59119f2b11b3e160b02694bc4ecbf56f6de4ab587128f86bf4e7d30000000000ffffffff0201f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f010000000005ee3fe00374eb131b54a7b528e5449b3827bcaa5069c259346810f20cf9079bd17b32fe481976a914d753351535a2a55f33ab39bbd6c70a55d46904e788ac01f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f01000000000007a120000000000000",
+                    "isElements": true,
+                    "index": 0,
+                    "txouts": [
+                        {
+                            "amount": 9000000
+                        },
+                        {
+                            "amount": 500000,
+                            "address": "XWMioJVK77vhKHgnSpaCcSBDgf93LFHzYg"
+                        }
+                    ]
+                },
+                "error": {
+                    "code": 1,
+                    "type": "illegal_argument",
+                    "message": "Locking script is empty.",
+                    "capi": "Failed to parameter. address and script is null."
+                }
+            },
+            {
+                "case": "error: already blind data",
+                "request": {
+                    "tx": "020000000101ee2057a523fca207f66b2584135c3c5499f766ebf30531545275ae0cffb697fa00000000171600141c7d1571343bc885f6873f70c2e81b0d2af02d5efdffffff030125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a0100000000000003e8003a6a2006226e46111a0b59caaf126043eb5bbf28c34f3a5e332a1fc7b2b73cf188910f17a91453c252a6a1379642adea35d055329ea04528eab7870adc8c2d6da8fd8ff788aa3c370b8efa84b081fa49d1ef1f2b134f448fd58e78f40828907e4e7d206082f88fffcfb6b483a71c64b00b8009dd60df526ff829b106fd020c4cbb4913cf74ba7c0e5b9727df8da616240d75ca73df7ebe52aa34eeb05e6e17a91450d40746f0ca159e65c1610346365cf499f28779870125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a0100000000000057080000c805000000000247304402202d4155339847bc0796e39f0f8329412cc4a2f2ccc021057959743da63445408102205d24e2f2322ae144923020a5d32d0201773252e2b5f22db6099323d3317d8339012102b9c8121e5b1587fe10f55c9d46b0f87157cb47b10be531ff95198cd429fface900000043010001d5056078037e73ad3251ca0c24f2b0dcbe12d68acb196d5461cf33f48663c2c132d73755b391f0a302e924f3bcdfbcd2b701c1b32e4d040750b1804e4d845a80fd4d0b602300000000000000018cbf00ca46e8898016defbeca52b386fbd084da493e11bc90d77abad052aa28cbf7f8553a37b1c33ed53b5aac5e890e55a6e3511ec37163ccba6e8880f3d96cdced45f4b95d0ec4c804dfce74668e9a6a7877a416c4f271ffad3d96bdfbbe9637d69b926fde873a03d1b6d85c35b471fe225c8859ecaa96872130cc207bb60a01b0ecccc25faaa9e991a27fd29e66311f0be6b226a4afef12743731445cd0bf25ec5250c5bc6272e0aa70548ad0c59948a3233729996a877eaca0704c6e58690288a3a2bedefa91925ad65fcc71133ec9f2b4d898d3bf57d6b5dd7b2a37395b5fe9e74c74e68c247d69a77bc85cd3930e5c2459b2ee091b51e4fad6b630777c1238e6999dfdd8bb3aa002a96e96085971ab9fdb6f1a31a18adfafde24cd7a96dbde43a363ae13c3e96067d2e225e4e4de4aa50a8b11e8090356e838f32aac8a7623496fdbc7e98322b813d357d2b7bca3cf87c1ca024b22f64bff52a973584e5a2b09426c825f282cf6778cd955cc395fc6ad261a68a711204c66567f0a8699589b402124ff2cbbb016a6792b9a4f222e64346b00313a5bb167268928e8e437547b8b61151e565892616e07b371dd648424a01b22e7a2efcc59140a8ee1f7705877ebd7a8a16ed24188b98d37f2a2320e2699457794973d08f636587ffa492b1cc14ee3dac19ddb971d0f652eca081d7f84ce0d44f7858c48f24053b0c284183c5a09c9aad91d77e30af5f45ab8bcd87447b1154954dc407890c3a215d38ac9b693f8823dd653fcfc62f6ee7f46d5ef04421e22690860301337742308bb034343b5e66ec26afc693a6c3b2c55cc10cce258748258a734872d4763a20ecebc73bc12e34dcea63732e843dc93b5390c1fbe7550d467cfac7cb51a0e7e6a0911b5a71c87bfb1aa153dcf8f6d74d11ea3e3cb3624b20c780b4e377d70020af448a5f8bf64a37c6b4101514867ee56915d2b0538b86cb65fe5d76cfdece0020eaef85442ba6255068f70045511a0dc6dec69a0c05f3b78a99cde7b14fdd0a969aaaf2af31f823770a168c2da3c0693daac5d9e2cdece9f265795a2d32faf82c99846fe3c3e7f9018ce1bd79048ebad2216337bcf422c2b28f8b2f5e7768455746a68babf7ee2a803fc53b2698a84c6d0adf44f893ba01efbbab48ca117abda5772c886aef302e9681c7e1467f5befd79b9d1ee669ddbdcd9775bb63d4af56900f072999de90092d2f60c8c38f6c6265b43784517a3fb44070493b2a1bb63fc82b74cf96d5121f37fb3b5b64fdf17735215cec2ca569124bd185d10c320abc75810d89202c6af5391a2c05c45f3ce73da8bbfd9b5ac80f60de86cfae2271ff7c8ecdecbddcf4a7579fc6b6bc00efbbb4af00769858a5a94a163932aa8a43522585ab7dfcfd16ca35c2505b0fc11f9dae0a62c790131c9fdb82c863b8a04cbfd1b1290d37b2c89fb4d82c8b97a9484871cccb3a647c4ce9745cba862555907e2477d110065b92235dedab76f00cdb02504fd2de1290b297aab12c5339b579ef4d8a2d71e62bfab715e7e3590bb1ebedc68e7643de39b6b927af2ce9ae061c309fd0518bd6f92cd94ea1df66aa61ff793446f052203efb3dc10a1c0573af6cf2f851b07f81f100445bd71baddca9e49ae3650fa6a208e6cd6c776fa6514a31a310b918396b4622be8e52d257ad1ca6541210033b4a67db77ebad2787439385037f7630f859bd79b4b0fc0c6fb54f6122885eb4ea848576fd59de2200b2cb3fbb4f924e014bafee753dbf3acf17f9f23efd002d7e35795ea6711222af1aafe5f732f626c6c3ddbb5dd3d888cab4374985eda0ed034370ace7fb3578b6b7068e1aada37f34a1482b0311d1abedf2d247bb6d25e28e5e87dc4b6b01e5b3afed944eb8aa36646ed09f9ef13d3baf70c11d026be1f002ce686439039f147c848e70eb134342da1e56e4ffb9fa14dcc143cfad88365106076caec96f3b11cd36be932644b4797de99ebde10f2e6b428548e1c5f9eeee662522abada057ed77cf4dbc85045b762bd3b828f251f921bc4ad56f689467c804dbad0104a88262e143973e5faa5ca008b72165380f9140c220410ace859835ab3e988d1691006041939613a06933df7d39293ceb15e9f28392de1287477414f1797c50893be18cc336a1a315f0513e383fe1afbb07244d09264c21b8ef8eaad2210f8950853b642584805b177ed5f3df30c2e729085fb0bb6c781bb49ddb760fe28bbbe54bb2b2baa0aa067c52418bd125cf35201f43ee8da028d2765e1e7b2a916fcb20d9f9bce72d812bdd4b0742ae14005b55962ab7a74297f2093088d5acdc5a94e3d982ffe623809dd244357370088c1ad909dcbfceb827feace90a82c7ee80e15de999f3e2fe8ca1e6479fb85dc5df4089ebef4f99a9acbd8074ad6e47598568f692654ff9f1abf30a027b0fcb4fc569db23f4abd94597783f0158bba2dde27b947422a189a7f70f22dabd16c886ee0d01bec65340d4176754608932c1b7044f9f0f04feb99768229de4c1e4b8bd90cc074a1d5560a1f09c3c99cb7cff9e951714e9a56784f9d4e74996465dfd4cd9f8a434c330023117fb31c3f9f0caf4f87d0b905040a2ffb9c9721da621e986395d73a327dacca20c1c7bc18a881cfc904771ac25d575c94b3eb8505731fb3af4b7486f2c5c5b151ddd3b7a1cac0d23ea04a99198e5a1c0c5a168e3ce75b4a5111729ef79d534c756b70bc76987efdeec519f691ab5bfc81a31ec5d705a5ef72451b11c99312461642d0c889b38621136f6ab50c7a380f4b2f5bf08e3f11b28209b2a9801671d53e75693a8cda2e5d5a692ae2971fc6575662e80b4bb03b3c536aa23cd4433c657e52d500f7ebf811263ed4ec00f42e7650bcffb05f58e7ae2014a7b252cfeafd9ddfeb27e29ef4bd836eae472e9ca7e5e0278ce7166ba67178ec558f56c638dac216a23191ab84c6883ccc49c81027ad67330529d2ae42eb888082f9a514363645953ec8c2f2190f3d531067dcb465a332378fe9a702ab1a4c203cca5d6b32305e2916d194f58ea6b0a20bdab7773f743aaccdc318f2a9f84d35865f01b56af3a2d773437e5a700f81f702f9e561ff6a4602c6db27ac7c18425c1fb347881e233bf6d1e78d3e3c9d635b42b40c56b2b29314827ea2f5318c6afba511790aa943f3a65b88fd37cd4f230c6bf819133fc4deb4f052841375c474e232e87da2b371ff5ad7619304bad8d2bd37bb998bd21d9b67c0b769b911a56ab54b8a80f320cc5ea8d521f6ce5ac41d760f678c24d05a5b6b8cd495cb1bd3ef6a3241d76408b7a5875228bb73c7cb3794d36e1f916385ee374d9eb81ac5358eae05d9a3043d1918faa7e05b1cabff6bdb1b57aeb82da5b93ef0239b7626e321debc6bf5ed98c13d3cb725d797d0bdd94babb38b886017a6c3bdc9dabc57fef75ac68a68e89ad2414c3c1dc480f237fb99c6f01b1c2a3385eb948a436da42e3cd41c6d4f3783bc751972c5190889461db104cd4d7adcfffb61b3dc687cfc153e031d433c0618534bd2581b5333a786a995b4990b62a489ffefc20529892adbf300111dd2523537f6d4ec6de891e68bd672723f73f10efc9a663acb6927251e9b5fc6f870fb6d4977258a90b0c14921f10462492d8750e01b4f1373392e2f65cb2e791608e97b54006ea3b7ae231f9cbb5a5dd2e155fae40dae0708dda1f4eba2323fab443af9a52f89cad56d7ebfc22505aea982d33a7e0db680a954f0451a92b67194851f7209e7ce9cda864ea7cfce620639f78ac26952c06584992b64eb16622bf78edcc13e83e8ea0ac4427bf00f79b48821c4d15e384660a9f80d38c3d0a29cf456c425676825ca85f1df61bce3e6fbe8ce21fe0a3aac25adb093ad1d6e2dc287949088783df12209bbe0e2332c7cd5424dace87ca93dcd71a3133919f577ed59fec35bd6199bf9049b4575487a1238529a38ce431349f703c220afd420f3f349dd601958768cb25693701f66a8f19f02831be90f0ac55235eb57331202d4c5739d75602b1896b801b4f126ee7d8c2621061deb62b63cb7c4efad07a357b770000",
+                    "isElements": true,
+                    "index": 0,
+                    "txouts": [
+                        {
+                            "amount": 200,
+                            "address": "ert1qz33wef9ehrvd7c64p27jf5xtvn50946xeekx50"
+                        },
+                        {
+                            "amount": 300,
+                            "address": "XWMioJVK77vhKHgnSpaCcSBDgf93LFHzYg"
+                        }
+                    ]
+                },
+                "error": {
+                    "code": 1,
+                    "type": "illegal_argument",
+                    "message": "Already blinded."
+                }
+            }
+        ]
+    },
+    {
+        "name": "ConfidentialTransaction.GetTxInIndex",
+        "cases": [
+            {
+                "case": "normal",
+                "request": {
+                    "tx": "020000000002d4b91f8ea0be3d89d33f9588884a843e78688152f4dff8aca5abc6f5973a83ae0000000000feffffff140510708ffd1fc8bea09e204d36b0d5b9402a31767a4f6c36f23b40cd0cbaf70a00000000faffffff0301f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f01000000003b9328e0001976a9146d715ab3da8090fd8f9e7aada1588e531b16b7da88ac0151f799a22a9375b31c2f20edce025f0df5231306e81222a0061bde342dc447ef010000000008f0d1800255fb6295bfd3bbf4760776a59d9476fac2e52f9c0c16549aea5c2ca5f1c15e6f1976a9147cafacbfc72f3682b1055b3a6b8711f3622eabfd88ac01f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f01000000000007a120000090000000",
+                    "isElements": true,
+                    "txid": "f7ba0ccd403bf2366c4f7a76312a40b9d5b0364d209ea0bec81ffd8f70100514",
+                    "vout": 10
+                },
+                "expect": {
+                    "index": 1
+                }
+            },
+            {
+                "case": "error: outpoint not found",
+                "request": {
+                    "tx": "020000000002d4b91f8ea0be3d89d33f9588884a843e78688152f4dff8aca5abc6f5973a83ae0000000000feffffff140510708ffd1fc8bea09e204d36b0d5b9402a31767a4f6c36f23b40cd0cbaf70a00000000faffffff0301f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f01000000003b9328e0001976a9146d715ab3da8090fd8f9e7aada1588e531b16b7da88ac0151f799a22a9375b31c2f20edce025f0df5231306e81222a0061bde342dc447ef010000000008f0d1800255fb6295bfd3bbf4760776a59d9476fac2e52f9c0c16549aea5c2ca5f1c15e6f1976a9147cafacbfc72f3682b1055b3a6b8711f3622eabfd88ac01f38611eb688e6fcd06f25e2faf52b9f98364dc14c379ab085f1b57d56b4b1a6f01000000000007a120000090000000",
+                    "isElements": true,
+                    "txid": "f7ba0ccd403bf2366c4f7a76312a40b9d5b0364d209ea0bec81ffd8f70100514",
+                    "vout": 9
+                },
+                "error": {
+                    "code": 1,
+                    "type": "illegal_argument",
+                    "message": "Txid is not found."
+                }
+            }
+        ]
+    },
+    {
+        "name": "ConfidentialTransaction.GetTxOutIndex",
+        "cases": [
+            {
+                "case": "address is single",
+                "request": {
+                    "tx": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff020125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac00000000",
+                    "isElements": true,
+                    "address": "2deLw2MsbXTr44ZXKBS91midF2WzJPfQ8cz"
+                },
+                "expect": {
+                    "index": 1,
+                    "indexes": [
+                        1
+                    ]
+                }
+            },
+            {
+                "case": "address is multiple",
+                "request": {
+                    "tx": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff030125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac0125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac00000000",
+                    "isElements": true,
+                    "address": "2deLw2MsbXTr44ZXKBS91midF2WzJPfQ8cz"
+                },
+                "expect": {
+                    "index": 1,
+                    "indexes": [
+                        1,
+                        2
+                    ]
+                }
+            },
+            {
+                "case": "confidential address is single",
+                "request": {
+                    "tx": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff020125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac00000000",
+                    "isElements": true,
+                    "address": "CTEyBCf1WzQDpbv6sXLTnFaknGK2UJMHqjyGJjQGq9NEytBR2JLHR9cHJSk4MbLVcKQYWsWERUEYN6R3"
+                },
+                "expect": {
+                    "index": 1,
+                    "indexes": [
+                        1
+                    ]
+                }
+            },
+            {
+                "case": "confidential address is multiple",
+                "request": {
+                    "tx": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff030125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac0125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac00000000",
+                    "isElements": true,
+                    "address": "CTEyBCf1WzQDpbv6sXLTnFaknGK2UJMHqjyGJjQGq9NEytBR2JLHR9cHJSk4MbLVcKQYWsWERUEYN6R3"
+                },
+                "expect": {
+                    "index": 1,
+                    "indexes": [
+                        1,
+                        2
+                    ]
+                }
+            },
+            {
+                "case": "locking script is single",
+                "request": {
+                    "tx": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff020125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac00000000",
+                    "isElements": true,
+                    "directLockingScript": "76a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac"
+                },
+                "expect": {
+                    "index": 1,
+                    "indexes": [
+                        1
+                    ]
+                }
+            },
+            {
+                "case": "locking script is multiple",
+                "request": {
+                    "tx": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff030125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac0125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac00000000",
+                    "isElements": true,
+                    "directLockingScript": "76a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac"
+                },
+                "expect": {
+                    "index": 1,
+                    "indexes": [
+                        1,
+                        2
+                    ]
+                }
+            },
+            {
+                "case": "empty input (search fee output)",
+                "request": {
+                    "tx": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff030125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac0125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac00000000",
+                    "isElements": true
+                },
+                "expect": {
+                    "index": 0,
+                    "indexes": [
+                        0
+                    ]
+                }
+            },
+            {
+                "case": "error: address not found",
+                "request": {
+                    "tx": "020000000002a38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0000000000ffffffffa38845c1a19b389f27217b91e2120273b447db3e595bba628f0be833f301a24a0200000000ffffffff030125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000000001c8400000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac0125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000befe33cc397c03f234757d0e00e6a7a7a3b4b2b31fb0328d7b9f755cd1093d9f61892fef3116871976a91435ef6d4b59f26089dfe2abca21408e15fee42a3388ac00000000",
+                    "isElements": true,
+                    "address": "2dqLgUheB1R4gw7G2DKuxBeMr1jdgxECAoG"
+                },
+                "error": {
+                    "code": 1,
+                    "type": "illegal_argument",
+                    "message": "target is not found.",
+                    "capi": "Failed to parameter. search target is not found."
+                }
+            }
+        ]
+    },
+    {
         "name": "ConfidentialTransaction.AddPubkeyHashSign",
         "cases": [
             {

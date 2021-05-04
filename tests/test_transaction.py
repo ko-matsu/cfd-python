@@ -66,6 +66,13 @@ def test_transaction_func1(obj, name, case, req, exp, error):
                     address=output.get('address', ''),
                     locking_script=output.get('directLockingScript', ''))
                 resp.update_txout_amount(index, output['amount'])
+        elif name == 'Transaction.SplitTxOut':
+            txouts = []
+            for output in req.get('txouts', []):
+                txouts.append(TxOut(
+                    amount=output['amount'], address=output.get('address', ''),
+                    locking_script=output.get('directLockingScript', '')))
+            resp.split_txout(req['index'], txouts)
         elif name == 'Transaction.UpdateWitnessStack':
             # FIXME impl
             return True
@@ -74,6 +81,8 @@ def test_transaction_func1(obj, name, case, req, exp, error):
             return False
         assert_error(obj, name, case, error)
 
+        if exp['hex'] != str(resp):
+            print('hex =', str(resp))
         assert_equal(obj, name, case, exp, str(resp), 'hex')
 
     except CfdError as err:
@@ -346,6 +355,21 @@ def test_transaction_func3(obj, name, case, req, exp, error):
             txin = req['txin']
             index = resp.get_txin_index(txid=txin['txid'], vout=txin['vout'])
             resp = len(resp.txin_list[index].witness_stack)
+        elif name == 'Transaction.GetTxInIndex':
+            resp = Transaction.from_hex(req['tx'])
+            resp = resp.get_txin_index(txid=req['txid'], vout=req['vout'])
+        elif name == 'Transaction.GetTxOutIndex':
+            resp = Transaction.from_hex(req['tx'])
+            index = resp.get_txout_index(
+                address=req.get('address', ''),
+                locking_script=req.get('directLockingScript', ''))
+            indexes = resp.get_txout_indexes(
+                address=req.get('address', ''),
+                locking_script=req.get('directLockingScript', ''))
+            resp = {
+                'index': index,
+                'indexes': indexes,
+            }
         else:
             return False
         assert_error(obj, name, case, error)
@@ -360,6 +384,17 @@ def test_transaction_func3(obj, name, case, req, exp, error):
             assert_match(obj, name, case, exp_json, resp, 'json')
         elif name == 'Transaction.GetWitnessStackNum':
             assert_equal(obj, name, case, exp, resp, 'count')
+        elif name == 'Transaction.GetTxInIndex':
+            assert_equal(obj, name, case, exp, resp, 'index')
+        elif name == 'Transaction.GetTxOutIndex':
+            assert_equal(obj, name, case, exp, resp['index'], 'index')
+            assert_match(obj, name, case, len(
+                exp['indexes']), len(resp['indexes']), 'indexes')
+            exp_list = exp['indexes']
+            idx_list = resp['indexes']
+            for i in range(len(exp_list)):
+                assert_match(obj, name, case, exp_list[i],
+                             idx_list[i], f'indexes.${i}')
         else:
             assert_equal(obj, name, case, exp, str(resp), 'sighash')
 
