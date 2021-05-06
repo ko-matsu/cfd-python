@@ -1272,17 +1272,18 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] bip32_counter                  address descriptor counter
     # @param[in] whitelist                      pegout whitelist
     # @return mainchain address
-    def add_pegout_output(self,
-                          asset: Union['ConfidentialAsset', str],
-                          amount: int,
-                          mainchain_network_type,
-                          elements_network_type,
-                          mainchain_genesis_block_hash: Union['BlockHash', str],
-                          online_pubkey: Union['Pubkey', str],
-                          master_online_key: Union['Privkey', str],
-                          mainchain_output_descriptor: Union['Descriptor', str],
-                          bip32_counter: int,
-                          whitelist: Union['ByteData', str]) -> 'Address':
+    def add_pegout_output(
+            self,
+            asset: Union['ConfidentialAsset', str],
+            amount: int,
+            mainchain_network_type,
+            elements_network_type,
+            mainchain_genesis_block_hash: Union['BlockHash', str],
+            online_pubkey: Union['Pubkey', str],
+            master_online_key: Union['Privkey', str],
+            mainchain_output_descriptor: Union['Descriptor', str],
+            bip32_counter: int,
+            whitelist: Union['ByteData', str]) -> 'Address':
         util = get_util()
         mainchain_nw = Network.get(mainchain_network_type)
         elements_nw = Network.get(elements_network_type)
