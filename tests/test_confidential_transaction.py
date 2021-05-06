@@ -60,12 +60,6 @@ def test_ct_transaction_func1(obj, name, case, req, exp, error):
                     resp.add_txin(txid=input['txid'], vout=input['vout'],
                                   sequence=input.get('sequence',
                                                      TxIn.SEQUENCE_DISABLE))
-                for output in req.get('txouts', []):
-                    resp.add_txout(
-                        output['amount'], address=output.get('address', ''),
-                        locking_script=output.get('directLockingScript', ''),
-                        asset=output.get('asset', ''),
-                        nonce=output.get('directNonce', ''))
                 for input in req.get('peginTxins', []):
                     pegin = input['peginwitness']
                     block_hash = pegin['mainchainGenesisBlockHash']
@@ -78,6 +72,12 @@ def test_ct_transaction_func1(obj, name, case, req, exp, error):
                         claim_script=pegin['claimScript'],
                         mainchain_tx=pegin['mainchainRawTransaction'],
                         txout_proof=pegin['mainchainTxoutproof'])
+                for output in req.get('txouts', []):
+                    resp.add_txout(
+                        output['amount'], address=output.get('address', ''),
+                        locking_script=output.get('directLockingScript', ''),
+                        asset=output.get('asset', ''),
+                        nonce=output.get('directNonce', ''))
                 btc_addresses = []
                 for pegout in req.get('pegoutTxouts', []):
                     block_hash = pegout['mainchainGenesisBlockHash']
@@ -431,16 +431,6 @@ def test_ct_transaction_func4(obj, name, case, req, exp, error):
         elif name == 'ConfidentialTransaction.CreateRawPegin':
             resp = ConfidentialTransaction.create(
                 req['version'], req['locktime'])
-            for output in req.get('txouts', []):
-                resp.add_txout(
-                    output['amount'], address=output.get('address', ''),
-                    locking_script=output.get('directLockingScript', ''),
-                    asset=output.get('asset', ''),
-                    nonce=output.get('directNonce', ''))
-            if ('fee' in req) and ('amount' in req['fee']):
-                output = req['fee']
-                resp.add_fee_txout(
-                    output['amount'], output.get('asset', ''))
             for input in req.get('txins', []):
                 if input.get('isPegin', False):
                     pegin = input['peginwitness']
@@ -458,6 +448,16 @@ def test_ct_transaction_func4(obj, name, case, req, exp, error):
                     resp.add_txin(txid=input['txid'], vout=input['vout'],
                                   sequence=input.get('sequence',
                                                      TxIn.SEQUENCE_DISABLE))
+            for output in req.get('txouts', []):
+                resp.add_txout(
+                    output['amount'], address=output.get('address', ''),
+                    locking_script=output.get('directLockingScript', ''),
+                    asset=output.get('asset', ''),
+                    nonce=output.get('directNonce', ''))
+            if ('fee' in req) and ('amount' in req['fee']):
+                output = req['fee']
+                resp.add_fee_txout(
+                    output['amount'], output.get('asset', ''))
         elif name == 'ConfidentialTransaction.CreateRawPegout':
             resp = ConfidentialTransaction.create(
                 req['version'], req['locktime'])

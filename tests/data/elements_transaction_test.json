@@ -8466,11 +8466,7 @@
                             "token": "be27be791402c9389c8c18f0c251107ca6d047c15e4e4a13689bf65fcf14c6b4"
                         }
                     ]
-                },
-                "exclude": [
-                    "python"
-                ],
-                "fixme": "cfd v0.3.12"
+                }
             },
             {
                 "case": "tokenAddress is err.",
