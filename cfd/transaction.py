@@ -667,7 +667,7 @@ class _TransactionBase:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
                 handle, self.network) as tx_handle:
-            if (len(_signature) == 64*2) and (
+            if (len(_signature) == 64 * 2) and (
                     _sighashtype != SigHashType.DEFAULT):
                 _signature = util.call_func(
                     'CfdAddSighashTypeInSchnorrSignature',
@@ -709,7 +709,7 @@ class _TransactionBase:
                 _sighashtype = SigHashType.ALL
                 if isinstance(sig, SignParameter):
                     _sighashtype = SigHashType.get(sig.sighashtype)
-                if (len(_sig) == 64*2) and (
+                if (len(_sig) == 64 * 2) and (
                         _sighashtype != SigHashType.DEFAULT):
                     _sig = util.call_func(
                         'CfdAddSighashTypeInSchnorrSignature',
