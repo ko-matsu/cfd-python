@@ -663,6 +663,7 @@ class CfdUtil:
         ("CfdAddTransactionInput", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_uint32]),  # noqa: E501
         ("CfdAddTransactionOutput", c_int, [c_void_p, c_void_p, c_int64, c_char_p, c_char_p, c_char_p]),  # noqa: E501
         ("CfdSplitTxOut", c_int, [c_void_p, c_void_p, c_void_p, c_uint32]),  # noqa: E501
+        ("CfdUpdateWitnessStack", c_int, [c_void_p, c_void_p, c_int, c_char_p, c_uint32, c_uint32, c_char_p]),  # noqa: E501
         ("CfdClearWitnessStack", c_int, [c_void_p, c_void_p, c_char_p, c_uint32]),  # noqa: E501
         ("CfdUpdateTxInScriptSig", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p]),  # noqa: E501
         ("CfdSetTransactionUtxoData", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p, c_bool]),  # noqa: E501

@@ -134,9 +134,26 @@ def test_ct_transaction_func1(obj, name, case, req, exp, error):
                     nonce=output.get('directNonce', '')))
             resp.split_txout(req['index'], txouts)
         elif name == 'ConfidentialTransaction.UpdateWitnessStack':
-            resp, txins, txouts = get_tx()
-            # FIXME impl
-            return True
+            resp, _, _ = get_tx()
+            txin = req['txin']
+            witness = txin['witnessStack']
+            data = witness['hex']
+            if witness.get('derEncode', False) and (
+                    witness.get('type', '') == 'sign'):
+                sign_param = SignParameter.encode_by_der(
+                    data, sighashtype=witness.get('sighashType', 'all'))
+                data = sign_param.hex
+            resp.update_witness_stack(
+                OutPoint(txin['txid'], txin['vout']),
+                witness.get('index', 0), data)
+        elif name == 'ConfidentialTransaction.UpdatePeginWitnessStack':
+            resp, _, _ = get_tx()
+            txin = req['txin']
+            witness = txin['witnessStack']
+            data = witness['hex']
+            resp.update_pegin_witness_stack(
+                OutPoint(txin['txid'], txin['vout']),
+                witness.get('index', 0), data)
 
         elif name == 'ConfidentialTransaction.UpdateTxOutFeeAmount':
             resp, _, _ = get_tx()
@@ -145,6 +162,8 @@ def test_ct_transaction_func1(obj, name, case, req, exp, error):
             return False
         assert_error(obj, name, case, error)
 
+        if exp['hex'] != str(resp):
+            print('hex =', str(resp))
         assert_equal(obj, name, case, exp, str(resp), 'hex')
 
     except CfdError as err:
