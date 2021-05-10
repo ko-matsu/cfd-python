@@ -4308,7 +4308,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "Txid size Invalid."
+                    "message": "Txid size Invalid.",
+                    "python": "Error: Invalid txid."
                 }
             },
             {
@@ -4329,7 +4330,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "Txid size Invalid."
+                    "message": "Txid size Invalid.",
+                    "python": "Error: Invalid txid."
                 }
             },
             {
@@ -4371,7 +4373,8 @@
                 "error": {
                     "code": 3,
                     "type": "out_of_range",
-                    "message": "Json value convert error. Value out of range."
+                    "message": "Json value convert error. Value out of range.",
+                    "capi": "Txid is not found."
                 }
             },
             {
@@ -4414,7 +4417,8 @@
                 "error": {
                     "code": 3,
                     "type": "out_of_range",
-                    "message": "Json value convert error. Value out of range."
+                    "message": "Json value convert error. Value out of range.",
+                    "capi": "witness stack set error."
                 }
             },
             {
@@ -4457,7 +4461,8 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "hex to byte convert error."
+                    "message": "hex to byte convert error.",
+                    "python": "Error: Invalid hex value."
                 }
             },
             {

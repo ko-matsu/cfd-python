@@ -500,6 +500,27 @@ class _TransactionBase:
             return list
 
     ##
+    # @brief update witness stack.
+    # @param[in] outpoint       outpoint
+    # @param[in] stack_index    witness stack index.
+    # @param[in] data           stack data
+    # @return void
+    def update_witness_stack(
+            self, outpoint: 'OutPoint', stack_index: int, data) -> None:
+        _data = to_hex_string(data)
+        util = get_util()
+        with util.create_handle() as handle, self._get_handle(
+                handle, self.network) as tx_handle:
+            self.hex = util.call_func(
+                'CfdUpdateWitnessStack', handle.get_handle(),
+                tx_handle.get_handle(), 0, str(outpoint.txid),
+                outpoint.vout, stack_index, _data)
+            self.hex = util.call_func(
+                'CfdFinalizeTransaction', handle.get_handle(),
+                tx_handle.get_handle())
+            self._update_txin_internal(handle, tx_handle, outpoint)
+
+    ##
     # @brief add pubkey hash sign.
     # @param[in] outpoint       outpoint
     # @param[in] hash_type      hash type
@@ -646,7 +667,7 @@ class _TransactionBase:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
                 handle, self.network) as tx_handle:
-            if (len(_signature) == 64*2) and (
+            if (len(_signature) == 64 * 2) and (
                     _sighashtype != SigHashType.DEFAULT):
                 _signature = util.call_func(
                     'CfdAddSighashTypeInSchnorrSignature',
@@ -688,7 +709,7 @@ class _TransactionBase:
                 _sighashtype = SigHashType.ALL
                 if isinstance(sig, SignParameter):
                     _sighashtype = SigHashType.get(sig.sighashtype)
-                if (len(_sig) == 64*2) and (
+                if (len(_sig) == 64 * 2) and (
                         _sighashtype != SigHashType.DEFAULT):
                     _sig = util.call_func(
                         'CfdAddSighashTypeInSchnorrSignature',

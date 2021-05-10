@@ -74,9 +74,17 @@ def test_transaction_func1(obj, name, case, req, exp, error):
                     locking_script=output.get('directLockingScript', '')))
             resp.split_txout(req['index'], txouts)
         elif name == 'Transaction.UpdateWitnessStack':
-            # FIXME impl
-            return True
-
+            txin = req['txin']
+            witness = txin['witnessStack']
+            data = witness['hex']
+            if witness.get('derEncode', False) and (
+                    witness.get('type', '') == 'sign'):
+                sign_param = SignParameter.encode_by_der(
+                    data, sighashtype=witness.get('sighashType', 'all'))
+                data = sign_param.hex
+            resp.update_witness_stack(
+                OutPoint(txin['txid'], txin['vout']),
+                witness.get('index', 0), data)
         else:
             return False
         assert_error(obj, name, case, error)
