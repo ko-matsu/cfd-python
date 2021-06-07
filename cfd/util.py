@@ -437,6 +437,15 @@ class CfdUtil:
         ("CfdFreeAddressesMultisigHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
         ("CfdGetAddressFromLockingScript", c_int, [c_void_p, c_char_p, c_int, c_char_p_p]),  # noqa: E501
         ("CfdGetAddressInfo", c_int, [c_void_p, c_char_p, c_int_p, c_int_p, c_int_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdInitializeBlockHandle", c_int, [c_void_p, c_int, c_char_p, c_void_p_p]),  # noqa: E501
+        ("CfdFreeBlockHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdGetBlockHash", c_int, [c_void_p, c_void_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetBlockHeaderData", c_int, [c_void_p, c_void_p, c_uint32_p, c_char_p_p, c_char_p_p, c_uint32_p, c_uint32_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetTransactionFromBlock", c_int, [c_void_p, c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetTxOutProof", c_int, [c_void_p, c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdExistTxidInBlock", c_int, [c_void_p, c_void_p, c_char_p]),  # noqa: E501
+        ("CfdGetTxCountInBlock", c_int, [c_void_p, c_void_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetTxidFromBlock", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p]),  # noqa: E501
         ("CfdInitializeCoinSelection", c_int, [c_void_p, c_uint32, c_uint32, c_char_p, c_int64, c_double, c_double, c_double, c_int64, c_void_p_p]),  # noqa: E501
         ("CfdAddCoinSelectionUtxo", c_int, [c_void_p, c_void_p, c_int32, c_char_p, c_uint32, c_int64, c_char_p, c_char_p]),  # noqa: E501
         ("CfdAddCoinSelectionUtxoTemplate", c_int, [c_void_p, c_void_p, c_int32, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_char_p]),  # noqa: E501
@@ -666,6 +675,7 @@ class CfdUtil:
         ("CfdUpdateWitnessStack", c_int, [c_void_p, c_void_p, c_int, c_char_p, c_uint32, c_uint32, c_char_p]),  # noqa: E501
         ("CfdClearWitnessStack", c_int, [c_void_p, c_void_p, c_char_p, c_uint32]),  # noqa: E501
         ("CfdUpdateTxInScriptSig", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p]),  # noqa: E501
+        ("CfdUpdateTxInSequence", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_uint32]),  # noqa: E501
         ("CfdSetTransactionUtxoData", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p, c_bool]),  # noqa: E501
         ("CfdCreateSighashByHandle", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int, c_bool, c_char_p, c_char_p, c_char_p, c_uint32, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdAddSignWithPrivkeyByHandle", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_int, c_bool, c_bool, c_char_p, c_char_p]),  # noqa: E501
