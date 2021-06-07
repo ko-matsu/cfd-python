@@ -146,6 +146,10 @@ def test_ct_transaction_func1(obj, name, case, req, exp, error):
             resp.update_witness_stack(
                 OutPoint(txin['txid'], txin['vout']),
                 witness.get('index', 0), data)
+        elif name == 'ConfidentialTransaction.UpdateTxInSequence':
+            resp, _, _ = get_tx()
+            resp.update_sequence(
+                OutPoint(req['txid'], req['vout']), req['sequence'])
         elif name == 'ConfidentialTransaction.UpdatePeginWitnessStack':
             resp, _, _ = get_tx()
             txin = req['txin']

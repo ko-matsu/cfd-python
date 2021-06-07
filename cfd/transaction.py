@@ -42,9 +42,9 @@ class Txid(ReverseByteData):
 class BlockHash(ReverseByteData):
     ##
     # @brief constructor.
-    # @param[in] txid   txid
-    def __init__(self, txid):
-        super().__init__(txid)
+    # @param[in] hash   block hash
+    def __init__(self, hash):
+        super().__init__(hash)
         if len(self.hex) != 64:
             raise CfdError(
                 error_code=1, message='Error: Invalid block hash.')
@@ -498,6 +498,25 @@ class _TransactionBase:
                     else:
                         raise err
             return list
+
+    ##
+    # @brief update witness stack.
+    # @param[in] outpoint       outpoint
+    # @param[in] sequence       sequence number
+    # @return void
+    def update_sequence(
+            self, outpoint: 'OutPoint', sequence: int) -> None:
+        util = get_util()
+        with util.create_handle() as handle, self._get_handle(
+                handle, self.network) as tx_handle:
+            self.hex = util.call_func(
+                'CfdUpdateTxInSequence', handle.get_handle(),
+                tx_handle.get_handle(), str(outpoint.txid),
+                outpoint.vout, sequence)
+            self.hex = util.call_func(
+                'CfdFinalizeTransaction', handle.get_handle(),
+                tx_handle.get_handle())
+            self._update_txin_internal(handle, tx_handle, outpoint)
 
     ##
     # @brief update witness stack.
