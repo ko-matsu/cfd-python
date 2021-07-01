@@ -100,7 +100,8 @@ def test_ct_transaction_func1(obj, name, case, req, exp, error):
                         mainchain_genesis_block_hash=block_hash,
                         online_pubkey=pegout['onlinePubkey'],
                         master_online_key=pegout['masterOnlineKey'],
-                        mainchain_output_descriptor=pegout['bitcoinDescriptor'],
+                        mainchain_output_descriptor=pegout.get(
+                            'bitcoinDescriptor', ''),
                         bip32_counter=pegout['bip32Counter'],
                         whitelist=pegout['whitelist'])
                     btc_addresses.append(addr)
@@ -986,7 +987,8 @@ def test_elements_tx_func(obj, name, case, req, exp, error):
             resp = tx.estimate_fee(
                 utxo_list, fee_rate=req.get('feeRate', 0.15),
                 fee_asset=req.get('feeAsset', ''),
-                is_blind=req.get('isBlind', True),
+                is_blind=req.get('isBlind',
+                                 req.get('isBlindEstimateFee', True)),
                 exponent=req.get('exponent', 0),
                 minimum_bits=req.get('minimumBits', 52))
         elif name == 'Elements.FundTransaction':
@@ -999,14 +1001,15 @@ def test_elements_tx_func(obj, name, case, req, exp, error):
                 txin_utxo_list,
                 utxo_list,
                 target_list,
-                fee_asset=fee_info.get('feeAsset', -1),
+                fee_asset=fee_info.get('feeAsset', ''),
                 effective_fee_rate=fee_info.get('feeRate', 20.0),
                 long_term_fee_rate=fee_info.get('longTermFeeRate', 20.0),
                 dust_fee_rate=fee_info.get('dustFeeRate', 3.0),
                 knapsack_min_change=fee_info.get('knapsackMinChange', -1),
-                is_blind=req.get('isBlind', True),
-                exponent=req.get('exponent', 0),
-                minimum_bits=req.get('minimumBits', 52))
+                is_blind=fee_info.get('isBlind',
+                                      fee_info.get('isBlindEstimateFee', True)),
+                exponent=fee_info.get('exponent', 0),
+                minimum_bits=fee_info.get('minimumBits', 52))
             resp = {'hex': str(tx), 'usedAddresses': used_addr_list,
                     'feeAmount': tx_fee}
         else:
@@ -1123,6 +1126,8 @@ class TestConfidentialTransaction(TestCase):
             get_json_file('utxo/elements_utxo_2.json'))
         self.utxos['elements_utxo_3'] = convert_elements_utxo(
             get_json_file('utxo/elements_utxo_3.json'))
+        self.utxos['elements_utxo_4'] = convert_elements_utxo(
+            get_json_file('utxo/elements_utxo_4.json'))
 
     def test_confidential_transaction(self):
         exec_test(self, 'ConfidentialTransaction', test_ct_transaction_func)

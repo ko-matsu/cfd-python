@@ -553,12 +553,12 @@
                         {
                             "asset": "aa00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "ex1q0r4elskfu8xlvvlvkergtzagv2ep8p9ttsns6q"
+                            "reserveAddress": "ex1q0r4elskfu8xlvvlvkergtzagv2ep8p9ttsns6q"
                         },
                         {
                             "asset": "bb00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "ex1q55a7gqgnhdg09w9j6zl7585z8e6kx26lxfq8xd"
+                            "reserveAddress": "ex1q55a7gqgnhdg09w9j6zl7585z8e6kx26lxfq8xd"
                         }
                     ],
                     "feeInfo": {
@@ -604,12 +604,12 @@
                         {
                             "asset": "aa00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "ex1q0r4elskfu8xlvvlvkergtzagv2ep8p9ttsns6q"
+                            "reserveAddress": "ex1q0r4elskfu8xlvvlvkergtzagv2ep8p9ttsns6q"
                         },
                         {
                             "asset": "bb00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "ex1q55a7gqgnhdg09w9j6zl7585z8e6kx26lxfq8xd"
+                            "reserveAddress": "ex1q55a7gqgnhdg09w9j6zl7585z8e6kx26lxfq8xd"
                         }
                     ],
                     "feeInfo": {
@@ -655,7 +655,7 @@
                         {
                             "asset": "bb00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "ex1q55a7gqgnhdg09w9j6zl7585z8e6kx26lxfq8xd"
+                            "reserveAddress": "ex1q55a7gqgnhdg09w9j6zl7585z8e6kx26lxfq8xd"
                         }
                     ],
                     "feeInfo": {
@@ -688,12 +688,12 @@
                         {
                             "asset": "aa00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "ert1q0r4elskfu8xlvvlvkergtzagv2ep8p9t3zeg96"
+                            "reserveAddress": "ert1q0r4elskfu8xlvvlvkergtzagv2ep8p9t3zeg96"
                         },
                         {
                             "asset": "bb00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "ert1q55a7gqgnhdg09w9j6zl7585z8e6kx26lum2leh"
+                            "reserveAddress": "ert1q55a7gqgnhdg09w9j6zl7585z8e6kx26lum2leh"
                         }
                     ],
                     "feeInfo": {
@@ -727,12 +727,12 @@
                         {
                             "asset": "aa00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "el1qqdqg9pua7svrx9u5ujj4hp7djnfdy0837g42quyp4g5tj8pgkhj6z78tnlpvncwd7ce7edjxsk96sc4jzwz2ky5z0zegze59c"
+                            "reserveAddress": "el1qqdqg9pua7svrx9u5ujj4hp7djnfdy0837g42quyp4g5tj8pgkhj6z78tnlpvncwd7ce7edjxsk96sc4jzwz2ky5z0zegze59c"
                         },
                         {
                             "asset": "bb00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "ert1q55a7gqgnhdg09w9j6zl7585z8e6kx26lum2leh"
+                            "reserveAddress": "ert1q55a7gqgnhdg09w9j6zl7585z8e6kx26lum2leh"
                         }
                     ],
                     "feeInfo": {
@@ -756,6 +756,39 @@
                 }
             },
             {
+                "case": "example test",
+                "request": {
+                    "utxoFile": "elements_utxo_4",
+                    "selectUtxos": [],
+                    "tx": "020000000000010125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000005f5e100036a2e218bb512a3e65c80b59fec57aee428b7512276bcfa366c154dd7262994c817a914363273e2f851bda01e24cda41ba748b8d1f54cfe8700000000",
+                    "network": "elementsregtest",
+                    "targets": [
+                        {
+                            "asset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225",
+                            "amount": 100000000,
+                            "reserveAddress": "AzpkHG7iBPzGn3wCoKwEUrNMWA8TCLXTvhK6ftgAmaAGWqDKyDipYSFjsBBcGXKj3Y65Kt9UauCEbftj"
+                        }
+                    ],
+                    "feeInfo": {
+                        "feeRate": 1.0,
+                        "longTermFeeRate": 1.0,
+                        "knapsackMinChange": -1,
+                        "dustFeeRate": 3.0,
+                        "feeAsset": "5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225",
+                        "isBlindEstimateFee": true,
+                        "exponent": 0,
+                        "minimumBits": 36
+                    }
+                },
+                "expect": {
+                    "hex": "0200000000027597a9db0a03074238e42936095b26e08193c5b054daf8d76bab761e0230c62b0000000000ffffffffc5c8a53f42d60311e2dd44b77fb61e9a691dc9a01736840d0f1ddc8a9e0c12420100000000ffffffff030125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a010000000005f5e100036a2e218bb512a3e65c80b59fec57aee428b7512276bcfa366c154dd7262994c817a914363273e2f851bda01e24cda41ba748b8d1f54cfe870125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a0100000000000007be00000125b251070e29ca19043cf33ccd7324e2ddab03ecc4ae0b5e77c4fc0e5cf6c95a01000000000bebba420230646d493a7ed8cb0091ad6e8feedcc9cd17a9162e61b7cff7929697792ef64217a91497dfc3937ad66e142925a76489eebc75358bca338700000000",
+                    "usedAddresses": [
+                        "AzpkHG7iBPzGn3wCoKwEUrNMWA8TCLXTvhK6ftgAmaAGWqDKyDipYSFjsBBcGXKj3Y65Kt9UauCEbftj"
+                    ],
+                    "feeAmount": 1982
+                }
+            },
+            {
                 "case": "unmatch address network type",
                 "request": {
                     "utxoFile": "elements_utxo_3",
@@ -766,12 +799,12 @@
                         {
                             "asset": "aa00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "ex1q0r4elskfu8xlvvlvkergtzagv2ep8p9ttsns6q"
+                            "reserveAddress": "ex1q0r4elskfu8xlvvlvkergtzagv2ep8p9ttsns6q"
                         },
                         {
                             "asset": "bb00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "ert1q0r4elskfu8xlvvlvkergtzagv2ep8p9t3zeg96"
+                            "reserveAddress": "ert1q0r4elskfu8xlvvlvkergtzagv2ep8p9t3zeg96"
                         }
                     ],
                     "feeInfo": {
@@ -800,12 +833,12 @@
                         {
                             "asset": "aa00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "bc1q0r4elskfu8xlvvlvkergtzagv2ep8p9tpewghq"
+                            "reserveAddress": "bc1q0r4elskfu8xlvvlvkergtzagv2ep8p9tpewghq"
                         },
                         {
                             "asset": "bb00000000000000000000000000000000000000000000000000000000000000",
                             "amount": 0,
-                            "reservedAddress": "bc1q55a7gqgnhdg09w9j6zl7585z8e6kx26lvqaltd"
+                            "reserveAddress": "bc1q55a7gqgnhdg09w9j6zl7585z8e6kx26lvqaltd"
                         }
                     ],
                     "feeInfo": {
