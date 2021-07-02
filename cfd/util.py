@@ -488,6 +488,7 @@ class CfdUtil:
         ("CfdCreateConfidentialAddress", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdParseConfidentialAddress", c_int, [c_void_p, c_char_p, c_char_p_p, c_char_p_p, c_int_p]),  # noqa: E501
         ("CfdGetPeginAddress", c_int, [c_void_p, c_int, c_char_p, c_int, c_char_p, c_char_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetPegoutAddress", c_int, [c_void_p, c_int, c_int, c_char_p, c_uint32, c_int, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdInitializeConfidentialTx", c_int, [c_void_p, c_uint32, c_uint32, c_char_p_p]),  # noqa: E501
         ("CfdAddConfidentialTxIn", c_int, [c_void_p, c_char_p, c_char_p, c_uint32, c_uint32, c_char_p_p]),  # noqa: E501
         ("CfdAddConfidentialTxOut", c_int, [c_void_p, c_char_p, c_char_p, c_int64, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
@@ -505,6 +506,8 @@ class CfdUtil:
         ("CfdGetConfidentialTxInIndex", c_int, [c_void_p, c_char_p, c_char_p, c_uint32, c_uint32_p]),  # noqa: E501
         ("CfdGetConfidentialTxOutIndex", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_uint32_p]),  # noqa: E501
         ("CfdGetConfidentialTxInfoByHandle", c_int, [c_void_p, c_void_p, c_char_p_p, c_char_p_p, c_char_p_p, c_uint32_p, c_uint32_p, c_uint32_p, c_uint32_p, c_uint32_p]),  # noqa: E501
+        ("CfdHasPegoutConfidentialTxOut", c_int, [c_void_p, c_void_p, c_uint32]),  # noqa: E501
+        ("CfdGetPegoutMainchainAddress", c_int, [c_void_p, c_void_p, c_uint32, c_int, c_char_p_p]),  # noqa: E501
         ("CfdGetTxInIssuanceInfoByHandle", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_char_p_p, c_int64_p, c_char_p_p, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdGetConfidentialTxOutSimpleByHandle", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdGetConfidentialTxOutByHandle", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
@@ -536,6 +539,7 @@ class CfdUtil:
         ("CfdSetReissueAsset", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdAddTxPeginInput", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
         ("CfdAddTxPegoutOutput", c_int, [c_void_p, c_void_p, c_char_p, c_int64, c_int, c_int, c_char_p, c_char_p, c_char_p, c_char_p, c_uint32, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdUnblindTxOutData", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p_p, c_int64_p, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdCalculateEcSignature", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_int, c_bool, c_char_p_p]),  # noqa: E501
         ("CfdVerifyEcSignature", c_int, [c_void_p, c_char_p, c_char_p, c_char_p]),  # noqa: E501
         ("CfdSignEcdsaAdaptor", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p_p, c_char_p_p]),  # noqa: E501
@@ -584,6 +588,7 @@ class CfdUtil:
         ("CfdGetPubkeyFromExtkey", c_int, [c_void_p, c_char_p, c_int, c_char_p_p]),  # noqa: E501
         ("CfdGetParentExtkeyPathData", c_int, [c_void_p, c_char_p, c_char_p, c_int, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdGetExtkeyInformation", c_int, [c_void_p, c_char_p, c_char_p_p, c_char_p_p, c_char_p_p, c_uint32_p, c_uint32_p]),  # noqa: E501
+        ("CfdGetExtkeyInfo", c_int, [c_void_p, c_char_p, c_char_p_p, c_char_p_p, c_char_p_p, c_uint32_p, c_uint32_p, c_int_p, c_int_p]),  # noqa: E501
         ("CfdInitializeMnemonicWordList", c_int, [c_void_p, c_char_p, c_void_p_p, c_uint32_p]),  # noqa: E501
         ("CfdGetMnemonicWord", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p]),  # noqa: E501
         ("CfdFreeMnemonicWordList", c_int, [c_void_p, c_void_p]),  # noqa: E501
