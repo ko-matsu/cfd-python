@@ -62,7 +62,7 @@
                             "amount": 78125000
                         }
                     ],
-                    "feeAmount": 3320,
+                    "feeAmount": 3340,
                     "utxoFeeAmount": 1840
                 }
             },
@@ -103,7 +103,7 @@
                             "amount": 234375000
                         }
                     ],
-                    "feeAmount": 5140,
+                    "feeAmount": 5180,
                     "utxoFeeAmount": 3680
                 }
             },
@@ -144,7 +144,7 @@
                             "amount": 100001090
                         }
                     ],
-                    "feeAmount": 1864,
+                    "feeAmount": 1868,
                     "utxoFeeAmount": 368
                 }
             },
@@ -181,7 +181,7 @@
                             "amount": 155062500
                         }
                     ],
-                    "feeAmount": 1682,
+                    "feeAmount": 1684,
                     "utxoFeeAmount": 184
                 }
             },
@@ -226,7 +226,7 @@
                             "amount": 115063590
                         }
                     ],
-                    "feeAmount": 1773,
+                    "feeAmount": 1776,
                     "utxoFeeAmount": 276
                 }
             },
@@ -275,7 +275,7 @@
                             "amount": 26918400
                         }
                     ],
-                    "feeAmount": 5140,
+                    "feeAmount": 5180,
                     "utxoFeeAmount": 3680
                 }
             },
@@ -332,7 +332,7 @@
                             "amount": 347180050
                         }
                     ],
-                    "feeAmount": 2228,
+                    "feeAmount": 2236,
                     "utxoFeeAmount": 736
                 }
             },
@@ -397,7 +397,7 @@
                             "amount": 37654200
                         }
                     ],
-                    "feeAmount": 2228,
+                    "feeAmount": 2236,
                     "utxoFeeAmount": 736
                 }
             },
@@ -714,7 +714,10 @@
                         "ert1q55a7gqgnhdg09w9j6zl7585z8e6kx26lum2leh"
                     ],
                     "feeAmount": 501
-                }
+                },
+                "exclude": [
+                    "js"
+                ]
             },
             {
                 "case": "confidential address",
@@ -722,7 +725,7 @@
                     "utxoFile": "elements_utxo_3",
                     "selectUtxos": [],
                     "tx": "020000000000020100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600144352a1a6e86311f22274f7ebb2746de21b09b15d0100000000000000000000000000000000000000000000000000000000000000bb01000000000007a120001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c00000000",
-                    "network": "liquidv1",
+                    "network": "elementsregtest",
                     "targets": [
                         {
                             "asset": "aa00000000000000000000000000000000000000000000000000000000000000",
