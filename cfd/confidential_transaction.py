@@ -244,10 +244,11 @@ class ConfidentialValue:
                 to_hex_string(blind_factor))
             return ConfidentialValue(commitment)
 
-
 ##
 # @class ElementsUtxoData
 # @brief elements utxo class.
+
+
 class ElementsUtxoData(UtxoData):
     ##
     # @var outpoint
@@ -404,6 +405,32 @@ class UnblindData:
     # @var amount_blinder
     # amount blind factor
     amount_blinder: 'BlindFactor'
+
+    ##
+    # @brief unblind data.
+    # @param[in] blinding_key           blinding key
+    # @param[in] locking_script         locking script
+    # @param[in] asset_commitment       asset commitment
+    # @param[in] value_commitment       value commitment
+    # @param[in] commitment_nonce       commitment nonce
+    # @param[in] rangeproof             rangeproof
+    # @return unblind data
+    @classmethod
+    def unblind(cls, blinding_key, locking_script, asset_commitment,
+                value_commitment, commitment_nonce,
+                rangeproof) -> 'UnblindData':
+        _privkey = to_hex_string(blinding_key)
+        _script = to_hex_string(locking_script)
+        _asset = to_hex_string(asset_commitment)
+        _value = to_hex_string(value_commitment)
+        _nonce = to_hex_string(commitment_nonce)
+        _rangeproof = to_hex_string(rangeproof)
+        util = get_util()
+        with util.create_handle() as handle:
+            asset, amount, abf, vbf = util.call_func(
+                'CfdUnblindTxOutData', handle.get_handle(), _privkey,
+                _script, _asset, _value, _nonce, _rangeproof)
+            return UnblindData(asset, amount, abf, vbf)
 
     ##
     # @brief constructor.
@@ -1383,6 +1410,42 @@ class ConfidentialTransaction(_TransactionBase):
                 'CfdFinalizeTransaction', handle.get_handle(),
                 tx_handle.get_handle())
         self._update_tx_all()
+
+    ##
+    # @brief check pegout output.
+    # @param[in] index          txout index
+    # @retval true      pegout output
+    # @retval false     other output
+    def has_pegout(self, index: int) -> bool:
+        try:
+            util = get_util()
+            with util.create_handle() as handle, self._get_handle(
+                    handle, self.network) as tx_handle:
+                util.call_func(
+                    'CfdHasPegoutConfidentialTxOut', handle.get_handle(),
+                    tx_handle.get_handle(), index)
+            return True
+        except CfdError as err:
+            if err.error_code == CfdErrorCode.NOT_FOUND.value:
+                return False
+            else:
+                raise err
+
+    ##
+    # @brief get pegout address.
+    # @param[in] index                  txout index
+    # @param[in] mainchain_network      mainchain network
+    # @return pegout address
+    def get_pegout_address(self, index: int,
+                           mainchain_network=Network.MAINNET) -> 'Address':
+        _network = Network.get(mainchain_network)
+        util = get_util()
+        with util.create_handle() as handle, self._get_handle(
+                handle, self.network) as tx_handle:
+            addr = util.call_func(
+                'CfdGetPegoutMainchainAddress', handle.get_handle(),
+                tx_handle.get_handle(), index, _network.value)
+        return AddressUtil.parse(addr)
 
     ##
     # @brief blind transaction output.

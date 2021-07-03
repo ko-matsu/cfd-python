@@ -293,7 +293,7 @@ def test_address_func(obj, name, case, req, exp, error):
         assert_equal(obj, name, case, exp, err.message)
 
 
-def test_pegin_address_func(obj, name, case, req, exp, error):
+def test_pegged_address_func(obj, name, case, req, exp, error):
     try:
         resp = None
 
@@ -310,6 +310,18 @@ def test_pegin_address_func(obj, name, case, req, exp, error):
                 'tweakFedpegscript': ret[2],
             }
 
+        elif name == 'PegoutAddress.Create':
+            ret = AddressUtil.get_pegout_address(
+                descriptor=req['descriptor'],
+                bip32_counter=req.get('bip32Counter', 0),
+                hash_type=req.get('hashType', 'p2pkh'),
+                mainchain_network=req.get('network', 'mainnet'),
+                elements_network=req.get('elementsNetwork', 'liquidv1'))
+            resp = {
+                'mainchainAddress': ret[0],
+                'baseDescriptor': ret[1],
+            }
+
         else:
             raise Exception('unknown name: ' + name)
         assert_error(obj, name, case, error)
@@ -321,6 +333,11 @@ def test_pegin_address_func(obj, name, case, req, exp, error):
                          str(resp['claimScript']), 'claimScript')
             assert_equal(obj, name, case, exp,
                          str(resp['tweakFedpegscript']), 'tweakFedpegscript')
+        elif name == 'PegoutAddress.Create':
+            assert_equal(obj, name, case, exp,
+                         str(resp['mainchainAddress']), 'mainchainAddress')
+            assert_equal(obj, name, case, exp,
+                         str(resp['baseDescriptor']), 'baseDescriptor')
 
     except CfdError as err:
         if not error:
@@ -354,4 +371,7 @@ class TestElementsAddress(TestCase):
         self.test_list = load_json_file('elements_address_test.json')
 
     def test_pegin_address(self):
-        exec_test(self, 'PeginAddress', test_pegin_address_func)
+        exec_test(self, 'PeginAddress', test_pegged_address_func)
+
+    def test_pegout_address(self):
+        exec_test(self, 'PegoutAddress', test_pegged_address_func)

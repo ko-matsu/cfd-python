@@ -426,6 +426,35 @@ class AddressUtil:
             return cls.parse(addr), Script(claim_script), Script(
                 tweaked_fedpeg)
 
+    ##
+    # @brief get pegout address.
+    # @param[in] descriptor             output descriptor or xpub
+    # @param[in] bip32_counter          bip32 counter
+    # @param[in] hash_type              script hash type
+    # @param[in] mainchain_network      mainchain network type
+    # @param[in] elements_network       elements network type
+    # @retval [0]      pegout address.
+    # @retval [1]      base descriptor.
+    @classmethod
+    def get_pegout_address(
+            cls,
+            descriptor: str,
+            bip32_counter=0,
+            hash_type: Union['HashType', str] = HashType.P2PKH,
+            mainchain_network=Network.MAINNET,
+            elements_network=Network.LIQUID_V1,
+    ) -> Tuple['Address', str]:
+        _hash_type = HashType.get(hash_type)
+        _network = Network.get(mainchain_network)
+        _elements_network = Network.get(elements_network)
+        util = get_util()
+        with util.create_handle() as handle:
+            addr, base_descriptor = util.call_func(
+                'CfdGetPegoutAddress',
+                handle.get_handle(), _network.value, _elements_network.value,
+                str(descriptor), int(bip32_counter), _hash_type.value)
+            return cls.parse(addr), base_descriptor
+
 
 ##
 # All import target.
