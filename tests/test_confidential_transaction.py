@@ -1015,7 +1015,7 @@ def test_elements_tx_func(obj, name, case, req, exp, error):
         elif name == 'Elements.FundTransaction':
             tx = ConfidentialTransaction.from_hex(req['tx'])
             txin_utxo_list = convert_elements_utxo(req['selectUtxos'])
-            utxo_list = obj.utxos.get(req['utxoFile'], [])
+            utxo_list = obj.utxos.get(req.get('utxoFile', ''), [])
             target_list = convert_target_amount(req['targets'])
             fee_info = req.get('feeInfo', {})
             tx_fee, used_addr_list = tx.fund_raw_transaction(
@@ -1065,7 +1065,10 @@ def test_elements_tx_func(obj, name, case, req, exp, error):
                 assert_equal(obj, name, case, exp, feeAmount, 'feeAmount')
         elif name == 'Elements.EstimateFee':
             total_fee, txout_fee, utxo_fee = resp
-            assert_equal(obj, name, case, exp, total_fee, 'feeAmount')
+            if (exp['feeAmount'] != total_fee) and (
+                    exp['feeAmount'] + 1 != total_fee):
+                assert_equal(obj, name, case, exp, total_fee, 'feeAmount')
+                # It is not an exact value because it is just an addition.
             assert_equal(obj, name, case, exp, txout_fee, 'txoutFeeAmount')
             assert_equal(obj, name, case, exp, utxo_fee, 'utxoFeeAmount')
         elif name == 'Elements.FundTransaction':
@@ -1105,7 +1108,8 @@ def convert_elements_utxo(json_utxo_list):
             is_blind_issuance=utxo.get('isBlindIssuance', True),
             is_pegin=utxo.get('isPegin', False),
             pegin_btc_tx_size=utxo.get('peginBtcTxSize', 0),
-            fedpeg_script=utxo.get('fedpegScript', ''),
+            pegin_txoutproof_size=utxo.get('peginTxOutProofSize', 0),
+            claim_script=utxo.get('claimScript', ''),
             asset_blinder=utxo.get('assetBlindFactor', ''),
             amount_blinder=utxo.get('blindFactor', ''))
         utxo_list.append(data)

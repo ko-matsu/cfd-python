@@ -494,8 +494,9 @@
                             "isIssuance": false,
                             "isBlindIssuance": false,
                             "isPegin": false,
+                            "claimScript": "",
                             "peginBtcTxSize": 0,
-                            "fedpegScript": "",
+                            "peginTxOutProofSize": 0,
                             "assetBlindFactor": "a10ecbe1be7a5f883d5d45d966e30dbc1beff5f21c55cec76cc21a2229116a9f",
                             "blindFactor": "ae0f46d1940f297c2dc3bbd82bf8ef6931a2431fbb05b3d3bc5df41af86ae808",
                             "keyData": {
@@ -514,8 +515,9 @@
                             "isIssuance": false,
                             "isBlindIssuance": false,
                             "isPegin": false,
+                            "claimScript": "",
                             "peginBtcTxSize": 0,
-                            "fedpegScript": "",
+                            "peginTxOutProofSize": 0,
                             "assetBlindFactor": "0b8954757234fd3ec9cf0dd6ef0a89d825ec56a9532e7da4b6cb90c51be3bbd8",
                             "blindFactor": "62e36e1f0fa4916b031648a6b6903083069fa587572a88b729250cde528cfd3b",
                             "keyData": {
@@ -535,6 +537,80 @@
                     "feeAmount": 755,
                     "txoutFeeAmount": 549,
                     "utxoFeeAmount": 206
+                }
+            },
+            {
+                "case": "unblind pegin",
+                "request": {
+                    "selectUtxos": [
+                        {
+                            "txid": "3b34ca92580075265d9548332041796ee7f55f63801835d3a4177f88601bfb41",
+                            "vout": 0,
+                            "amount": 24232,
+                            "asset": "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d",
+                            "redeemScript": "",
+                            "descriptor": "wpkh(03f942716865bb9b62678d99aa34de4632249d066d99de2b5a2e542e54908450d6)",
+                            "scriptSigTemplate": "",
+                            "isIssuance": false,
+                            "isBlindIssuance": false,
+                            "isPegin": true,
+                            "claimScript": "0014aab2ed7ac90f976a17ddb850c4a0c4e62db49b07",
+                            "peginBtcTxSize": 83,
+                            "peginTxOutProofSize": 473,
+                            "assetBlindFactor": "",
+                            "blindFactor": "",
+                            "keyData": {
+                                "privkey": "",
+                                "blindingKey": ""
+                            }
+                        }
+                    ],
+                    "feeRate": 0.1,
+                    "tx": "02000000000141fb1b60887f17a4d3351880635ff5e76e7941203348955d2675005892ca343b0000004000ffffffff02016d521c38ec1ea15734ae22b7c46064412829c0d0579f0a713d1c04ede979026f010000000000005e7f001600149aa483fc0fd0b1806f25e57903e4cbefb19c20a1016d521c38ec1ea15734ae22b7c46064412829c0d0579f0a713d1c04ede979026f010000000000000029000000000000",
+                    "isBlind": false,
+                    "feeAsset": "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d"
+                },
+                "expect": {
+                    "feeAmount": 36,
+                    "txoutFeeAmount": 13,
+                    "utxoFeeAmount": 24
+                }
+            },
+            {
+                "case": "unblind pegin on tx",
+                "request": {
+                    "selectUtxos": [
+                        {
+                            "txid": "3b34ca92580075265d9548332041796ee7f55f63801835d3a4177f88601bfb41",
+                            "vout": 0,
+                            "amount": 24232,
+                            "asset": "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d",
+                            "redeemScript": "",
+                            "descriptor": "wpkh(03f942716865bb9b62678d99aa34de4632249d066d99de2b5a2e542e54908450d6)",
+                            "scriptSigTemplate": "",
+                            "isIssuance": false,
+                            "isBlindIssuance": false,
+                            "isPegin": false,
+                            "claimScript": "",
+                            "peginBtcTxSize": 0,
+                            "peginTxOutProofSize": 0,
+                            "assetBlindFactor": "",
+                            "blindFactor": "",
+                            "keyData": {
+                                "privkey": "",
+                                "blindingKey": ""
+                            }
+                        }
+                    ],
+                    "feeRate": 0.1,
+                    "tx": "02000000010141fb1b60887f17a4d3351880635ff5e76e7941203348955d2675005892ca343b0000004000ffffffff02016d521c38ec1ea15734ae22b7c46064412829c0d0579f0a713d1c04ede979026f010000000000005e7f001600149aa483fc0fd0b1806f25e57903e4cbefb19c20a1016d521c38ec1ea15734ae22b7c46064412829c0d0579f0a713d1c04ede979026f01000000000000002900000000000000000247304402204c761ad9b55f2fd502d09551656c34f5e118220c286072c7408fe1b2d9eb033202201cb5fbbd90038d82fd21b686a23fa26ac20574da7f28a2afff5e958547ab72ef012102026e4a89b56f6f89de4f0c00d084eacb9dc310e387433049b55d7737fa2e04a70608a85e000000000000206d521c38ec1ea15734ae22b7c46064412829c0d0579f0a713d1c04ede979026f206fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000160014aab2ed7ac90f976a17ddb850c4a0c4e62db49b0753020000000123edd3be8309747693f42e5b6a0a0c57899fca7d6fb5a8d9c4f52fbf7398f03d00000000000000008001a85e00000000000017a914fdfbf873904e8276428aa892576acd028775fbda8700000000fdd9010400c0209ac0009d7289eb8e52ef1883501b35ec6ee8a5bfc83a09000000000000000000e157506b8e9b09bed1b9a9d6045fa26735547d696d9ce230c7f2003d09704594f558e160ce981317486c10c46e0600000c7eab9226e14b446023e58c32f677298a3a60448556b3b6dcf189ea680035de47fcd1a47ece1bda2de728f1ea7ca166338ddd0ab1ee2797c7cd2c9c5d5d07b055ed58f3b21f1324c98e1c09a8f4dd3a3f5b3a7ca8efc48fcbcb41cbf5476c40e9e3abc1c5d78e4b59dde0cfabf3c47d68f2f83893b19c0079b6902525c41e146ad09cb3859268063fd6e6b123036e6c65a975698553d701e04f0801752a4c454ff689b184b1c48c3fdfc33a7e25c2d96f8b9dfcbbb6b970f7da7ecbccd6f3d33141fb1b60887f17a4d3351880635ff5e76e7941203348955d2675005892ca343b04b0b4b9206faf789f1c0659f100a69eea88bfdc66a2b2382fe628fb159304ffd3f7ef70acc4e0438b1fb380da205c7ae0746dfbb451bb2110a9a25e224455719c6c22fa85161cb1df6fc4a870b337d2de35c7cc478c6658147ea8e1d64e7152d172e425e8e3ffd1cfae750d09193292f6e170a1fbfd65d8d43ecc3c5e0932fddf4b338fb84ae565a87fb78bc9d4d5d32ab8bf1fba7880c08c3a8a3a7e3aa22803bdd60200000000",
+                    "isBlind": false,
+                    "feeAsset": "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d"
+                },
+                "expect": {
+                    "feeAmount": 36,
+                    "txoutFeeAmount": 13,
+                    "utxoFeeAmount": 24
                 }
             }
         ]
@@ -789,6 +865,61 @@
                         "AzpkHG7iBPzGn3wCoKwEUrNMWA8TCLXTvhK6ftgAmaAGWqDKyDipYSFjsBBcGXKj3Y65Kt9UauCEbftj"
                     ],
                     "feeAmount": 1982
+                }
+            },
+            {
+                "case": "fund unblind pegin",
+                "request": {
+                    "utxos": [],
+                    "selectUtxos": [
+                        {
+                            "txid": "3b34ca92580075265d9548332041796ee7f55f63801835d3a4177f88601bfb41",
+                            "vout": 0,
+                            "amount": 24232,
+                            "asset": "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d",
+                            "redeemScript": "",
+                            "descriptor": "wpkh(03f942716865bb9b62678d99aa34de4632249d066d99de2b5a2e542e54908450d6)",
+                            "scriptSigTemplate": "",
+                            "isIssuance": false,
+                            "isBlindIssuance": false,
+                            "isPegin": true,
+                            "claimScript": "0014aab2ed7ac90f976a17ddb850c4a0c4e62db49b07",
+                            "peginBtcTxSize": 83,
+                            "peginTxOutProofSize": 473,
+                            "assetBlindFactor": "",
+                            "blindFactor": "",
+                            "keyData": {
+                                "privkey": "",
+                                "blindingKey": ""
+                            }
+                        }
+                    ],
+                    "tx": "02000000000141fb1b60887f17a4d3351880635ff5e76e7941203348955d2675005892ca343b0000004000ffffffff0000000000",
+                    "network": "liquidv1",
+                    "targets": [
+                        {
+                            "asset": "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d",
+                            "amount": 0,
+                            "reserveAddress": "ex1qn2jg8lq06zccqme9u4us8exta7cecg9p4madau"
+                        }
+                    ],
+                    "feeInfo": {
+                        "feeRate": 0.1,
+                        "longTermFeeRate": 0.1,
+                        "knapsackMinChange": -1,
+                        "dustFeeRate": 3.0,
+                        "feeAsset": "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d",
+                        "isBlindEstimateFee": false,
+                        "exponent": 0,
+                        "minimumBits": 36
+                    }
+                },
+                "expect": {
+                    "hex": "02000000000141fb1b60887f17a4d3351880635ff5e76e7941203348955d2675005892ca343b0000004000ffffffff02016d521c38ec1ea15734ae22b7c46064412829c0d0579f0a713d1c04ede979026f0100000000000000240000016d521c38ec1ea15734ae22b7c46064412829c0d0579f0a713d1c04ede979026f010000000000005e84001600149aa483fc0fd0b1806f25e57903e4cbefb19c20a100000000",
+                    "usedAddresses": [
+                        "ex1qn2jg8lq06zccqme9u4us8exta7cecg9p4madau"
+                    ],
+                    "feeAmount": 36
                 }
             },
             {

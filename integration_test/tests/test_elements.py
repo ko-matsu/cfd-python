@@ -280,6 +280,7 @@ def create_pegin_tx(test_obj, btc_tx: 'Transaction', pegin_address,
     btc_txout_index = btc_tx_obj.get_txout_index(address=pegin_address)
     btc_amount = btc_tx_obj.txout_list[btc_txout_index].amount
     btc_size = len(str(btc_tx)) / 2
+    txoutproof_size = len(str(txout_proof)) / 2
 
     # add txout
     tx = ConfidentialTransaction.create(2, 0)
@@ -308,9 +309,13 @@ def create_pegin_tx(test_obj, btc_tx: 'Transaction', pegin_address,
         descriptor='wpkh({})'.format('02' * 33),  # dummy
         asset=test_obj.pegged_asset,
         is_pegin=True, pegin_btc_tx_size=int(btc_size),
-        fedpeg_script=test_obj.fedpegscript)
+        pegin_txoutproof_size=int(txoutproof_size),
+        claim_script=claim_script)
     utxo_list = [pegin_utxo]
-    calc_fee, _, _ = tx.estimate_fee(utxo_list, test_obj.pegged_asset)
+    minimum_bits = 52
+    calc_fee, _, _ = tx.estimate_fee(
+        utxo_list, test_obj.pegged_asset, fee_rate=0.1,
+        minimum_bits=minimum_bits)
     # update fee
     tx.update_txout_fee_amount(calc_fee)
 
@@ -320,17 +325,19 @@ def create_pegin_tx(test_obj, btc_tx: 'Transaction', pegin_address,
 
     # blind
     print('before blind tx=', str(tx))
-    tx.blind_txout(utxo_list)
+    tx.blind_txout(utxo_list, minimum_bits=minimum_bits)
     return str(tx)
 
 
-def update_pegin_tx(test_obj, pegin_tx, btc_tx, pegin_address) -> str:
+def update_pegin_tx(test_obj, pegin_tx, btc_tx, pegin_address,
+                    claim_script, txout_proof) -> str:
     pegin_tx2 = pegin_tx
     btc_tx_obj = Transaction.from_hex(btc_tx)
     btc_txid = btc_tx_obj.txid
     btc_txout_index = btc_tx_obj.get_txout_index(address=pegin_address)
     btc_amount = btc_tx_obj.txout_list[btc_txout_index].amount
     btc_size = len(btc_tx) / 2
+    txoutproof_size = len(txout_proof) / 2
 
     # decode
     tx = ConfidentialTransaction.from_hex(pegin_tx)
@@ -372,7 +379,8 @@ def update_pegin_tx(test_obj, pegin_tx, btc_tx, pegin_address) -> str:
         descriptor='wpkh({})'.format('02' * 33),  # dummy
         asset=test_obj.pegged_asset,
         is_pegin=True, pegin_btc_tx_size=int(btc_size),
-        fedpeg_script=test_obj.fedpegscript)
+        pegin_txoutproof_size=int(txoutproof_size),
+        claim_script=claim_script)
     utxo_list = [pegin_utxo]
     if utxo_amount > 0:
         for txin in tx.txin_list:
@@ -470,7 +478,7 @@ def test_pegin(test_obj):
             # pegin_tx = elm_rpc.createrawpegin(
             #     tx_data, txout_proof, claim_script)['hex']
             # pegin_tx = update_pegin_tx(
-            #     test_obj, pegin_tx, tx_data, pegin_address)
+            #     test_obj, pegin_tx, tx_data, pegin_address, txout_proof)
             pegin_tx = create_pegin_tx(test_obj, tx, pegin_address,
                                        txout_proof, claim_script)
             ct = ConfidentialTransaction(pegin_tx)
