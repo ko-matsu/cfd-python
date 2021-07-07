@@ -312,8 +312,9 @@ class ElementsUtxoData(UtxoData):
     # @param[in] is_issuance            issuance flag
     # @param[in] is_blind_issuance      blinded issuance flag
     # @param[in] is_pegin               pegin flag
+    # @param[in] claim_script           claim script
     # @param[in] pegin_btc_tx_size      pegin btc tx size
-    # @param[in] fedpeg_script          fedpeg script
+    # @param[in] pegin_txoutproof_size  pegin txoutproof size
     # @param[in] asset_blinder          asset blind factor
     # @param[in] amount_blinder         amount blind factor
     def __init__(
