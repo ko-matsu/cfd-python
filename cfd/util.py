@@ -112,6 +112,8 @@ class ByteData:
             self.hex = data.hex()
         elif isinstance(data, list):
             self.hex = ''.join("%02x" % b for b in data)
+        elif data is None:
+            self.hex = ''
         else:
             self.hex = str(data).lower()
             bytes.fromhex(self.hex)  # check hex
@@ -458,6 +460,7 @@ class CfdUtil:
         ("CfdInitializeEstimateFee", c_int, [c_void_p, c_void_p_p, c_bool]),  # noqa: E501
         ("CfdAddTxInForEstimateFee", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_uint32, c_char_p]),  # noqa: E501
         ("CfdAddTxInTemplateForEstimateFee", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_uint32, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddTxInputForEstimateFee", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_char_p, c_uint32, c_uint32, c_char_p]),  # noqa: E501
         ("CfdSetOptionEstimateFee", c_int, [c_void_p, c_void_p, c_int, c_int64, c_double, c_bool]),  # noqa: E501
         ("CfdFinalizeEstimateFee", c_int, [c_void_p, c_void_p, c_char_p, c_char_p, c_int64_p, c_int64_p, c_bool, c_double]),  # noqa: E501
         ("CfdFreeEstimateFeeHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
@@ -732,6 +735,7 @@ class CfdUtil:
         ("CfdInitializeFundRawTx", c_int, [c_void_p, c_int, c_uint32, c_char_p, c_void_p_p]),  # noqa: E501
         ("CfdAddTxInForFundRawTx", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_uint32, c_char_p]),  # noqa: E501
         ("CfdAddTxInTemplateForFundRawTx", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_uint32, c_char_p, c_char_p]),  # noqa: E501
+        ("CfdAddTxInputForFundRawTx", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_char_p, c_uint32, c_uint32, c_char_p]),  # noqa: E501
         ("CfdAddUtxoForFundRawTx", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p]),  # noqa: E501
         ("CfdAddUtxoTemplateForFundRawTx", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_int64, c_char_p, c_char_p, c_char_p]),  # noqa: E501
         ("CfdAddTargetAmountForFundRawTx", c_int, [c_void_p, c_void_p, c_uint32, c_int64, c_char_p, c_char_p]),  # noqa: E501

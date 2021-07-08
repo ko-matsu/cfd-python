@@ -1463,11 +1463,11 @@ class Transaction(_TransactionBase):
                            'CfdFreeEstimateFeeHandle') as tx_handle:
                 for utxo in utxo_list:
                     util.call_func(
-                        'CfdAddTxInTemplateForEstimateFee',
+                        'CfdAddTxInputForEstimateFee',
                         handle.get_handle(), tx_handle.get_handle(),
                         str(utxo.outpoint.txid), utxo.outpoint.vout,
                         str(utxo.descriptor), '', False, False, False,
-                        0, '', to_hex_string(utxo.scriptsig_template))
+                        '', 0, 0, to_hex_string(utxo.scriptsig_template))
 
                 _txout_fee = ctypes.c_int64()
                 _utxo_fee = ctypes.c_int64()
@@ -1525,11 +1525,11 @@ class Transaction(_TransactionBase):
                            'CfdFreeFundRawTxHandle') as tx_handle:
                 for utxo in txin_utxo_list:
                     util.call_func(
-                        'CfdAddTxInTemplateForFundRawTx',
+                        'CfdAddTxInputForFundRawTx',
                         handle.get_handle(), tx_handle.get_handle(),
                         str(utxo.outpoint.txid), utxo.outpoint.vout,
                         utxo.amount, str(utxo.descriptor),
-                        '', False, False, False, 0, '',
+                        '', False, False, False, '', 0, 0,
                         to_hex_string(utxo.scriptsig_template))
                 for utxo in utxo_list:
                     util.call_func(

@@ -7,7 +7,7 @@ from typing import Tuple, Union, Optional, List
 from .util import get_util, CfdError, JobHandle, to_hex_string
 from .key import Network, Pubkey, SchnorrPubkey
 from .script import HashType, Script
-from .taproot import TaprootScriptTree
+from .taproot import TaprootScriptTree, TapBranch
 
 
 ##
@@ -49,7 +49,8 @@ class Address:
     ##
     # @var taproot_script_tree
     # Taproot script tree.
-    taproot_script_tree: Optional['TaprootScriptTree'] = None
+    taproot_script_tree: Optional[Union['TaprootScriptTree',
+                                        'TapBranch']] = None
 
     ##
     # @brief constructor.
@@ -204,15 +205,22 @@ class AddressUtil:
     # @return address object.
     @classmethod
     def taproot(
-            cls, pubkey: Union['SchnorrPubkey', 'TaprootScriptTree'],
+            cls, pubkey: Union[
+                'SchnorrPubkey', 'TaprootScriptTree'],
             network=Network.MAINNET,
-            script_tree: Optional['TaprootScriptTree'] = None) -> 'Address':
+            script_tree: Optional[Union[
+                'TaprootScriptTree', 'TapBranch']] = None) -> 'Address':
         if isinstance(pubkey, TaprootScriptTree):
             pk, _, _, _ = pubkey.get_taproot_data()
             addr = cls.from_pubkey_hash(pk, HashType.TAPROOT, network)
             addr.taproot_script_tree = script_tree
             return addr
         elif isinstance(script_tree, TaprootScriptTree):
+            pk, _, _, _ = script_tree.get_taproot_data(pubkey)
+            addr = cls.from_pubkey_hash(pk, HashType.TAPROOT, network)
+            addr.taproot_script_tree = script_tree
+            return addr
+        elif isinstance(script_tree, TapBranch):
             pk, _, _, _ = script_tree.get_taproot_data(pubkey)
             addr = cls.from_pubkey_hash(pk, HashType.TAPROOT, network)
             addr.taproot_script_tree = script_tree

@@ -12,8 +12,9 @@
         "isIssuance": false,
         "isBlindIssuance": false,
         "isPegin": false,
+        "claimScript": "",
         "peginBtcTxSize": 0,
-        "fedpegScript": "",
+        "peginTxOutProofSize": 0,
         "assetBlindFactor": "",
         "blindFactor": "",
         "keyData": {
@@ -37,8 +38,9 @@
         "isIssuance": false,
         "isBlindIssuance": false,
         "isPegin": false,
+        "claimScript": "",
         "peginBtcTxSize": 0,
-        "fedpegScript": "",
+        "peginTxOutProofSize": 0,
         "assetBlindFactor": "",
         "blindFactor": "",
         "keyData": {
@@ -58,8 +60,9 @@
         "isIssuance": false,
         "isBlindIssuance": false,
         "isPegin": false,
+        "claimScript": "",
         "peginBtcTxSize": 0,
-        "fedpegScript": "",
+        "peginTxOutProofSize": 0,
         "assetBlindFactor": "",
         "blindFactor": "",
         "keyData": {
