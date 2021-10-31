@@ -59,6 +59,8 @@ if [ $? -gt 0 ]; then
 fi
 
 python3 tests/test_elements.py -v
+elements-cli -chain=liquidregtest -datadir=${WORKDIR_PATH}/elementsd_datadir getblockchaininfo
+elements-cli -chain=liquidregtest -datadir=${WORKDIR_PATH}/elementsd_datadir getsidechaininfo
 if [ $? -gt 0 ]; then
   cd ../..
   exit 1
