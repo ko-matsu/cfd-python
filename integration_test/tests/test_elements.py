@@ -996,7 +996,8 @@ def test_elements_dynafed(test_obj):
     print(ConfidentialTransaction.parse_to_json(str(tx), network=NETWORK))
     elm_rpc.sendrawtransaction(str(tx))
     # generate block
-    elm_rpc.generatetoaddress(2, fee_addr)
+    # elm_rpc.generatetoaddress(2, fee_addr)
+    generatetoaddress_dynafed(test_obj, 2)
     time.sleep(2)
 
 
