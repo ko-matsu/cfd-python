@@ -7534,7 +7534,7 @@
                     "code": 1,
                     "type": "illegal_argument",
                     "json": "Error WIF to Private key.",
-                    "message": "bitcoin_descriptor is not of any type supported: pkh(<xpub>)"
+                    "message": "Failed to parse WIF. unsupported WIF prefix."
                 }
             }
         ]

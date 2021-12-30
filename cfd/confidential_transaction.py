@@ -11,8 +11,10 @@ from .address import Address, AddressUtil
 from .descriptor import Descriptor, parse_descriptor
 from .key import Network, SigHashType, Privkey, Pubkey
 from .script import HashType, Script
+from .taproot import TaprootScriptTree
 from .transaction import UtxoData, OutPoint, Txid, TxIn, TxOut, _FundTxOpt,\
-    _TransactionBase, BlockHash, Transaction
+    _TransactionBase, BlockHash, Transaction,\
+    CODE_SEPARATOR_POSITION_FINAL
 from .confidential_address import ConfidentialAddress
 from enum import Enum
 import copy
@@ -244,11 +246,10 @@ class ConfidentialValue:
                 to_hex_string(blind_factor))
             return ConfidentialValue(commitment)
 
+
 ##
 # @class ElementsUtxoData
 # @brief elements utxo class.
-
-
 class ElementsUtxoData(UtxoData):
     ##
     # @var outpoint
@@ -260,12 +261,16 @@ class ElementsUtxoData(UtxoData):
     amount: int
     ##
     # @var value
-    # value
+    # value (amount or commitment)
     value: 'ConfidentialValue'
     ##
     # @var asset
-    # asset
+    # asset (value or commitment)
     asset: 'ConfidentialAsset'
+    ##
+    # @var asset_commitment
+    # asset commitment
+    asset_commitment: 'ConfidentialAsset'
     ##
     # @var is_issuance
     # is issuance
@@ -309,6 +314,7 @@ class ElementsUtxoData(UtxoData):
     # @param[in] scriptsig_template     scriptsig template
     # @param[in] value                  value
     # @param[in] asset                  asset
+    # @param[in] asset_commitment       asset commitment
     # @param[in] is_issuance            issuance flag
     # @param[in] is_blind_issuance      blinded issuance flag
     # @param[in] is_pegin               pegin flag
@@ -322,7 +328,7 @@ class ElementsUtxoData(UtxoData):
             txid='', vout: int = 0, amount: int = 0,
             descriptor: Union[str, 'Descriptor'] = '',
             scriptsig_template='',
-            value='', asset='',
+            value=None, asset='', asset_commitment='',
             is_issuance: bool = False, is_blind_issuance: bool = False,
             is_pegin: bool = False,
             claim_script='',
@@ -332,8 +338,14 @@ class ElementsUtxoData(UtxoData):
             outpoint=outpoint, txid=txid, vout=vout,
             amount=amount, descriptor=descriptor,
             scriptsig_template=scriptsig_template)
-        self.value = ConfidentialValue.create(value, amount)
+        if not value:
+            self.value = ConfidentialValue(amount)
+        elif isinstance(value, ConfidentialValue):
+            self.value = value
+        else:
+            self.value = ConfidentialValue.create(value, amount)
         self.asset = ConfidentialAsset(asset)
+        self.asset_commitment = ConfidentialAsset(asset_commitment)
         self.is_issuance = is_issuance
         self.is_blind_issuance = is_blind_issuance
         self.is_pegin = is_pegin
@@ -885,6 +897,18 @@ class ConfidentialTransaction(_TransactionBase):
     ##
     # transaction's free function name.
     FREE_FUNC_NAME = 'CfdFreeTransactionHandle'
+
+    ##
+    # @brief set elements genesis block hash default.
+    # @param[in] genesis_block_hash     elements genesis block hash
+    # @return void
+    @classmethod
+    def set_default_genesis_block_hash(cls, genesis_block_hash):
+        util = get_util()
+        with util.create_handle() as handle:
+            util.call_func(
+                'CfdSetGenesisBlockHashGlobal', handle.get_handle(),
+                str(genesis_block_hash))
 
     ##
     # @brief parse transaction to json.
@@ -1455,6 +1479,19 @@ class ConfidentialTransaction(_TransactionBase):
         return AddressUtil.parse(addr)
 
     ##
+    # @brief set elements genesis block hash.
+    # @param[in] genesis_block_hash     elements genesis block hash
+    # @return void
+    def set_genesis_block_hash(self, genesis_block_hash):
+        util = get_util()
+        with util.create_handle() as handle, self._get_handle(
+                handle, self.network) as tx_handle:
+            util.call_func(
+                'CfdSetConfidentialTxGenesisBlockHashByHandle',
+                handle.get_handle(), tx_handle.get_handle(),
+                str(genesis_block_hash))
+
+    ##
     # @brief blind transaction output.
     # @param[in] utxo_list                      utxo list
     # @param[in] confidential_address_list      confidential address list
@@ -1723,31 +1760,69 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] pubkey         pubkey
     # @param[in] redeem_script  redeem script
     # @param[in] sighashtype    sighash type
+    # @param[in] utxos          utxo list (for taproot)
+    # @param[in] tapleaf_hash   tapleaf hash
+    # @param[in] annex          annex bytes
+    # @param[in] codeseparator_pos   codeseparator position
     # @return sighash
     def get_sighash(
-            self,
-            outpoint: 'OutPoint',
-            hash_type,
-            value,
-            pubkey='',
-            redeem_script='',
-            sighashtype=SigHashType.ALL) -> 'ByteData':
+        self,
+        outpoint: 'OutPoint',
+        hash_type,
+        value='',
+        pubkey='',
+        redeem_script='',
+        sighashtype=SigHashType.ALL,
+        utxos: List['ElementsUtxoData'] = [],
+        tapleaf_hash: Optional[Union['ByteData', str]] = None,
+        annex: Optional[Union['ByteData', str]] = None,
+        codeseparator_pos: int = CODE_SEPARATOR_POSITION_FINAL,
+    ) -> 'ByteData':
         _hash_type = HashType.get(hash_type)
         _pubkey = to_hex_string(pubkey)
         _script = to_hex_string(redeem_script)
         _sighashtype = SigHashType.get(sighashtype)
-        _value = value
-        if isinstance(value, ConfidentialValue) is False:
-            _value = ConfidentialValue(value)
+        _tapleaf_hash = to_hex_string(tapleaf_hash)
         util = get_util()
-        with util.create_handle() as handle:
-            sighash = util.call_func(
-                'CfdCreateConfidentialSighash', handle.get_handle(),
-                self.hex, str(outpoint.txid), outpoint.vout,
-                _hash_type.value, _pubkey, _script,
-                _value.amount, _value.hex, _sighashtype.value,
-                _sighashtype.anyone_can_pay())
-            return ByteData(sighash)
+        if not utxos:
+            _value = value
+            if isinstance(value, ConfidentialValue) is False:
+                _value = ConfidentialValue(value)
+            with util.create_handle() as handle:
+                sighash = util.call_func(
+                    'CfdCreateConfidentialSighash', handle.get_handle(),
+                    self.hex, str(outpoint.txid), outpoint.vout,
+                    _hash_type.value, _pubkey, _script,
+                    _value.amount, _value.hex, _sighashtype.value,
+                    _sighashtype.anyone_can_pay())
+        else:
+            with util.create_handle() as handle, super()._get_handle(
+                    handle, self.network) as tx_handle:
+                for utxo in utxos:
+                    desc = parse_descriptor(utxo.descriptor,
+                                            network=Network.LIQUID_V1)
+                    util.call_func(
+                        'CfdSetConfidentialTxUtxoDataByHandle',
+                        handle.get_handle(),
+                        tx_handle.get_handle(), str(utxo.outpoint.txid),
+                        utxo.outpoint.vout, utxo.amount,
+                        utxo.value.hex if utxo.value.has_blind() else '',
+                        str(utxo.descriptor), desc.data.address,
+                        str(utxo.asset), str(utxo.asset_commitment),
+                        str(utxo.asset_blinder), str(utxo.amount_blinder),
+                        to_hex_string(utxo.scriptsig_template), False)
+                if (not _tapleaf_hash) and _script:
+                    tree = TaprootScriptTree(
+                        Script(_script), network=Network.LIQUID_V1)
+                    _tapleaf_hash = tree.hash.hex
+
+                sighash = util.call_func(
+                    'CfdCreateSighashByHandle', handle.get_handle(),
+                    tx_handle.get_handle(), str(outpoint.txid),
+                    outpoint.vout, _sighashtype.get_type(),
+                    _sighashtype.anyone_can_pay(), _pubkey, _script,
+                    _tapleaf_hash, codeseparator_pos, to_hex_string(annex))
+        return ByteData(sighash)
 
     ##
     # @brief add sign with private key.
@@ -1757,10 +1832,18 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] value          value
     # @param[in] sighashtype    sighash type
     # @param[in] grind_r        grind-R flag
+    # @param[in] utxos          utxo list (for taproot)
+    # @param[in] aux_rand       aux random bytes
+    # @param[in] annex          annex bytes
     # @return void
     def sign_with_privkey(
-            self, outpoint: 'OutPoint', hash_type, privkey, value,
-            sighashtype=SigHashType.ALL, grind_r: bool = True) -> None:
+            self, outpoint: 'OutPoint', hash_type, privkey,
+            value='',
+            sighashtype=SigHashType.ALL,
+            grind_r: bool = True,
+            utxos: List['ElementsUtxoData'] = [],
+            aux_rand: Optional[Union['ByteData', str]] = None,
+            annex: Optional[Union['ByteData', str]] = None) -> None:
         _hash_type = HashType.get(hash_type)
         if isinstance(privkey, Privkey):
             _privkey = privkey
@@ -1770,19 +1853,45 @@ class ConfidentialTransaction(_TransactionBase):
             _privkey = Privkey(hex=privkey)
         _pubkey = _privkey.pubkey
         _sighashtype = SigHashType.get(sighashtype)
-        _value = value
-        if isinstance(value, ConfidentialValue) is False:
-            _value = ConfidentialValue(value)
         util = get_util()
-        with util.create_handle() as handle:
-            self.hex = util.call_func(
-                'CfdAddConfidentialTxSignWithPrivkeySimple',
-                handle.get_handle(), self.hex, str(outpoint.txid),
-                outpoint.vout, _hash_type.value, str(_pubkey),
-                str(_privkey), _value.amount, _value.hex,
-                _sighashtype.value,
-                _sighashtype.anyone_can_pay(), grind_r)
-            self._update_txin(outpoint)
+        if not utxos:
+            _value = value
+            if isinstance(value, ConfidentialValue) is False:
+                _value = ConfidentialValue(value)
+            with util.create_handle() as handle:
+                self.hex = util.call_func(
+                    'CfdAddConfidentialTxSignWithPrivkeySimple',
+                    handle.get_handle(), self.hex, str(outpoint.txid),
+                    outpoint.vout, _hash_type.value, str(_pubkey),
+                    str(_privkey), _value.amount, _value.hex,
+                    _sighashtype.value,
+                    _sighashtype.anyone_can_pay(), grind_r)
+                self._update_txin(outpoint)
+        else:
+            with util.create_handle() as handle, super()._get_handle(
+                    handle, self.network) as tx_handle:
+                for utxo in utxos:
+                    util.call_func(
+                        'CfdSetConfidentialTxUtxoDataByHandle',
+                        handle.get_handle(),
+                        tx_handle.get_handle(), str(utxo.outpoint.txid),
+                        utxo.outpoint.vout, utxo.amount,
+                        utxo.value.hex if utxo.value.has_blind() else '',
+                        str(utxo.descriptor), '',
+                        str(utxo.asset), str(utxo.asset_commitment),
+                        str(utxo.asset_blinder), str(utxo.amount_blinder),
+                        to_hex_string(utxo.scriptsig_template), False)
+
+                util.call_func(
+                    'CfdAddSignWithPrivkeyByHandle', handle.get_handle(),
+                    tx_handle.get_handle(), str(outpoint.txid),
+                    outpoint.vout, str(_privkey), _sighashtype.get_type(),
+                    _sighashtype.anyone_can_pay(), grind_r,
+                    to_hex_string(aux_rand), to_hex_string(annex))
+                self.hex = util.call_func(
+                    'CfdFinalizeTransaction', handle.get_handle(),
+                    tx_handle.get_handle())
+                self._update_txin_internal(handle, tx_handle, outpoint)
 
     ##
     # @brief verify sign.
@@ -1790,20 +1899,49 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] address        address
     # @param[in] hash_type      hash type
     # @param[in] value          value
+    # @param[in] utxos          utxo list (for taproot)
     # @return void
-    def verify_sign(self, outpoint: 'OutPoint', address, hash_type,
-                    value) -> None:
+    def verify_sign(self, outpoint: 'OutPoint',
+                    address='',
+                    hash_type=HashType.TAPROOT,
+                    value=0, utxos: List['ElementsUtxoData'] = []) -> None:
         _hash_type = HashType.get(hash_type)
         _value = value
         if isinstance(value, ConfidentialValue) is False:
             _value = ConfidentialValue(value)
         util = get_util()
-        with util.create_handle() as handle:
+        if _hash_type in [HashType.P2SH_P2WPKH, HashType.P2SH_P2WSH]:
+            with util.create_handle() as handle:
+                util.call_func(
+                    'CfdVerifyTxSign', handle.get_handle(),
+                    self.NETWORK, self.hex, str(outpoint.txid),
+                    outpoint.vout, str(address), _hash_type.value,
+                    '', _value.amount, _value.hex)
+                return
+
+        with util.create_handle() as handle, super()._get_handle(
+                handle, self.network) as tx_handle:
+            if not utxos:
+                addr = address if isinstance(
+                    address, Address) else AddressUtil.parse(address)
+                utxo = ElementsUtxoData(
+                    outpoint, value=_value,
+                    descriptor=f'raw({addr.locking_script})')
+                utxos = [utxo]
+            for utxo in utxos:
+                util.call_func(
+                    'CfdSetConfidentialTxUtxoDataByHandle',
+                    handle.get_handle(),
+                    tx_handle.get_handle(), str(utxo.outpoint.txid),
+                    utxo.outpoint.vout, utxo.amount,
+                    utxo.value.hex if utxo.value.has_blind() else '',
+                    str(utxo.descriptor), '',
+                    str(utxo.asset), str(utxo.asset_commitment),
+                    str(utxo.asset_blinder), str(utxo.amount_blinder),
+                    to_hex_string(utxo.scriptsig_template), False)
             util.call_func(
-                'CfdVerifyTxSign', handle.get_handle(),
-                self.NETWORK, self.hex, str(outpoint.txid),
-                outpoint.vout, str(address), _hash_type.value,
-                '', _value.amount, _value.hex)
+                'CfdVerifyTxSignByHandle', handle.get_handle(),
+                tx_handle.get_handle(), str(outpoint.txid), outpoint.vout)
 
     ##
     # @brief verify signature.
@@ -1818,7 +1956,9 @@ class ConfidentialTransaction(_TransactionBase):
     # @retval False     signature invalid.
     def verify_signature(
             self, outpoint: 'OutPoint', signature,
-            hash_type, pubkey, value,
+            hash_type,
+            pubkey='',
+            value='',
             redeem_script='', sighashtype=SigHashType.ALL) -> bool:
         _signature = to_hex_string(signature)
         _pubkey = to_hex_string(pubkey)

@@ -210,17 +210,30 @@ class AddressUtil:
             network=Network.MAINNET,
             script_tree: Optional[Union[
                 'TaprootScriptTree', 'TapBranch']] = None) -> 'Address':
+        _network = Network.get(network)
         if isinstance(pubkey, TaprootScriptTree):
+            if _network.is_elements() != pubkey.network.is_elements():
+                raise CfdError(
+                    error_code=1,
+                    message='Error: Unmatch network type by taproot.')
             pk, _, _, _ = pubkey.get_taproot_data()
             addr = cls.from_pubkey_hash(pk, HashType.TAPROOT, network)
             addr.taproot_script_tree = script_tree
             return addr
         elif isinstance(script_tree, TaprootScriptTree):
+            if _network.is_elements() != script_tree.network.is_elements():
+                raise CfdError(
+                    error_code=1,
+                    message='Error: Unmatch network type by taproot.')
             pk, _, _, _ = script_tree.get_taproot_data(pubkey)
             addr = cls.from_pubkey_hash(pk, HashType.TAPROOT, network)
             addr.taproot_script_tree = script_tree
             return addr
         elif isinstance(script_tree, TapBranch):
+            if _network.is_elements() != script_tree.network.is_elements():
+                raise CfdError(
+                    error_code=1,
+                    message='Error: Unmatch network type by taproot.')
             pk, _, _, _ = script_tree.get_taproot_data(pubkey)
             addr = cls.from_pubkey_hash(pk, HashType.TAPROOT, network)
             addr.taproot_script_tree = script_tree
@@ -410,7 +423,7 @@ class AddressUtil:
             fedpeg_script: Union['Script', str],
             pubkey='',
             redeem_script='',
-            hash_type: Union['HashType', str] = HashType.P2SH_P2WSH,
+            hash_type: Union['HashType', str] = HashType.P2WSH,
             mainchain_network=Network.MAINNET,
     ) -> Tuple['Address', 'Script', 'Script']:
         _fedpeg_script = to_hex_string(fedpeg_script)
