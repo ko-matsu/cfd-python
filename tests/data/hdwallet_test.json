@@ -157,7 +157,7 @@
                     "language": "en"
                 },
                 "error": {
-                    "cfd": "Failed to ConvertEntropyToMnemonic. Convert entropy to mnemonic error."
+                    "cfd": "Convert entropy to mnemonic error."
                 }
             }
         ]
@@ -259,7 +259,7 @@
                     "strict_check": false
                 },
                 "error": {
-                    "cfd": "Failed to ConvertMnemonicToSeed. Convert mnemonic to entropy error.",
+                    "cfd": "Convert mnemonic to entropy error.",
                     "json": "Failed to ConvertMnemonicToSeed. Not support language passed."
                 }
             }
@@ -372,8 +372,7 @@
                     "network": "mainnet"
                 },
                 "error": {
-                    "cfd": "ExtPrivkey base58 decode error.",
-                    "python": "ExtPubkey base58 decode error."
+                    "cfd": "Decode base58 error."
                 },
                 "memo": "Different APIs are called, which is why the error messages are different."
             },
@@ -486,8 +485,7 @@
                     "hardened": false
                 },
                 "error": {
-                    "python": "ExtPubkey base58 decode error.",
-                    "cfd": "ExtPubkey base58 decode error.",
+                    "cfd": "Decode base58 error.",
                     "json": "Illegal extkey. base58 decode error."
                 }
             },
@@ -533,7 +531,7 @@
                     "hardened": true
                 },
                 "error": {
-                    "cfd": "Illegal child_number. Hardened is privkey only."
+                    "cfd": "hardened child_num can use privkey only."
                 }
             },
             {
@@ -546,7 +544,7 @@
                     "hardened": true
                 },
                 "error": {
-                    "cfd": "Illegal child_number. Hardened is privkey only."
+                    "cfd": "hardened child_num can use privkey only."
                 }
             },
             {
@@ -684,8 +682,7 @@
                     ]
                 },
                 "error": {
-                    "python": "ExtPubkey base58 decode error.",
-                    "cfd": "Illegal extkey. base58 decode error."
+                    "cfd": "Decode base58 error."
                 }
             },
             {
@@ -733,8 +730,7 @@
                     ]
                 },
                 "error": {
-                    "python": "Error: Invalid ext privkey.",
-                    "cfd": "Illegal output_key_type. Cannot create privkey from pubkey."
+                    "cfd": "Error: Invalid ext privkey."
                 }
             },
             {
@@ -748,7 +744,7 @@
                     ]
                 },
                 "error": {
-                    "cfd": "Illegal child_number. Hardened is privkey only."
+                    "cfd": "hardened child_num can use privkey only."
                 }
             },
             {
@@ -875,7 +871,7 @@
                     "extkey": "Ltpv78nmdb9RW2JVn6dGat5MR1edEbTEXKUPH8gmTKk6o6RTGLJXRjRHvYzW6fWzSbRcf4ydLekAGxWr7NFTgjz9MTnjGhjCocnDqg1uoSyMkKV"
                 },
                 "error": {
-                    "cfd": "ExtPubkey unserialize error."
+                    "cfd": "unsupported extkey version."
                 }
             }
         ]
@@ -1179,8 +1175,7 @@
                     "isCompressed": true
                 },
                 "error": {
-                    "python": "ExtPubkey unserialize error.",
-                    "cfd": "ExtPrivkey unserialize error."
+                    "cfd": "unsupported extkey version."
                 }
             },
             {
@@ -1289,8 +1284,7 @@
                     "network": "regtest"
                 },
                 "error": {
-                    "python": "ExtPubkey unserialize error.",
-                    "cfd": "ExtPrivkey unserialize error."
+                    "cfd": "unsupported extkey version."
                 }
             },
             {

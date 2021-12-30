@@ -1,8 +1,6 @@
 import os
 import glob
 
-__version__ = '0.3.0'
-
 __all__ = [
     os.path.split(os.path.splitext(file)[0])[1]
     for file in glob.glob(os.path.join(

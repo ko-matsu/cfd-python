@@ -1471,7 +1471,7 @@
         ]
     },
     {
-        "name": "EcdsaAdaptor.Sign",
+        "name": "EcdsaAdaptor.Encrypt",
         "cases": [
             {
                 "case": "hashed message",
@@ -1482,8 +1482,7 @@
                     "adaptor": "038d48057fc4ce150482114d43201b333bf3706f3cd527e8767ceb4b443ab5d349"
                 },
                 "expect": {
-                    "signature": "00cbe0859638c3600ea1872ed7a55b8182a251969f59d7d2da6bd4afedf25f5021a49956234cbbbbede8ca72e0113319c84921bf1224897a6abd89dc96b9c5b208",
-                    "proof": "00b02472be1ba09f5675488e841a10878b38c798ca63eff3650c8e311e3e2ebe2e3b6fee5654580a91cc5149a71bf25bcbeae63dea3ac5ad157a0ab7373c3011d0fc2592a07f719c5fc1323f935569ecd010db62f045e965cc1d564eb42cce8d6d"
+                    "signature": "02717ff3bb1c1ab09782f1f9ac0ea9f07006717efe0771d1ab7fc856bf6bb802c203164e2639cff6ad8943244d4f31533b0f168f026242905c0a761681b2eaf7329bde184ef11c5a9d89a871422ae92f42b0ae09c975d34450cb0c77eeeaa69881152fb87fca8d09454743b5d77abb60aea5263e93eecfbf933a9efd6e48b5b7946fd8021bf858141f1c3854d24778baf27e642d288e07851b3e83c33a64ab10ee85"
                 }
             }
         ]
@@ -1494,12 +1493,11 @@
             {
                 "case": "hashed message",
                 "request": {
-                    "signature": "00cbe0859638c3600ea1872ed7a55b8182a251969f59d7d2da6bd4afedf25f5021a49956234cbbbbede8ca72e0113319c84921bf1224897a6abd89dc96b9c5b208",
-                    "proof": "00b02472be1ba09f5675488e841a10878b38c798ca63eff3650c8e311e3e2ebe2e3b6fee5654580a91cc5149a71bf25bcbeae63dea3ac5ad157a0ab7373c3011d0fc2592a07f719c5fc1323f935569ecd010db62f045e965cc1d564eb42cce8d6d",
-                    "adaptor": "038d48057fc4ce150482114d43201b333bf3706f3cd527e8767ceb4b443ab5d349",
+                    "signature": "02717ff3bb1c1ab09782f1f9ac0ea9f07006717efe0771d1ab7fc856bf6bb802c203164e2639cff6ad8943244d4f31533b0f168f026242905c0a761681b2eaf7329bde184ef11c5a9d89a871422ae92f42b0ae09c975d34450cb0c77eeeaa69881152fb87fca8d09454743b5d77abb60aea5263e93eecfbf933a9efd6e48b5b7946fd8021bf858141f1c3854d24778baf27e642d288e07851b3e83c33a64ab10ee85",
                     "message": "024bdd11f2144e825db05759bdd9041367a420fad14b665fd08af5b42056e5e2",
                     "isHashed": true,
-                    "pubkey": "03490cec9a53cd8f2f664aea61922f26ee920c42d2489778bb7c9d9ece44d149a7"
+                    "pubkey": "03490cec9a53cd8f2f664aea61922f26ee920c42d2489778bb7c9d9ece44d149a7",
+                    "adaptor": "038d48057fc4ce150482114d43201b333bf3706f3cd527e8767ceb4b443ab5d349"
                 },
                 "expect": {
                     "valid": true
@@ -1508,12 +1506,11 @@
             {
                 "case": "unmatch signature",
                 "request": {
-                    "signature": "11cbe0859638c3600ea1872ed7a55b8182a251969f59d7d2da6bd4afedf25f5021a49956234cbbbbede8ca72e0113319c84921bf1224897a6abd89dc96b9c5b208",
-                    "proof": "00b02472be1ba09f5675488e841a10878b38c798ca63eff3650c8e311e3e2ebe2e3b6fee5654580a91cc5149a71bf25bcbeae63dea3ac5ad157a0ab7373c3011d0fc2592a07f719c5fc1323f935569ecd010db62f045e965cc1d564eb42cce8d6d",
-                    "adaptor": "038d48057fc4ce150482114d43201b333bf3706f3cd527e8767ceb4b443ab5d349",
+                    "signature": "03717ff3bb1c1ab09782f1f9ac0ea9f07006717efe0771d1ab7fc856bf6bb802c203164e2639cff6ad8943244d4f31533b0f168f026242905c0a761681b2eaf7329bde184ef11c5a9d89a871422ae92f42b0ae09c975d34450cb0c77eeeaa69881152fb87fca8d09454743b5d77abb60aea5263e93eecfbf933a9efd6e48b5b7946fd8021bf858141f1c3854d24778baf27e642d288e07851b3e83c33a64ab10ee85",
                     "message": "024bdd11f2144e825db05759bdd9041367a420fad14b665fd08af5b42056e5e2",
                     "isHashed": true,
-                    "pubkey": "03490cec9a53cd8f2f664aea61922f26ee920c42d2489778bb7c9d9ece44d149a7"
+                    "pubkey": "03490cec9a53cd8f2f664aea61922f26ee920c42d2489778bb7c9d9ece44d149a7",
+                    "adaptor": "038d48057fc4ce150482114d43201b333bf3706f3cd527e8767ceb4b443ab5d349"
                 },
                 "expect": {
                     "valid": false
@@ -1525,12 +1522,11 @@
             {
                 "case": "unmatch signature by json",
                 "request": {
-                    "signature": "11cbe0859638c3600ea1872ed7a55b8182a251969f59d7d2da6bd4afedf25f5021a49956234cbbbbede8ca72e0113319c84921bf1224897a6abd89dc96b9c5b208",
-                    "proof": "00b02472be1ba09f5675488e841a10878b38c798ca63eff3650c8e311e3e2ebe2e3b6fee5654580a91cc5149a71bf25bcbeae63dea3ac5ad157a0ab7373c3011d0fc2592a07f719c5fc1323f935569ecd010db62f045e965cc1d564eb42cce8d6d",
-                    "adaptor": "038d48057fc4ce150482114d43201b333bf3706f3cd527e8767ceb4b443ab5d349",
+                    "signature": "03717ff3bb1c1ab09782f1f9ac0ea9f07006717efe0771d1ab7fc856bf6bb802c203164e2639cff6ad8943244d4f31533b0f168f026242905c0a761681b2eaf7329bde184ef11c5a9d89a871422ae92f42b0ae09c975d34450cb0c77eeeaa69881152fb87fca8d09454743b5d77abb60aea5263e93eecfbf933a9efd6e48b5b7946fd8021bf858141f1c3854d24778baf27e642d288e07851b3e83c33a64ab10ee85",
                     "message": "024bdd11f2144e825db05759bdd9041367a420fad14b665fd08af5b42056e5e2",
                     "isHashed": true,
-                    "pubkey": "03490cec9a53cd8f2f664aea61922f26ee920c42d2489778bb7c9d9ece44d149a7"
+                    "pubkey": "03490cec9a53cd8f2f664aea61922f26ee920c42d2489778bb7c9d9ece44d149a7",
+                    "adaptor": "038d48057fc4ce150482114d43201b333bf3706f3cd527e8767ceb4b443ab5d349"
                 },
                 "error": {
                     "json": "Failed to VerifyEcdsaAdaptor. check fail."
@@ -1542,12 +1538,11 @@
             {
                 "case": "Error: invalid message",
                 "request": {
-                    "signature": "00cbe0859638c3600ea1872ed7a55b8182a251969f59d7d2da6bd4afedf25f5021a49956234cbbbbede8ca72e0113319c84921bf1224897a6abd89dc96b9c5b208",
-                    "proof": "00b02472be1ba09f5675488e841a10878b38c798ca63eff3650c8e311e3e2ebe2e3b6fee5654580a91cc5149a71bf25bcbeae63dea3ac5ad157a0ab7373c3011d0fc2592a07f719c5fc1323f935569ecd010db62f045e965cc1d564eb42cce8d6d",
-                    "adaptor": "038d48057fc4ce150482114d43201b333bf3706f3cd527e8767ceb4b443ab5d349",
+                    "signature": "02717ff3bb1c1ab09782f1f9ac0ea9f07006717efe0771d1ab7fc856bf6bb802c203164e2639cff6ad8943244d4f31533b0f168f026242905c0a761681b2eaf7329bde184ef11c5a9d89a871422ae92f42b0ae09c975d34450cb0c77eeeaa69881152fb87fca8d09454743b5d77abb60aea5263e93eecfbf933a9efd6e48b5b7946fd8021bf858141f1c3854d24778baf27e642d288e07851b3e83c33a64ab10ee85",
                     "message": "02dd11f2144e825db05759bdd9041367a420fad14b665fd08af5b42056e5e2",
                     "isHashed": true,
-                    "pubkey": "03490cec9a53cd8f2f664aea61922f26ee920c42d2489778bb7c9d9ece44d149a7"
+                    "pubkey": "03490cec9a53cd8f2f664aea61922f26ee920c42d2489778bb7c9d9ece44d149a7",
+                    "adaptor": "038d48057fc4ce150482114d43201b333bf3706f3cd527e8767ceb4b443ab5d349"
                 },
                 "error": {
                     "cfd": "ByteData256 size unmatch."
@@ -1556,12 +1551,11 @@
             {
                 "case": "Error: invalid pubkey",
                 "request": {
-                    "signature": "00cbe0859638c3600ea1872ed7a55b8182a251969f59d7d2da6bd4afedf25f5021a49956234cbbbbede8ca72e0113319c84921bf1224897a6abd89dc96b9c5b208",
-                    "proof": "00b02472be1ba09f5675488e841a10878b38c798ca63eff3650c8e311e3e2ebe2e3b6fee5654580a91cc5149a71bf25bcbeae63dea3ac5ad157a0ab7373c3011d0fc2592a07f719c5fc1323f935569ecd010db62f045e965cc1d564eb42cce8d6d",
-                    "adaptor": "038d48057fc4ce150482114d43201b333bf3706f3cd527e8767ceb4b443ab5d349",
+                    "signature": "02717ff3bb1c1ab09782f1f9ac0ea9f07006717efe0771d1ab7fc856bf6bb802c203164e2639cff6ad8943244d4f31533b0f168f026242905c0a761681b2eaf7329bde184ef11c5a9d89a871422ae92f42b0ae09c975d34450cb0c77eeeaa69881152fb87fca8d09454743b5d77abb60aea5263e93eecfbf933a9efd6e48b5b7946fd8021bf858141f1c3854d24778baf27e642d288e07851b3e83c33a64ab10ee85",
                     "message": "024bdd11f2144e825db05759bdd9041367a420fad14b665fd08af5b42056e5e2",
                     "isHashed": true,
-                    "pubkey": "030cec9a53cd8f2f664aea61922f26ee920c42d2489778bb7c9d9ece44d149a7"
+                    "pubkey": "030cec9a53cd8f2f664aea61922f26ee920c42d2489778bb7c9d9ece44d149a7",
+                    "adaptor": "038d48057fc4ce150482114d43201b333bf3706f3cd527e8767ceb4b443ab5d349"
                 },
                 "error": {
                     "cfd": "Invalid Pubkey data."
@@ -1570,28 +1564,28 @@
         ]
     },
     {
-        "name": "EcdsaAdaptor.Adapt",
+        "name": "EcdsaAdaptor.Decrypt",
         "cases": [
             {
                 "case": "hashed message",
                 "request": {
-                    "signature": "01099c91aa1fe7f25c41085c1d3c9e73fe04a9d24dac3f9c2172d6198628e57f47bb90e2ad6630900b69f55674c8ad74a419e6ce113c10a21a79345a6e47bc74c1",
+                    "signature": "02717ff3bb1c1ab09782f1f9ac0ea9f07006717efe0771d1ab7fc856bf6bb802c203164e2639cff6ad8943244d4f31533b0f168f026242905c0a761681b2eaf7329bde184ef11c5a9d89a871422ae92f42b0ae09c975d34450cb0c77eeeaa69881152fb87fca8d09454743b5d77abb60aea5263e93eecfbf933a9efd6e48b5b7946fd8021bf858141f1c3854d24778baf27e642d288e07851b3e83c33a64ab10ee85",
                     "secret": "475697a71a74ff3f2a8f150534e9b67d4b0b6561fab86fcaa51f8c9d6c9db8c6"
                 },
                 "expect": {
-                    "signature": "099c91aa1fe7f25c41085c1d3c9e73fe04a9d24dac3f9c2172d6198628e57f474d13456e98d8989043fd4674302ce90c432e2f8bb0269f02c72aafec60b72de1"
+                    "signature": "717ff3bb1c1ab09782f1f9ac0ea9f07006717efe0771d1ab7fc856bf6bb802c260d6deb1bc09038b4eb8244a645beed1387890b58b83f0674102b21561456f20"
                 }
             }
         ]
     },
     {
-        "name": "EcdsaAdaptor.ExtractSecret",
+        "name": "EcdsaAdaptor.Recover",
         "cases": [
             {
                 "case": "hashed message",
                 "request": {
-                    "adaptorSignature": "01099c91aa1fe7f25c41085c1d3c9e73fe04a9d24dac3f9c2172d6198628e57f47bb90e2ad6630900b69f55674c8ad74a419e6ce113c10a21a79345a6e47bc74c1",
-                    "signature": "099c91aa1fe7f25c41085c1d3c9e73fe04a9d24dac3f9c2172d6198628e57f474d13456e98d8989043fd4674302ce90c432e2f8bb0269f02c72aafec60b72de1",
+                    "adaptorSignature": "02717ff3bb1c1ab09782f1f9ac0ea9f07006717efe0771d1ab7fc856bf6bb802c203164e2639cff6ad8943244d4f31533b0f168f026242905c0a761681b2eaf7329bde184ef11c5a9d89a871422ae92f42b0ae09c975d34450cb0c77eeeaa69881152fb87fca8d09454743b5d77abb60aea5263e93eecfbf933a9efd6e48b5b7946fd8021bf858141f1c3854d24778baf27e642d288e07851b3e83c33a64ab10ee85",
+                    "signature": "717ff3bb1c1ab09782f1f9ac0ea9f07006717efe0771d1ab7fc856bf6bb802c260d6deb1bc09038b4eb8244a645beed1387890b58b83f0674102b21561456f20",
                     "adaptor": "038d48057fc4ce150482114d43201b333bf3706f3cd527e8767ceb4b443ab5d349"
                 },
                 "expect": {

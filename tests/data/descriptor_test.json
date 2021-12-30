@@ -1274,7 +1274,7 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "ExtPubkey hardened derive error."
+                    "message": "hardened child_num can use privkey only."
                 }
             },
             {
