@@ -1161,7 +1161,7 @@ def search_vout(tx_hex, address) -> OutPoint:
     raise Exception('address not found.')
 
 
-def test_elements_taproot(test_obj):
+def test_elements_taproot_unblind(test_obj):
     # btc_rpc = test_obj.btcConn.get_rpc()
     elm_rpc = test_obj.elmConn.get_rpc()
 
@@ -1303,10 +1303,167 @@ def test_elements_taproot(test_obj):
     generatetoaddress_dynafed(test_obj, 2)
     time.sleep(2)
 
-    # 3. blind tx by taproot (sighash default)
-    # 4. blind tx by tapscript (sighash default) => use descriptor
-    # 5. sighash ALL/Single/None
-    # 6. issue/reissue, other asset
+
+def test_elements_taproot_blind(test_obj):
+    elm_rpc = test_obj.elmConn.get_rpc()
+
+    main_addr = test_obj.addr_dic['main']
+    main_pk, _ = SchnorrPubkey.from_pubkey(str(main_addr.pubkey))
+    main_path = str(test_obj.path_dic[str(main_addr)])
+    main_sk = test_obj.hdwallet.get_privkey(path=main_path).privkey
+    main_blind_sk = test_obj.blind_key_dic[str(main_addr)]
+
+    fee_addr = test_obj.addr_dic['fee']
+    fee_pk, _ = SchnorrPubkey.from_pubkey(str(fee_addr.pubkey))
+    fee_desc = test_obj.desc_dic[str(fee_addr)]
+    fee_ct_addr = test_obj.ct_addr_dic[str(fee_addr)]
+    fee_sk = test_obj.hdwallet.get_privkey(path=FEE_PATH).privkey
+
+    # 3. blind tx by taproot & tapscript (sighash default)
+    # 4. sighash ALL/Single/None + AnyOneCanPay
+    sighashtype_list = [SigHashType.DEFAULT, SigHashType.ALL,
+                        SigHashType.SINGLE, SigHashType.NONE,
+                        SigHashType.ALL_PLUS_ANYONE_CAN_PAY,
+                        SigHashType.SINGLE_PLUS_ANYONE_CAN_PAY,
+                        SigHashType.NONE_PLUS_ANYONE_CAN_PAY]
+    for sighashtype in sighashtype_list:
+        desc1 = parse_descriptor(f'tr({str(main_pk)})', network=NETWORK)
+        st1 = TapBranch.from_string(desc1.data.tree_string, network=NETWORK)
+        tr_addr1 = desc1.data.address
+        ct_addr1 = ConfidentialAddress(str(tr_addr1), main_blind_sk.pubkey)
+        desc2 = parse_descriptor(
+            f'tr({str(main_pk)},{{pk({str(main_pk)}),pk({str(fee_pk)})}})',
+            network=NETWORK)
+        tr_addr2 = desc2.data.address
+        ct_addr2 = ConfidentialAddress(str(tr_addr2), main_blind_sk.pubkey)
+        script2 = Script.from_asm([str(main_pk), 'OP_CHECKSIG'])
+        st2 = TaprootScriptTree.from_string_and_key(
+            desc2.data.tree_string, tapscript=script2,
+            internal_pubkey=main_pk, network=NETWORK)
+
+        txout_list = [
+            ConfidentialTxOut(
+                10000000,
+                ct_addr1,
+                asset=test_obj.pegged_asset),
+            ConfidentialTxOut(
+                10000000,
+                ct_addr2,
+                asset=test_obj.pegged_asset),
+        ]
+        tx = ConfidentialTransaction.create(2, 0, [], txout_list)
+        # fundrawtransaction
+        utxos = get_utxo(elm_rpc, [str(fee_addr)])
+        utxo_list = convert_elements_utxos(test_obj, utxos)
+        target_list = [TargetAmountData(
+            amount=1,
+            asset=test_obj.pegged_asset,
+            reserved_address=fee_ct_addr)]
+        tx.fund_raw_transaction([], utxo_list,
+                                fee_asset=test_obj.pegged_asset,
+                                target_list=target_list,
+                                effective_fee_rate=0.1,
+                                knapsack_min_change=1)
+        # blind
+        blind_utxo_list = []
+        for txin in tx.txin_list:
+            blind_utxo_list.append(search_utxos(
+                test_obj, utxo_list, txin.outpoint))
+        tx.blind_txout(blind_utxo_list)
+        # add sign
+        for txin in tx.txin_list:
+            utxo = search_utxos(test_obj, utxo_list, txin.outpoint)
+            tx.sign_with_privkey(txin.outpoint, fee_desc.data.hash_type,
+                                 privkey=fee_sk, value=utxo.value,
+                                 sighashtype=SigHashType.ALL)
+        # broadcast
+        print(ConfidentialTransaction.parse_to_json(str(tx), network=NETWORK))
+        elm_rpc.sendrawtransaction(str(tx))
+        # generate block
+        # generatetoaddress_dynafed(test_obj, 2)
+        # time.sleep(2)
+
+        # unblind tx (for utxo)
+        unblind_data1 = tx.unblind_txout(0, main_blind_sk)
+        unblind_data2 = tx.unblind_txout(1, main_blind_sk)
+        txid = tx.txid
+
+        txin_utxo_list2 = []
+        txin_list2 = []
+        txin_utxo_list2.append(ElementsUtxoData(
+            outpoint=OutPoint(tx.txid, 0),
+            descriptor=f'raw({desc1.data.locking_script})',
+            amount=txout_list[0].amount,
+            asset=txout_list[0].asset,
+            amount_blinder=unblind_data1.amount_blinder,
+            asset_blinder=unblind_data1.asset_blinder,
+            asset_commitment=tx.txout_list[0].asset,
+            value=tx.txout_list[0].value,
+        ))
+        txin_list2.append(ConfidentialTxIn(txin_utxo_list2[0].outpoint))
+
+        txin_utxo_list2.append(ElementsUtxoData(
+            outpoint=OutPoint(tx.txid, 1),
+            descriptor=f'raw({desc2.data.locking_script})',
+            amount=txout_list[1].amount,
+            asset=txout_list[1].asset,
+            amount_blinder=unblind_data2.amount_blinder,
+            asset_blinder=unblind_data2.asset_blinder,
+            asset_commitment=tx.txout_list[1].asset,
+            value=tx.txout_list[1].value,
+        ))
+        txin_list2.append(ConfidentialTxIn(txin_utxo_list2[1].outpoint))
+        total_amount = txout_list[0].amount+txout_list[1].amount
+        txout_list2 = [
+            ConfidentialTxOut(
+                total_amount-10000000-2000,
+                fee_ct_addr,
+                asset=test_obj.pegged_asset),
+            ConfidentialTxOut(
+                10000000,
+                fee_ct_addr,
+                asset=test_obj.pegged_asset),
+            ConfidentialTxOut(
+                2000,
+                asset=test_obj.pegged_asset),
+        ]
+        tx2 = ConfidentialTransaction.create(2, 0, txin_list2, txout_list2)
+        # blind
+        tx2.blind_txout(txin_utxo_list2)
+
+        # add sign
+        for index, utxo in enumerate(txin_utxo_list2):
+            if index == 0:
+                sk = st1.get_privkey(main_sk)
+                tx2.sign_with_privkey(utxo.outpoint,
+                                      HashType.TAPROOT,
+                                      sk,
+                                      sighashtype=sighashtype,
+                                      utxos=txin_utxo_list2)
+            elif index == 1:
+                print(f'{main_sk},{script2},{str(tx2)}')
+                tree = TaprootScriptTree(
+                    Script(script2), network=Network.LIQUID_V1)
+                sighash = tx2.get_sighash(
+                    utxo.outpoint, HashType.TAPROOT, redeem_script=script2,
+                    sighashtype=sighashtype, utxos=txin_utxo_list2,
+                    tapleaf_hash=str(tree.hash))
+                sig = SchnorrUtil.sign(sighash, main_sk)
+                sign_param = SignParameter(sig, sighashtype=sighashtype)
+                _, _, _, control_block = st2.get_taproot_data()
+                tx2.add_tapscript_sign(utxo.outpoint, [sign_param],
+                                       script2, control_block)
+
+        # broadcast
+        tx_json = ConfidentialTransaction.parse_to_json(
+            str(tx2), network=NETWORK)
+        print(f'tx={tx_json}, sighashtype={sighashtype}')
+        txid = elm_rpc.sendrawtransaction(str(tx2))
+        test_obj.tx_dic[txid] = tx2
+        # generate block
+        generatetoaddress_dynafed(test_obj, 2)
+        time.sleep(2)
+    # 5. issue/reissue, other asset
 
 
 class TestElements(unittest.TestCase):
@@ -1357,7 +1514,8 @@ class TestElements(unittest.TestCase):
         # send multi asset
         # destroy amount
         test_elements_dynafed(self)
-        test_elements_taproot(self)
+        test_elements_taproot_unblind(self)
+        test_elements_taproot_blind(self)
 
 
 if __name__ == "__main__":
