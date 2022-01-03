@@ -88,6 +88,9 @@ def generatetoaddress_dynafed(test_obj, count):
                 "extension_space": [pak1],
             })
         elm_rpc.submitblock(block_data)
+    # bitcoin ping (for disconnect 60 sec empty)
+    btc_rpc = test_obj.btcConn.get_rpc()
+    btc_rpc.ping()
 
 
 def create_bitcoin_address(test_obj):
@@ -1464,6 +1467,50 @@ def test_elements_taproot_blind(test_obj):
         time.sleep(2)
 
 
+def sendrawtransaction(test_obj, addrs, amounts) -> ConfidentialTransaction:
+    elm_rpc = test_obj.elmConn.get_rpc()
+
+    fee_addr = test_obj.addr_dic['fee']
+    fee_desc = test_obj.desc_dic[str(fee_addr)]
+    fee_ct_addr = test_obj.ct_addr_dic[str(fee_addr)]
+    fee_sk = test_obj.hdwallet.get_privkey(path=FEE_PATH).privkey
+
+    txout_list = []
+    for index, addr in enumerate(addrs):
+        txout_list.append(ConfidentialTxOut(
+            amounts[index],
+            addr,
+            asset=test_obj.pegged_asset))
+    tx = ConfidentialTransaction.create(2, 0, [], txout_list)
+    # fundrawtransaction
+    utxos = get_utxo(elm_rpc, [str(fee_addr)])
+    utxo_list = convert_elements_utxos(test_obj, utxos)
+    target_list = [TargetAmountData(
+        amount=1,
+        asset=test_obj.pegged_asset,
+        reserved_address=fee_ct_addr)]
+    tx.fund_raw_transaction([], utxo_list,
+                            fee_asset=test_obj.pegged_asset,
+                            target_list=target_list,
+                            effective_fee_rate=0.1,
+                            knapsack_min_change=1)
+    # blind
+    blind_utxo_list = []
+    for txin in tx.txin_list:
+        utxo = search_utxos(test_obj, utxo_list, txin.outpoint)
+        blind_utxo_list.append(utxo)
+    tx.blind_txout(blind_utxo_list)
+    # add sign
+    for txin in tx.txin_list:
+        utxo = search_utxos(test_obj, utxo_list, txin.outpoint)
+        tx.sign_with_privkey(txin.outpoint, fee_desc.data.hash_type,
+                             privkey=fee_sk, value=utxo.value,
+                             sighashtype=SigHashType.ALL)
+    # broadcast
+    elm_rpc.sendrawtransaction(str(tx))
+    return tx
+
+
 def test_elements_taproot_issue_reissue(test_obj):
     # 5. issue/reissue, other asset
     # tx1: fund & send taproot addr & issue asset
@@ -1681,9 +1728,192 @@ def test_elements_taproot_issue_reissue(test_obj):
             time.sleep(2)
 
 
-def test_elements_taproot_pegin_pegout(test_obj):
+def test_elements_taproot_pegin(test_obj):
+    btc_rpc = test_obj.btcConn.get_rpc()
+    elm_rpc = test_obj.elmConn.get_rpc()
+
+    main_addr = test_obj.addr_dic['main']
+    main_pk, _ = SchnorrPubkey.from_pubkey(str(main_addr.pubkey))
+    main_path = str(test_obj.path_dic[str(main_addr)])
+    main_sk = test_obj.hdwallet.get_privkey(path=main_path).privkey
+    main_blind_sk = test_obj.blind_key_dic[str(main_addr)]
+
+    fee_addr = test_obj.addr_dic['fee']
+    fee_pk, _ = SchnorrPubkey.from_pubkey(str(fee_addr.pubkey))
+    fee_ct_addr = test_obj.ct_addr_dic[str(fee_addr)]
+    # fee_sk = test_obj.hdwallet.get_privkey(path=FEE_PATH).privkey
+    # fee_blind_sk = test_obj.blind_key_dic[str(fee_addr)]
+
+    desc1 = parse_descriptor(f'tr({str(main_pk)})', network=NETWORK)
+    st1 = TapBranch.from_string(desc1.data.tree_string, network=NETWORK)
+    tr_addr1 = desc1.data.address
+    ct_addr1 = ConfidentialAddress(str(tr_addr1), main_blind_sk.pubkey)
+    desc2 = parse_descriptor(
+        f'tr({str(main_pk)},{{pk({str(main_pk)}),pk({str(fee_pk)})}})',
+        network=NETWORK)
+    tr_addr2 = desc2.data.address
+    ct_addr2 = ConfidentialAddress(str(tr_addr2), main_blind_sk.pubkey)
+    script2 = Script.from_asm([str(main_pk), 'OP_CHECKSIG'])
+    st2 = TaprootScriptTree.from_string_and_key(
+        desc2.data.tree_string, tapscript=script2,
+        internal_pubkey=main_pk, network=NETWORK)
+
     # 6. pegin/pegout: pegin is using pegin utxo & taproot utxo
-    pass
+    tx1 = sendrawtransaction(test_obj, [str(ct_addr1), str(ct_addr2)],
+                             [100000000, 100000000])
+    # generate block
+    generatetoaddress_dynafed(test_obj, 2)
+    time.sleep(2)
+
+    vout1 = tx1.get_txout_index(str(tr_addr1))
+    vout2 = tx1.get_txout_index(str(tr_addr2))
+    outpoint1 = OutPoint(tx1.txid, vout1)
+    outpoint2 = OutPoint(tx1.txid, vout2)
+    unblind_data1 = tx1.unblind_txout(outpoint1.vout, main_blind_sk)
+    unblind_data2 = tx1.unblind_txout(outpoint2.vout, main_blind_sk)
+    script2_template = '0240{}22{}42{}'.format(
+        '00' * 0x80, '00' * 0x44, '00' * 0x84)
+
+    # generate pegin address
+    main_ext_pk = str(main_sk.pubkey)
+    pegin_address, claim_script, _ = AddressUtil.get_pegin_address(
+        fedpeg_script=new_fedpeg_script,
+        pubkey=main_ext_pk,
+        mainchain_network=Network.REGTEST,
+        hash_type=HashType.P2WSH)  # TODO: Dynafed mode (need p2wsh)
+    pegin_address = str(pegin_address)
+    claim_script = claim_script.hex
+
+    try:
+        blk_cnt = btc_rpc.getblockcount() + 1
+        # send bitcoin
+        utxos = get_utxo(btc_rpc, [])
+        amount = 0
+        for utxo in utxos:
+            amount += utxo['amount']
+        amount -= 1
+        if amount > 100:
+            amount = 100
+        txid = btc_rpc.sendtoaddress(pegin_address, amount)
+
+        # generate bitcoin 100 block
+        addr = str(test_obj.addr_dic['btc'])
+        btc_rpc.generatetoaddress(101, addr)
+        max_blk_cnt = btc_rpc.getblockcount()
+
+        txout_proof = None
+        for i in range(max_blk_cnt - blk_cnt):
+            blk_hash = btc_rpc.getblockhash(blk_cnt + i)
+            block_hex = btc_rpc.getblock(blk_hash, 0)
+            block = Block(block_hex)
+            if block.exist_txid(txid):
+                tx_data, txout_proof = block.get_tx_data(txid)
+                break
+        if txout_proof is None:
+            raise Exception('txoutproof is empty.')
+
+        # pegin transaction for fee address
+        btc_tx = Transaction(tx_data)
+        btc_txout_index = btc_tx.get_txout_index(address=pegin_address)
+        btc_amount = btc_tx.txout_list[btc_txout_index].amount
+        btc_size = len(str(btc_tx)) / 2
+        txoutproof_size = len(str(txout_proof)) / 2
+
+        # add txout
+        tx = ConfidentialTransaction.create(2, 0)
+        pegin_outpoint = OutPoint(btc_tx.txid, btc_txout_index)
+        tx.add_pegin_input(
+            outpoint=pegin_outpoint,
+            amount=btc_amount,
+            asset=test_obj.pegged_asset,
+            mainchain_genesis_block_hash=test_obj.parent_blockhash,
+            claim_script=claim_script,
+            mainchain_tx=btc_tx,
+            txout_proof=txout_proof)
+
+        # calc fee
+        txin_utxo_list = [
+            ElementsUtxoData(
+                outpoint=pegin_outpoint,
+                descriptor=f'wpkh({main_sk.pubkey})',  # dummy
+                amount=btc_amount,
+                asset=test_obj.pegged_asset,
+                is_pegin=True, pegin_btc_tx_size=int(btc_size),
+                pegin_txoutproof_size=int(txoutproof_size),
+                claim_script=claim_script),
+        ]
+        utxo_list = [
+            ElementsUtxoData(
+                outpoint=outpoint1,
+                descriptor=f'raw({desc1.data.locking_script})',
+                amount=unblind_data1.value.amount,
+                asset=unblind_data1.asset,
+                amount_blinder=unblind_data1.amount_blinder,
+                asset_blinder=unblind_data1.asset_blinder,
+                asset_commitment=tx1.txout_list[outpoint1.vout].asset,
+                value=tx1.txout_list[outpoint1.vout].value),
+            ElementsUtxoData(
+                outpoint=outpoint2,
+                descriptor=f'raw({desc2.data.locking_script})',
+                amount=unblind_data2.value.amount,
+                asset=unblind_data2.asset,
+                amount_blinder=unblind_data2.amount_blinder,
+                asset_blinder=unblind_data2.asset_blinder,
+                asset_commitment=tx1.txout_list[outpoint2.vout].asset,
+                value=tx1.txout_list[outpoint2.vout].value,
+                scriptsig_template=script2_template),
+        ]
+        blind_utxo_list = txin_utxo_list + utxo_list
+        target_list = [TargetAmountData(
+            amount=btc_amount+unblind_data1.value.amount+1,
+            asset=test_obj.pegged_asset,
+            reserved_address=fee_ct_addr)]
+        tx.fund_raw_transaction(txin_utxo_list, utxo_list,
+                                fee_asset=test_obj.pegged_asset,
+                                target_list=target_list,
+                                effective_fee_rate=0.11,
+                                knapsack_min_change=1)
+        tx.blind_txout(blind_utxo_list)
+
+        # add sign
+        for utxo in blind_utxo_list:
+            if utxo.outpoint == pegin_outpoint:
+                tx.sign_with_privkey(utxo.outpoint,
+                                     HashType.P2WPKH,
+                                     main_sk,
+                                     sighashtype=SigHashType.ALL,
+                                     value=btc_amount)
+            elif utxo.outpoint == outpoint1:
+                sk = st1.get_privkey(main_sk)
+                tx.sign_with_privkey(utxo.outpoint,
+                                     HashType.TAPROOT,
+                                     sk,
+                                     sighashtype=SigHashType.DEFAULT,
+                                     utxos=blind_utxo_list)
+            elif utxo.outpoint == outpoint2:
+                tree = TaprootScriptTree(
+                    Script(script2), network=Network.LIQUID_V1)
+                sighash = tx.get_sighash(
+                    utxo.outpoint, HashType.TAPROOT, redeem_script=script2,
+                    sighashtype=SigHashType.DEFAULT, utxos=blind_utxo_list,
+                    tapleaf_hash=str(tree.hash))
+                sig = SchnorrUtil.sign(sighash, main_sk)
+                sign_param = SignParameter(
+                    sig, sighashtype=SigHashType.DEFAULT)
+                _, _, _, control_block = st2.get_taproot_data()
+                tx.add_tapscript_sign(utxo.outpoint, [sign_param],
+                                      script2, control_block)
+
+        # broadcast
+        print(ConfidentialTransaction.parse_to_json(tx, network=NETWORK))
+        txid = elm_rpc.sendrawtransaction(str(tx))
+        test_obj.tx_dic[txid] = tx
+        # elm_rpc.generatetoaddress(2, addr)
+        generatetoaddress_dynafed(test_obj, 2)
+        time.sleep(2)
+    except Exception as err:
+        print('Exception({})'.format(i))
+        raise err
 
 
 class TestElements(unittest.TestCase):
@@ -1737,7 +1967,7 @@ class TestElements(unittest.TestCase):
         test_elements_taproot_unblind(self)
         test_elements_taproot_blind(self)
         test_elements_taproot_issue_reissue(self)
-        test_elements_taproot_pegin_pegout(self)
+        test_elements_taproot_pegin(self)
 
 
 if __name__ == "__main__":
