@@ -144,6 +144,7 @@ def create_bitcoin_address(test_obj):
     main_spk, _ = SchnorrPubkey.from_pubkey(str(pk))
     mains_addr = AddressUtil.taproot(main_spk, network=NETWORK)
     test_obj.addr_dic['mains'] = mains_addr
+    # FIXME(k-matsuzawa): For some reason, I can handle it better when I use 'raw'. Further investigation is required.  # noqa: E501
     test_obj.desc_dic[str(mains_addr)] = parse_descriptor(
         'raw({})'.format(str(mains_addr.locking_script)), network=NETWORK)
     print('set mains addr: ' + str(mains_addr))
@@ -1251,7 +1252,7 @@ def test_elements_taproot_unblind(test_obj):
     txin_list2 = []
     txin_utxo_list2.append(ElementsUtxoData(
         outpoint=OutPoint(tx.txid, 1),
-        descriptor=f'raw({desc1.data.locking_script})',
+        descriptor=desc1.descriptor,
         amount=txout_list[1].amount,
         asset=txout_list[1].asset,
     ))
@@ -1259,7 +1260,7 @@ def test_elements_taproot_unblind(test_obj):
 
     txin_utxo_list2.append(ElementsUtxoData(
         outpoint=OutPoint(tx.txid, 2),
-        descriptor=f'raw({desc2.data.locking_script})',
+        descriptor=desc2.descriptor,
         amount=txout_list[2].amount,
         asset=txout_list[2].asset,
     ))
@@ -1394,7 +1395,7 @@ def test_elements_taproot_blind(test_obj):
         txin_list2 = []
         txin_utxo_list2.append(ElementsUtxoData(
             outpoint=OutPoint(tx.txid, 0),
-            descriptor=f'raw({desc1.data.locking_script})',
+            descriptor=desc1.descriptor,
             amount=txout_list[0].amount,
             asset=txout_list[0].asset,
             amount_blinder=unblind_data1.amount_blinder,
@@ -1406,7 +1407,7 @@ def test_elements_taproot_blind(test_obj):
 
         txin_utxo_list2.append(ElementsUtxoData(
             outpoint=OutPoint(tx.txid, 1),
-            descriptor=f'raw({desc2.data.locking_script})',
+            descriptor=desc2.descriptor,
             amount=txout_list[1].amount,
             asset=txout_list[1].asset,
             amount_blinder=unblind_data2.amount_blinder,
@@ -1619,10 +1620,12 @@ def test_elements_taproot_issue_reissue(test_obj):
             txin_utxo_list2 = []
             txin_list2 = []
 
-            addr_locking_script = tx.txout_list[0].locking_script
+            addr_desc = desc1.descriptor
+            if index == 1:
+                addr_desc = desc2.descriptor
             txin_utxo_list2.append(ElementsUtxoData(
                 outpoint=OutPoint(tx.txid, 0),
-                descriptor=f'raw({addr_locking_script})',
+                descriptor=addr_desc,
                 amount=txout_list[0].amount,
                 asset=txout_list[0].asset,
                 amount_blinder=unblind_data1.amount_blinder,
@@ -1632,7 +1635,7 @@ def test_elements_taproot_issue_reissue(test_obj):
             ))
             txin_utxo_list2.append(ElementsUtxoData(
                 outpoint=OutPoint(tx.txid, 3),
-                descriptor=f'raw({addr_locking_script})',
+                descriptor=addr_desc,
                 amount=issue_amount,
                 asset=issue_asset,
                 amount_blinder=unblind_asset.amount_blinder,
@@ -1642,7 +1645,7 @@ def test_elements_taproot_issue_reissue(test_obj):
             ))
             txin_utxo_list2.append(ElementsUtxoData(
                 outpoint=OutPoint(tx.txid, 4),
-                descriptor=f'raw({addr_locking_script})',
+                descriptor=addr_desc,
                 amount=token_amount,
                 asset=token_asset,
                 amount_blinder=unblind_token.amount_blinder,
@@ -1845,7 +1848,7 @@ def test_elements_taproot_pegin(test_obj):
         utxo_list = [
             ElementsUtxoData(
                 outpoint=outpoint1,
-                descriptor=f'raw({desc1.data.locking_script})',
+                descriptor=desc1.descriptor,
                 amount=unblind_data1.value.amount,
                 asset=unblind_data1.asset,
                 amount_blinder=unblind_data1.amount_blinder,
@@ -1854,7 +1857,7 @@ def test_elements_taproot_pegin(test_obj):
                 value=tx1.txout_list[outpoint1.vout].value),
             ElementsUtxoData(
                 outpoint=outpoint2,
-                descriptor=f'raw({desc2.data.locking_script})',
+                descriptor=desc2.descriptor,
                 amount=unblind_data2.value.amount,
                 asset=unblind_data2.asset,
                 amount_blinder=unblind_data2.amount_blinder,
