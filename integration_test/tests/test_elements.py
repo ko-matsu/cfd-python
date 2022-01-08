@@ -144,7 +144,6 @@ def create_bitcoin_address(test_obj):
     main_spk, _ = SchnorrPubkey.from_pubkey(str(pk))
     mains_addr = AddressUtil.taproot(main_spk, network=NETWORK)
     test_obj.addr_dic['mains'] = mains_addr
-    # FIXME(k-matsuzawa): For some reason, I can handle it better when I use 'raw'. Further investigation is required.  # noqa: E501
     test_obj.desc_dic[str(mains_addr)] = parse_descriptor(
         'raw({})'.format(str(mains_addr.locking_script)), network=NETWORK)
     print('set mains addr: ' + str(mains_addr))
