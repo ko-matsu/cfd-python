@@ -13,6 +13,33 @@ import os
 import re
 from typing import List, Union
 
+
+###################
+# Public Function #
+###################
+
+
+##
+# @brief set custom prefix.
+# @param[in] json_str     json text.
+# @return void
+def set_custom_prefix(json_str: str = '') -> None:
+    util = get_util()
+    with util.create_handle() as handle:
+        util.call_func('CfdRequestExecuteJson', handle.get_handle(),
+                       'SetCustomPrefix', json_str)
+
+
+##
+# @brief clear custom prefix.
+# @return void
+def clear_custom_prefix() -> None:
+    util = get_util()
+    with util.create_handle() as handle:
+        util.call_func('CfdRequestExecuteJson', handle.get_handle(),
+                       'ClearCustomPrefix', '')
+
+
 ################
 # Public class #
 ################
@@ -1064,5 +1091,7 @@ def get_util() -> 'CfdUtil':
 __all__ = [
     'CfdError',
     'ByteData',
-    'ReverseByteData'
+    'ReverseByteData',
+    'set_custom_prefix',
+    'clear_custom_prefix'
 ]

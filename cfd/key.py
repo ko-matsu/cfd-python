@@ -667,15 +667,20 @@ class SignParameter:
 # @brief Ecdsa adaptor.
 class EcdsaAdaptor:
     ##
+    # @var hex
+    # hex data
+    hex: str
+
+    ##
     # @brief encrypt.
-    # @param[in] message        message (byte or string)
-    # @param[in] secret_key     secret key
-    # @param[in] adaptor        adaptor bytes
-    # @param[in] is_message_hashed      message is hashed byte.
+    # @param[in] message            message (byte or string)
+    # @param[in] secret_key         secret key
+    # @param[in] encryption_key     encryption key
+    # @param[in] is_message_hashed  message is hashed byte.
     # @return adaptor signature
     @classmethod
-    def encrypt(cls, message, secret_key, adaptor,
-                is_message_hashed=True) -> 'ByteData':
+    def encrypt(cls, message, secret_key, encryption_key,
+                is_message_hashed=True) -> 'EcdsaAdaptor':
         msg = message
         if (not is_message_hashed) and isinstance(message, str):
             m = hashlib.sha256()
@@ -683,62 +688,62 @@ class EcdsaAdaptor:
             msg = m.hexdigest()
         _msg = to_hex_string(msg)
         _sk = to_hex_string(secret_key)
-        _adaptor = to_hex_string(adaptor)
+        _adaptor = to_hex_string(encryption_key)
         util = get_util()
         with util.create_handle() as handle:
             signature = util.call_func(
                 'CfdEncryptEcdsaAdaptor', handle.get_handle(),
                 _msg, _sk, _adaptor)
-        return ByteData(signature)
+        return EcdsaAdaptor(signature)
+
+    ##
+    # @brief constructor.
+    # @param[in] data   adaptor signature data
+    def __init__(self, data):
+        self.hex = to_hex_string(data)
+
+    ##
+    # @brief get string.
+    # @return sing data hex.
+    def __str__(self) -> str:
+        return self.hex
 
     ##
     # @brief decrypt.
-    # @param[in] adaptor_signature  adaptor signature
     # @param[in] adaptor_secret     adaptor secret key
     # @return adapted signature
-    @classmethod
-    def decrypt(cls, adaptor_signature, adaptor_secret) -> 'ByteData':
-        _sig = to_hex_string(adaptor_signature)
+    def decrypt(self, adaptor_secret) -> 'ByteData':
         _sk = to_hex_string(adaptor_secret)
         util = get_util()
         with util.create_handle() as handle:
             signature = util.call_func(
-                'CfdDecryptEcdsaAdaptor', handle.get_handle(), _sig, _sk)
+                'CfdDecryptEcdsaAdaptor', handle.get_handle(), self.hex, _sk)
         return ByteData(signature)
 
     ##
     # @brief recover.
-    # @param[in] adaptor_signature      adaptor signature
-    # @param[in] signature              signature
-    # @param[in] adaptor                adaptor bytes
+    # @param[in] signature          signature
+    # @param[in] encryption_key     encryption key
     # @return adaptor secret key
-    @classmethod
-    def recover(
-            cls,
-            adaptor_signature,
-            signature,
-            adaptor) -> 'Privkey':
-        _adaptor_signature = to_hex_string(adaptor_signature)
+    def recover(self, signature, encryption_key) -> 'Privkey':
         _signature = to_hex_string(signature)
-        _adaptor = to_hex_string(adaptor)
+        _adaptor = to_hex_string(encryption_key)
         util = get_util()
         with util.create_handle() as handle:
             adaptor_secret = util.call_func(
                 'CfdRecoverEcdsaAdaptor', handle.get_handle(),
-                _adaptor_signature, _signature, _adaptor)
+                self.hex, _signature, _adaptor)
         return Privkey(hex=adaptor_secret)
 
     ##
     # @brief verify.
-    # @param[in] adaptor_signature      adaptor signature
     # @param[in] message                message (byte or string)
     # @param[in] pubkey                 public key
-    # @param[in] adaptor                adaptor bytes
+    # @param[in] encryption_key         encryption key
     # @param[in] is_message_hashed      message is hashed byte.
     # @retval True      Verify success.
     # @retval False     Verify fail.
-    @classmethod
-    def verify(cls, adaptor_signature, message, pubkey, adaptor,
+    def verify(self, message, pubkey, encryption_key,
                is_message_hashed: bool = True) -> bool:
         msg = message
         if (not is_message_hashed) and isinstance(message, str):
@@ -746,15 +751,14 @@ class EcdsaAdaptor:
             m.update(message.encode('utf-8'))
             msg = m.hexdigest()
         _msg = to_hex_string(msg)
-        _adaptor_signature = to_hex_string(adaptor_signature)
-        _adaptor = to_hex_string(adaptor)
+        _adaptor = to_hex_string(encryption_key)
         _pk = to_hex_string(pubkey)
         util = get_util()
         with util.create_handle() as handle:
             try:
                 util.call_func(
                     'CfdVerifyEcdsaAdaptor', handle.get_handle(),
-                    _adaptor_signature, _msg, _pk, _adaptor)
+                    self.hex, _msg, _pk, _adaptor)
                 return True
             except CfdError as err:
                 if err.error_code == CfdErrorCode.SIGN_VERIFICATION.value:

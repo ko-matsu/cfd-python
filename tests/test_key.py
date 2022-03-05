@@ -154,21 +154,23 @@ def test_signature_func(obj, name, case, req, exp, error):
 def test_ecdsa_adaptor_func(obj, name, case, req, exp, error):
     try:
         if name == 'EcdsaAdaptor.Decrypt':
-            resp = EcdsaAdaptor.decrypt(req['signature'], req['secret'])
+            sig = EcdsaAdaptor(req['signature'])
+            resp = sig.decrypt(req['secret'])
 
         elif name == 'EcdsaAdaptor.Recover':
-            resp = EcdsaAdaptor.recover(
-                req['adaptorSignature'], req['signature'], req['adaptor'])
+            sig = EcdsaAdaptor(req['adaptorSignature'])
+            resp = sig.recover(req['signature'], req['encryptionKey'])
 
         elif name == 'EcdsaAdaptor.Encrypt':
             resp = EcdsaAdaptor.encrypt(req['message'], req['privkey'],
-                                        req['adaptor'],
+                                        req['encryptionKey'],
                                         is_message_hashed=req['isHashed'])
 
         elif name == 'EcdsaAdaptor.Verify':
-            resp = EcdsaAdaptor.verify(req['signature'], req['message'],
-                                       req['pubkey'], req['adaptor'],
-                                       is_message_hashed=req['isHashed'])
+            sig = EcdsaAdaptor(req['signature'])
+            resp = sig.verify(req['message'], req['pubkey'],
+                              req['encryptionKey'],
+                              is_message_hashed=req['isHashed'])
         else:
             raise Exception('unknown name: ' + name)
         assert_error(obj, name, case, error)
