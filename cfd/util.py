@@ -612,6 +612,8 @@ class CfdUtil:
         ("CfdPrivkeyTweakAdd", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdPrivkeyTweakMul", c_int, [c_void_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdNegatePrivkey", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
+        ("CfdSignMessage", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_bool, c_char_p_p]),  # noqa: E501
+        ("CfdVerifyMessage", c_int, [c_void_p, c_char_p, c_char_p, c_char_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdCreateExtkeyFromSeed", c_int, [c_void_p, c_char_p, c_int, c_int, c_char_p_p]),  # noqa: E501
         ("CfdCreateExtkeyByFormatFromSeed", c_int, [c_void_p, c_char_p, c_int, c_int, c_int, c_char_p_p]),  # noqa: E501
         ("CfdCreateExtkey", c_int, [c_void_p, c_int, c_int, c_char_p, c_char_p, c_char_p, c_char_p, c_ubyte, c_uint32, c_char_p_p]),  # noqa: E501
@@ -1058,6 +1060,37 @@ class CfdUtil:
             return ret[1]
         else:
             return ret[1:]
+
+    ##
+    # @brief call cfd function.
+    # @param[in] name       function name.
+    # @param[in] *args      function arguments.
+    # @retval [0] error object.
+    # @retval [1] response data.
+    def call_func_no_except(self, name, *args):
+        # print('call: {}{}'.format(name, args))
+        ret = self._func_map[name](*args)
+        err_code = ret
+        if isinstance(ret, tuple):
+            err_code = ret[0]
+        err_obj = CfdError(error_code=err_code, message='')
+        if err_code != 0:
+            message = 'Error: ' + name
+            if len(args) > 0 and \
+                    args[0] != 'CfdCreateSimpleHandle' and \
+                    args[0] != 'CfdFreeHandle' and \
+                    args[0] != 'CfdFreeBuffer':
+                temp_ret, err_msg = self._func_map['CfdGetLastErrorMessage'](
+                    args[0])
+                if temp_ret == 0:
+                    message = err_msg
+            err_obj = CfdError(error_code=err_code, message=message)
+        if isinstance(ret, tuple) is False:
+            return err_obj
+        elif len(ret) == 1:
+            return err_obj
+        else:
+            return tuple([err_obj]) + ret[1:]
 
     ##
     # @brief create cfd handle.

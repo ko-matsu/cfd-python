@@ -260,12 +260,30 @@ class Privkey:
     pubkey: 'Pubkey'
 
     ##
+    # @brief sign message.
+    # @param[in] privkey            privkey
+    # @param[in] message            message
+    # @param[in] magic_word         message magic word
+    # @param[in] is_output_base64   base64 output mode
+    # @return signature (hex string or base64)
+    @classmethod
+    def sign_message(cls, privkey, message: str, magic_word: str,
+                     is_base64: bool) -> str:
+        util = get_util()
+        with util.create_handle() as handle:
+            signature = util.call_func(
+                'CfdSignMessage', handle.get_handle(),
+                str(privkey), message, magic_word, is_base64)
+            return signature
+
+    ##
     # @brief generate key pair.
     # @param[in] is_compressed  pubkey compressed
     # @param[in] network        network type
     # @return private key
     @classmethod
-    def generate(cls, is_compressed: bool = True, network=Network.MAINNET):
+    def generate(cls, is_compressed: bool = True,
+                 network=Network.MAINNET) -> 'Privkey':
         _network = Network.get_mainchain(network)
         util = get_util()
         with util.create_handle() as handle:
@@ -285,7 +303,7 @@ class Privkey:
             cls,
             hex,
             network=Network.MAINNET,
-            is_compressed: bool = True):
+            is_compressed: bool = True) -> 'Privkey':
         return Privkey(hex=hex, network=network,
                        is_compressed=is_compressed)
 
@@ -422,6 +440,34 @@ class Pubkey:
     # @var _hex
     # pubkey hex
     _hex: str
+
+    ##
+    # @brief verify message.
+    # @param[in] signature          signature
+    # @param[in] pubkey             pubkey
+    # @param[in] message            message
+    # @param[in] magic_word         message magic word
+    # @param[in] ignore_error       ignore error flag for recovered pubkey
+    # @retval [0] verify result (True or False)
+    # @retval [1] recovered pubkey (only 'ignore_error' is True)
+    @classmethod
+    def verify_message(cls, signature, pubkey, message: str, magic_word: str,
+                       ignore_error: bool) -> Tuple[bool, Optional['Pubkey']]:
+        util = get_util()
+        with util.create_handle() as handle:
+            ret, pk = util.call_func_no_except(
+                'CfdVerifyMessage', handle.get_handle(),
+                str(signature), str(pubkey), message, magic_word)
+            recovered_pk = None
+            if len(pk) > 0:
+                recovered_pk = Pubkey(pk)
+            if ret.error_code == 0:
+                return True, recovered_pk
+            elif ignore_error:
+                return False, recovered_pk
+            elif ret.error_code == CfdErrorCode.SIGN_VERIFICATION.value:
+                return False, None
+            raise ret
 
     ##
     # @brief combine pubkey.

@@ -908,7 +908,7 @@
                 },
                 "expect": {
                     "success": false,
-                    "pubkey": ""
+                    "pubkey": "02aa4544055032182f74ad10937d6f0104b066befecba9cb579fca2be21bd3d6cf"
                 }
             },
             {
@@ -922,7 +922,7 @@
                 },
                 "expect": {
                     "success": false,
-                    "pubkey": ""
+                    "pubkey": "02a9db5a4eb0a6e6b08ced85fc256e4c2ac8b5849ddfa4503cdcf0ef3f669f4bc9"
                 }
             },
             {
@@ -935,9 +935,26 @@
                     "ignoreError": false
                 },
                 "error": {
-                    "capi": "hex to byte convert error.",
-                    "json": "failed to verify message."
-                }
+                    "capi": "failed to verify message.",
+                    "json": "failed to verify message.",
+                    "python": "Error: failed to verify message."
+                },
+                "exclude": ["python"]
+            },
+            {
+                "case": "Error: invalid message (ignoreError=false) no error",
+                "request": {
+                    "signature": "H9Dk+Y13ybD+hH7okYJemWs0N9cIJ23Zn5T+lDFo+ZO3G9QSb6Qla2TATXFji29uip6vKsi8TJRZQHbCTu85/74=",
+                    "pubkey": "0278bfaa4e045cc450ce9397136ac9bac1914147d85945dd9c8c3b2edc0108249d",
+                    "message": "This is just a test message2",
+                    "magic": "",
+                    "ignoreError": false
+                },
+                "expect": {
+                    "success": false,
+                    "pubkey": ""
+                },
+                "exclude": ["json"]
             }
         ]
     },
