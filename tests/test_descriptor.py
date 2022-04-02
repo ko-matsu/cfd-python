@@ -71,7 +71,8 @@ def test_descriptor_func(obj, name, case, req, exp, error):
                 if depth == -1:
                     assert_equal(obj, name, case, exp,
                                  str(data.tree_string),
-                                 'treeString', 'treeString:{}'.format(depth))
+                                 'treeString',
+                                 'treeString:{}'.format(depth))
 
                 keys = exp.get('keys', [])
                 assert_match(obj, name, case, len(keys),
