@@ -2,9 +2,10 @@ from unittest import TestCase
 from tests.util import load_json_file, get_json_file,\
     exec_test, assert_equal, assert_match, assert_error
 from cfd.util import CfdError, set_custom_prefix, clear_custom_prefix
-from cfd.key import Privkey
-from cfd.hdwallet import HDWallet, ExtPrivkey, ExtPubkey, Extkey
+from cfd.key import Privkey, Network
+from cfd.hdwallet import HDWallet, ExtPrivkey, ExtPubkey, Extkey, ExtKeyType
 import json
+import time
 import unicodedata
 
 
@@ -210,11 +211,19 @@ def test_extkey_func(obj, name, case, req, exp, error):
             if req.get('extkeyType', '') == 'extPrivkey':
                 resp = ExtPrivkey(req['extkey'])
             else:
-                resp = ExtPubkey(req['extkey'])
+                try:
+                    resp = ExtPrivkey(req['extkey'])
+                except CfdError:
+                    resp = ExtPubkey(req['extkey'])
+
             resp = resp.derive(
                 path=req.get('path', ''),
                 number=number,
                 number_list=req.get('childNumberArray', []))
+
+            if (req.get('extkeyType', '') == 'extPubkey') and (
+                    resp.extkey_type == ExtKeyType.EXT_PRIVKEY):
+                resp = resp.get_extpubkey()
 
         elif name == 'Extkey.GetExtkeyInfo':
             if 'privkey' in case:
@@ -369,9 +378,9 @@ class TestHDWallet(TestCase):
                 'keyJsonDatas': [
                     {
                         'IsMainnet': 'true',
-                        'wif': '80',
-                        'bip32xpub': '0488b21e',
-                        'bip32xprv': '0488ade4',
+                        'wif': '40',
+                        'bip32xpub': '0473e78d',
+                        'bip32xprv': '0473e354',
                         'bip49ypub': '049d7cb2',
                         'bip49yprv': '049d7878',
                         'bip84zpub': '04b24746',
@@ -379,9 +388,9 @@ class TestHDWallet(TestCase):
                     },
                     {
                         'IsMainnet': 'false',
-                        'wif': 'ef',
-                        'bip32xpub': '043587cf',
-                        'bip32xprv': '04358394',
+                        'wif': '60',
+                        'bip32xpub': '0420bd3a',
+                        'bip32xprv': '0420b900',
                         'bip49ypub': '044a5262',
                         'bip49yprv': '044a4e28',
                         'bip84zpub': '045f1cf6',
@@ -392,15 +401,51 @@ class TestHDWallet(TestCase):
             json_str = json.dumps(json_dict)
             set_custom_prefix(json_str)
 
+            # parse
+            wprv = ExtPrivkey(
+                'wprvikzVDokm6P1KtKfqXgTJv8XpWZcukZYCFsmaRemcFvKZakza93Zwuo15JHekgFrn6ZZai45KS6AitFzNGo2sTf17aiPR86dWi9Tq82Qgo1r')  # noqa: E501
+            sprv = ExtPrivkey(
+                'sprv8Erh3X3hFeKuoD653knTvhJHkiKLxbhym6yyMYfKJ9kPXc3AnztLtmAyv29tc6yQn95qGE6e6TmYRokeKRMdyBXuyXTihmcpwoqJJPtTyAy')  # noqa: E501
+            self.assertEqual(Network.MAINNET, wprv.network, 'wprv.network')
+            self.assertEqual(Network.TESTNET, sprv.network, 'sprv.network')
+
             # check
-            xprv = ExtPrivkey(
-                'xprv9s21ZrQH143K2gA81bYFHqU68xz1cX2APaSq5tt6MFSLeXnCKV1RVUJt9FWNTbrrryem4ZckN8k4Ls1H6nwdvDTvnV7zEXs2HgPezuVccsq')  # noqa: E501
-            xpub = xprv.get_extpubkey()
+            seed = 'c55257c360c07c72029aebc1b53c05ed0362ada38ead3e3e9efa3708e53495531f09a6987599d18264c1e1c92f2cf141630c7a3c4ab7c81b2f001698e7463b04'  # noqa: E501
+            hdwallet_mainnet = HDWallet.from_seed(
+                seed, network=Network.MAINNET)
+            hdwallet_testnet = HDWallet.from_seed(
+                seed, network=Network.TESTNET)
+            extprv_main = hdwallet_mainnet.ext_privkey
+            extprv_test = hdwallet_testnet.ext_privkey
             self.assertEqual(
-                'xpub661MyMwAqRbcFAEb7d5FeyQpgzpW1yk1koNRtHHhuayKXL7Ls2Kg3GdMzWHSDAfpkzzxKfB9pDHeF8iWTcnovFuJ4DYPBbPBWq7oUFW31LB',  # noqa: E501
-                str(xpub), 'xpub')
+                'wprvikzVDokm6P1KtKfqXgTJv8XpWZcukZYCFsmaRemcFvKZakza93Zwuo15JHekgFrn6ZZai45KS6AitFzNGo2sTf17aiPR86dWi9Tq82Qgo1r',  # noqa: E501
+                str(extprv_main), 'extprv_main')
+            self.assertEqual(
+                'sprv8Erh3X3hFeKuoD653knTvhJHkiKLxbhym6yyMYfKJ9kPXc3AnztLtmAyv29tc6yQn95qGE6e6TmYRokeKRMdyBXuyXTihmcpwoqJJPtTyAy',  # noqa: E501
+                str(extprv_test), 'extprv_test')
+            extpub_main = extprv_main.get_extpubkey()
+            extpub_test = extprv_test.get_extpubkey()
+            self.assertEqual(
+                'wpubWgH9tQnJckSFRpnyr5rjEzmB3bmxQ9nzR21zjuYXxKb8VsQ6bjNrpu2Aph61HVbgR9UFxZuRKe5FMHkZncoGNGUF1zjL8eyQSoacUbLMX4F',  # noqa: E501
+                str(extpub_main), 'extpub_main')
+            self.assertEqual(
+                'spub4Tr3T2ab61tD1hAY9nKUHqF2Jk9qN4Rq8Kua9w4vrVHNQQNKLYCbSZVTmHWGjUHEXBze8DprMkvK8ATi6tdKxBBjwmLdjVtuMKo4yLfkDWR',  # noqa: E501
+                str(extpub_test), 'extpub_test')
+
+            try:
+                ExtPrivkey(
+                    'tpubD6NzVbkrYhZ4XyJymmEgYC3uVhyj4YtPFX6yRTbW6RvfRC7Ag3sVhKSz7MNzFWW5MJ7aVBKXCAX7En296EYdpo43M4a4LaeaHuhhgHToSJF')  # noqa: E501
+                self.assertTrue(True, 'invalid prefix not error')
+            except CfdError as err2:
+                self.assertEqual('unsupported extkey version.',
+                                 err2.message, 'invalid prefix')
 
             clear_custom_prefix()
+            time.sleep(1)  # for other test
         except CfdError as err:
             clear_custom_prefix()
+            time.sleep(1)  # for other test
             self.assertEqual('', err.message, 'exception')
+        finally:
+            clear_custom_prefix()
+            time.sleep(1)  # for other test
