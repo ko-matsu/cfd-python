@@ -11,9 +11,8 @@ from cfd.util import CfdError, ByteData
 def test_address_func(obj, name, case, req, exp, error):
     try:
         resp = None
-        _network = req.get('network', 'mainnet')
-        if req.get('isElements', False) and (
-                _network.lower() == Network.REGTEST.as_str()):
+        _network = Network.get(req.get('network', 'mainnet'))
+        if req.get('isElements', False) and (_network == Network.REGTEST):
             _network = Network.ELEMENTS_REGTEST
 
         if name == 'Address.Create':
@@ -59,24 +58,29 @@ def test_address_func(obj, name, case, req, exp, error):
             topNode = req['tree'][0]
             for node in req['tree'][1:]:
                 if 'tapscript' in node:
-                    nodes.append(Script(node['tapscript']))
+                    nodes.append(TapBranch(tapscript=Script(node['tapscript']),
+                                           network=_network))
                 elif 'treeString' in node:
-                    nodes.append(TapBranch(tree_str=node['treeString']))
+                    nodes.append(TapBranch(tree_str=node['treeString'],
+                                           network=_network))
                 else:
-                    nodes.append(ByteData(node['branchHash']))
+                    nodes.append(TapBranch(hash=ByteData(node['branchHash']),
+                                           network=_network))
             pk = None if 'internalPubkey' not in req else SchnorrPubkey(
                 req['internalPubkey'])
             if 'tapscript' in topNode:
                 tree = TaprootScriptTree.create(
-                    Script(topNode['tapscript']), nodes, pk)
+                    Script(topNode['tapscript']), nodes, pk, network=_network)
                 tapleaf_hash = tree.get_base_hash()
                 resp['tapLeafHash'] = tapleaf_hash
                 resp['tapscript'] = tree.tapscript
             elif 'treeString' in topNode:
-                tree = TapBranch(tree_str=topNode['treeString'])
+                tree = TapBranch(tree_str=topNode['treeString'],
+                                 network=_network)
                 tree.add_branches(nodes)
             else:
-                tree = TapBranch(ByteData(topNode['branchHash']))
+                tree = TapBranch(ByteData(topNode['branchHash']),
+                                 network=_network)
                 tree.add_branches(nodes)
             if 'internalPubkey' in req:
                 tap_data = tree.get_taproot_data(pk)
@@ -104,7 +108,7 @@ def test_address_func(obj, name, case, req, exp, error):
         elif name == 'Address.GetTapScriptTreeInfoByControlBlock':
             tree = TaprootScriptTree.from_control_block(
                 ByteData(req['controlBlock']),
-                Script(req['tapscript']))
+                Script(req['tapscript']), network=_network)
             tap_data = tree.get_taproot_data()
             addr = AddressUtil.taproot(tree, network=_network)
             resp = {
@@ -137,11 +141,12 @@ def test_address_func(obj, name, case, req, exp, error):
             if 'tapscript' in req:
                 nodes = [ByteData(node) for node in req.get('nodes', [])]
                 tree = TaprootScriptTree.from_string_and_key(
-                    req['treeString'], Script(req['tapscript']), nodes, pk)
+                    req['treeString'], Script(req['tapscript']), nodes, pk,
+                    network=_network)
                 resp['tapLeafHash'] = tree.get_base_hash()
                 resp['tapscript'] = tree.tapscript
             else:
-                tree = TapBranch(tree_str=req['treeString'])
+                tree = TapBranch(tree_str=req['treeString'], network=_network)
 
             if pk is not None:
                 tap_data = tree.get_taproot_data(pk)
@@ -172,7 +177,8 @@ def test_address_func(obj, name, case, req, exp, error):
             resp = {}
             nodes = [ByteData(node) for node in req.get('nodes', [])]
             tree = TaprootScriptTree.from_string_and_key(
-                req['treeString'], Script(req.get('tapscript', '')), nodes)
+                req['treeString'], Script(req.get('tapscript', '')), nodes,
+                network=_network)
             branch = tree.branches[req.get('index', 0)]
             resp['tapLeafHash'] = branch.get_base_hash()
             nodes = []
@@ -193,20 +199,23 @@ def test_address_func(obj, name, case, req, exp, error):
                 count = len(branch.branches)
                 for index, child in enumerate(branch.branches):
                     collect_branch(child)
-                    br = TapBranch(hash=branch.get_branch_hash(
-                        count - index - 1))
+                    br = TapBranch(
+                        hash=branch.get_branch_hash(count - index - 1),
+                        network=_network)
                     resp.append(br)
 
                 if not branch.branches:
                     resp.append(branch)
                 elif branch.has_tapscript():
-                    br = TapBranch(tapscript=branch.tapscript)
+                    br = TapBranch(tapscript=branch.tapscript,
+                                   network=_network)
                     resp.append(br)
                 else:
-                    br = TapBranch(hash=branch.get_base_hash())
+                    br = TapBranch(hash=branch.get_base_hash(),
+                                   network=_network)
                     resp.append(br)
 
-            tree = TapBranch.from_string(req['treeString'])
+            tree = TapBranch.from_string(req['treeString'], network=_network)
             collect_branch(tree)
 
         else:
