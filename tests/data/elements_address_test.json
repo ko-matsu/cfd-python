@@ -123,6 +123,26 @@
                 }
             },
             {
+                "case": "p2tr liquidv1",
+                "request": {
+                    "unblindedAddress": "ex1p5l62rfvlte3axg3aeu6p0zwnqr60adqc427jkz70sadzxtjdy7tsqlq7u8",
+                    "key": "02f008a3abacadc56e714db62a6c248514440a0119ac53f7f8abe81a1687706298"
+                },
+                "expect": {
+                    "confidentialAddress": "lq1pqtcq3gat4jku2mn3fkmz5mpys52ygzsprxk98alc405p5958wp3f3fl55xje7hnr6v3rmne5z7yaxq85l66p324a9v9ulp66yvhy6fuhupmpgywyfsh2"
+                }
+            },
+            {
+                "case": "p2tr regtest",
+                "request": {
+                    "unblindedAddress": "ert1p5l62rfvlte3axg3aeu6p0zwnqr60adqc427jkz70sadzxtjdy7tshjlu6s",
+                    "key": "026af56b95a94f1d1633a1cd7334b996bef05619b7547287fc20075867265f9949"
+                },
+                "expect": {
+                    "confidentialAddress": "el1pqf4026u44983693n58xhxd9ej6l0q4seka289pluyqr4seext7v5nfl55xje7hnr6v3rmne5z7yaxq85l66p324a9v9ulp66yvhy6fuhyxls47d7c5cv"
+                }
+            },
+            {
                 "case": "empty unblindedAddress",
                 "request": {
                     "unblindedAddress": "",
