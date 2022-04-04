@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - master
+    - stable_v*
     - develop
     - features/sprint*
     - feature/code_scanning
@@ -17,13 +18,14 @@ on:
   pull_request:
     branches:
     - master
+    - stable_v*
     - develop
     - features/sprint*
 
 jobs:
   analyze-CodeQL:
     name: CodeQL
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     strategy:
       fail-fast: false
@@ -71,7 +73,7 @@ jobs:
   OSSAR-Scan:
     # OSSAR runs on windows-latest.
     # ubuntu-latest and macos-latest support coming soon
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     steps:
       # Checkout your code repository to scan
@@ -92,10 +94,11 @@ jobs:
     # A version greater than or equal to v3.1.201 of dotnet must be installed on the agent in order to run this action.
     # GitHub hosted runners already have a compatible version of dotnet installed and this step may be skipped.
     # For self-hosted runners, ensure dotnet version 3.1.201 or later is installed by including this action:
-    # - name: Install .NET
-    #   uses: actions/setup-dotnet@v1
-    #   with:
-    #     dotnet-version: '3.1.x'
+
+    - name: Install .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
 
       # Run open source static analysis tools
     - name: Run OSSAR
