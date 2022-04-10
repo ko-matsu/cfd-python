@@ -62,6 +62,31 @@ jobs:
       matrix:
         os: [macos-10.15, macos-11.0, windows-2019, windows-2022, ubuntu-18.04, ubuntu-20.04]
         py-ver: ['3.7', '3.8', '3.9', '3.10', 'pypy-3.7', 'pypy-3.8', 'pypy-3.9']
+        include:
+          - os: windows-2019
+            py-ver: '3.7'
+            package-path: 'c:\users\runneradmin\appdata\roaming\python\python37\site-packages'
+          - os: windows-2019
+            py-ver: 'pypy-3.7'
+            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy37\site-packages'
+          - os: windows-2019
+            py-ver: 'pypy-3.8'
+            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy38\site-packages'
+          - os: windows-2019
+            py-ver: 'pypy-3.9'
+            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy39\site-packages'
+          - os: windows-2022
+            py-ver: '3.7'
+            package-path: 'c:\users\runneradmin\appdata\roaming\python\python37\site-packages'
+          - os: windows-2022
+            py-ver: 'pypy-3.7'
+            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy37\site-packages'
+          - os: windows-2022
+            py-ver: 'pypy-3.8'
+            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy38\site-packages'
+          - os: windows-2022
+            py-ver: 'pypy-3.9'
+            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy39\site-packages'
 
     steps:
     - uses: actions/checkout@v2
@@ -77,6 +102,13 @@ jobs:
       run: pip install --user .
     - name: dump info
       run: pip show cfd
+    - name: set path
+      # for cpython 3.7, pypy 3.7-3.9
+      if: runner.os == 'Windows' && matrix.package-path != ''
+      env:
+        PYTHON_PACKAGE_PATH: ${{ matrix.package-path }}
+      run: echo "$PYTHON_PACKAGE_PATH\cfd" >> $GITHUB_PATH
+      shell: bash
     - name: call example
       run: python ./tools/example.py
 
