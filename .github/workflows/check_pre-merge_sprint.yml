@@ -13,10 +13,10 @@ on:
     - features/sprint*
 
 env:
-  GITHUB_VERSION: v0.0.10
-  GITHUB_BITCOIN_VERSION: v0.0.10
-  DOCKER_PYTHON_VERSION: 3.7
-  GITHUB_DOCKER_IMAGE: docker.pkg.github.com/cryptogarageinc/elements-testing-dockerfile/elements-testing
+  GITHUB_VERSION: v0.1.2
+  GITHUB_BITCOIN_VERSION: v0.1.2
+  DOCKER_PYTHON_VERSION: 3.9
+  GITHUB_DOCKER_IMAGE: ghcr.io/cryptogarageinc/elements-testing
   ENTRYPOINT_PATH: /github/workspace/.github/workflows/docker/test_entrypoint.sh
   BITCOIN_ENTRYPOINT_PATH: /github/workspace/.github/workflows/docker/test_bitcoin_entrypoint.sh
 
@@ -28,24 +28,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-10.15, windows-2019, ubuntu-18.04]
-        py-ver: [3.6, 3.7, 3.8, 3.9, pypy3]
+        os: [macos-11.0, windows-2019, windows-2022, ubuntu-20.04]
+        py-ver: ['3.7', '3.8', '3.9', '3.10', 'pypy-3.7', 'pypy-3.8', 'pypy-3.9']
         exclude:
-          - os: macos-10.15
-            py-ver: 3.6
-          - os: macos-10.15
-            py-ver: 3.7
-          - os: macos-10.15
-            py-ver: 3.8
+          - os: macos-11.0
+            py-ver: '3.7'
+          - os: macos-11.0
+            py-ver: '3.8'
           - os: windows-2019
-            py-ver: 3.6
+            py-ver: '3.8'
           - os: windows-2019
-            py-ver: pypy3
+            py-ver: 'pypy-3.8'
+          - os: windows-2022
+            py-ver: '3.8'
 
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.py-ver }}
     - name: Display Python version
@@ -53,7 +53,8 @@ jobs:
     - name: build
       run: python setup.py build
     - name: copy dll
-      if: runner.os == 'Windows' && matrix.py-ver == '3.7'
+      # for cpython 3.7, pypy 3.7-3.9
+      if: runner.os == 'Windows'
       run: |
         cp ./cmake_build/Release/*.dll ./cfd/
         echo "$GITHUB_WORKSPACE/cfd" >> $GITHUB_PATH
@@ -62,14 +63,14 @@ jobs:
       run: python -m unittest discover -v tests
 
   elements-e2e-test:
-    timeout-minutes: 20
+    timeout-minutes: 40
     name: elements e2e test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ env.DOCKER_PYTHON_VERSION }}
     - name: Display Python version
@@ -87,12 +88,12 @@ jobs:
   bitcoin-e2e-test:
     timeout-minutes: 20
     name: bitcoin e2e test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ env.DOCKER_PYTHON_VERSION }}
     - name: Display Python version

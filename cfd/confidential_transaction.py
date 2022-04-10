@@ -1976,6 +1976,10 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] value          value
     # @param[in] redeem_script  redeem script
     # @param[in] sighashtype    sighash type
+    # @param[in] utxos              utxo list (for taproot)
+    # @param[in] tapleaf_hash       tapleaf hash
+    # @param[in] annex              annex bytes
+    # @param[in] codeseparator_pos  codeseparator position
     # @retval True      signature valid.
     # @retval False     signature invalid.
     def verify_signature(

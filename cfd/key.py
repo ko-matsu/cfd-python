@@ -268,12 +268,12 @@ class Privkey:
     # @return signature (hex string or base64)
     @classmethod
     def sign_message(cls, privkey, message: str, magic_word: str,
-                     is_base64: bool) -> str:
+                     is_output_base64: bool) -> str:
         util = get_util()
         with util.create_handle() as handle:
             signature = util.call_func(
                 'CfdSignMessage', handle.get_handle(),
-                str(privkey), message, magic_word, is_base64)
+                str(privkey), message, magic_word, is_output_base64)
             return signature
 
     ##
