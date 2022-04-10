@@ -9,7 +9,7 @@ from .util import ReverseByteData, CfdError, JobHandle,\
     CfdErrorCode, to_hex_string, get_util, ByteData
 from .address import Address, AddressUtil
 from .descriptor import Descriptor, parse_descriptor
-from .key import Network, SigHashType, Privkey, Pubkey
+from .key import Network, SigHashType, Privkey, Pubkey, SchnorrUtil
 from .script import HashType, Script
 from .taproot import TaprootScriptTree
 from .transaction import UtxoData, OutPoint, Txid, TxIn, TxOut, _FundTxOpt,\
@@ -887,6 +887,10 @@ class ConfidentialTransaction(_TransactionBase):
     # @var locktime
     # locktime
     locktime: int
+    ##
+    # @var genesis_block_hash
+    # genesis block hash
+    genesis_block_hash: Optional['BlockHash']
 
     ##
     # bitcoin network value.
@@ -897,6 +901,31 @@ class ConfidentialTransaction(_TransactionBase):
     ##
     # transaction's free function name.
     FREE_FUNC_NAME = 'CfdFreeTransactionHandle'
+
+    ##
+    # @brief get transaction handle.
+    # @param[in] handle     cfd handle
+    # @param[in] network    network type
+    # @return transaction job handle
+    def _get_handle(
+        self, handle, network: Optional[Union['Network', str, int]] = None,
+    ) -> 'JobHandle':
+        util = get_util()
+        _network = Network.get(
+            self.network) if not network else Network.get(network)
+        work_handle = util.call_func(
+            'CfdInitializeTxDataHandle', handle.get_handle(),
+            _network.value, self.hex)
+        if self.genesis_block_hash is not None:
+            err = util.call_func_no_except(
+                'CfdSetConfidentialTxGenesisBlockHashByHandle',
+                handle.get_handle(), work_handle,
+                str(self.genesis_block_hash))
+            if err.error_code != 0:
+                util.call_func('CfdFreeTxDataHandle',
+                               handle.get_handle(), work_handle)
+                raise err
+        return JobHandle(handle, work_handle, 'CfdFreeTxDataHandle')
 
     ##
     # @brief set elements genesis block hash default.
@@ -1027,6 +1056,7 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] enable_cache   enable tx cache
     def __init__(self, hex, enable_cache: bool = True):
         super().__init__(hex, self.NETWORK, enable_cache)
+        self.genesis_block_hash = None
         self.txin_list = []
         self.txout_list = []
         self._update_tx_all()
@@ -1137,7 +1167,7 @@ class ConfidentialTransaction(_TransactionBase):
         if self.enable_cache is False:
             return
         util = get_util()
-        with util.create_handle() as handle, super()._get_handle(
+        with util.create_handle() as handle, self._get_handle(
                 handle, self.network) as tx_handle:
             self._update_txin_internal(handle, tx_handle, outpoint)
 
@@ -1175,7 +1205,7 @@ class ConfidentialTransaction(_TransactionBase):
             return txout_list
 
         util = get_util()
-        with util.create_handle() as handle, super()._get_handle(
+        with util.create_handle() as handle, self._get_handle(
                 handle, self.network) as tx_handle:
             self.txid, self.wtxid, self.wit_hash, self.size, self.vsize,\
                 self.weight, self.version, self.locktime = util.call_func(
@@ -1248,7 +1278,7 @@ class ConfidentialTransaction(_TransactionBase):
     def add(self, txins: List['ConfidentialTxIn'],
             txouts: List['ConfidentialTxOut']) -> None:
         util = get_util()
-        with util.create_handle() as handle, super()._get_handle(
+        with util.create_handle() as handle, self._get_handle(
                 handle, self.network) as tx_handle:
             for txin in txins:
                 sec = TxIn.get_sequence_number(
@@ -1483,13 +1513,7 @@ class ConfidentialTransaction(_TransactionBase):
     # @param[in] genesis_block_hash     elements genesis block hash
     # @return void
     def set_genesis_block_hash(self, genesis_block_hash):
-        util = get_util()
-        with util.create_handle() as handle, self._get_handle(
-                handle, self.network) as tx_handle:
-            util.call_func(
-                'CfdSetConfidentialTxGenesisBlockHashByHandle',
-                handle.get_handle(), tx_handle.get_handle(),
-                str(genesis_block_hash))
+        self.genesis_block_hash = BlockHash(genesis_block_hash)
 
     ##
     # @brief blind transaction output.
@@ -1796,7 +1820,7 @@ class ConfidentialTransaction(_TransactionBase):
                     _value.amount, _value.hex, _sighashtype.value,
                     _sighashtype.anyone_can_pay())
         else:
-            with util.create_handle() as handle, super()._get_handle(
+            with util.create_handle() as handle, self._get_handle(
                     handle, self.network) as tx_handle:
                 for utxo in utxos:
                     desc = parse_descriptor(utxo.descriptor,
@@ -1819,7 +1843,7 @@ class ConfidentialTransaction(_TransactionBase):
                 sighash = util.call_func(
                     'CfdCreateSighashByHandle', handle.get_handle(),
                     tx_handle.get_handle(), str(outpoint.txid),
-                    outpoint.vout, _sighashtype.get_type(),
+                    outpoint.vout, _sighashtype.value,
                     _sighashtype.anyone_can_pay(), _pubkey, _script,
                     _tapleaf_hash, codeseparator_pos, to_hex_string(annex))
         return ByteData(sighash)
@@ -1868,7 +1892,7 @@ class ConfidentialTransaction(_TransactionBase):
                     _sighashtype.anyone_can_pay(), grind_r)
                 self._update_txin(outpoint)
         else:
-            with util.create_handle() as handle, super()._get_handle(
+            with util.create_handle() as handle, self._get_handle(
                     handle, self.network) as tx_handle:
                 for utxo in utxos:
                     util.call_func(
@@ -1885,7 +1909,7 @@ class ConfidentialTransaction(_TransactionBase):
                 util.call_func(
                     'CfdAddSignWithPrivkeyByHandle', handle.get_handle(),
                     tx_handle.get_handle(), str(outpoint.txid),
-                    outpoint.vout, str(_privkey), _sighashtype.get_type(),
+                    outpoint.vout, str(_privkey), _sighashtype.value,
                     _sighashtype.anyone_can_pay(), grind_r,
                     to_hex_string(aux_rand), to_hex_string(annex))
                 self.hex = util.call_func(
@@ -1919,7 +1943,7 @@ class ConfidentialTransaction(_TransactionBase):
                     '', _value.amount, _value.hex)
                 return
 
-        with util.create_handle() as handle, super()._get_handle(
+        with util.create_handle() as handle, self._get_handle(
                 handle, self.network) as tx_handle:
             if not utxos:
                 addr = address if isinstance(
@@ -1959,7 +1983,11 @@ class ConfidentialTransaction(_TransactionBase):
             hash_type,
             pubkey='',
             value='',
-            redeem_script='', sighashtype=SigHashType.ALL) -> bool:
+            redeem_script='', sighashtype=SigHashType.ALL,
+            utxos: List['ElementsUtxoData'] = [],
+            tapleaf_hash: Optional[Union['ByteData', str]] = None,
+            annex: Optional[Union['ByteData', str]] = None,
+            codeseparator_pos: int = CODE_SEPARATOR_POSITION_FINAL) -> bool:
         _signature = to_hex_string(signature)
         _pubkey = to_hex_string(pubkey)
         _script = to_hex_string(redeem_script)
@@ -1970,14 +1998,21 @@ class ConfidentialTransaction(_TransactionBase):
             _value = ConfidentialValue(value)
         try:
             util = get_util()
-            with util.create_handle() as handle:
-                util.call_func(
-                    'CfdVerifySignature', handle.get_handle(),
-                    self.NETWORK, self.hex, _signature, _hash_type.value,
-                    _pubkey, _script, str(outpoint.txid),
-                    outpoint.vout, _sighashtype.value,
-                    _sighashtype.anyone_can_pay(), _value.amount, _value.hex)
-                return True
+            if not utxos:
+                with util.create_handle() as handle:
+                    util.call_func(
+                        'CfdVerifySignature', handle.get_handle(),
+                        self.NETWORK, self.hex, _signature, _hash_type.value,
+                        _pubkey, _script, str(outpoint.txid),
+                        outpoint.vout, _sighashtype.value,
+                        _sighashtype.anyone_can_pay(),
+                        _value.amount, _value.hex)
+                    return True
+            else:
+                sighash = self.get_sighash(
+                    outpoint, hash_type, _value, pubkey, redeem_script,
+                    sighashtype, utxos, tapleaf_hash, annex, codeseparator_pos)
+                return SchnorrUtil.verify(signature, sighash, pubkey)
         except CfdError as err:
             if err.error_code == CfdErrorCode.SIGN_VERIFICATION.value:
                 return False

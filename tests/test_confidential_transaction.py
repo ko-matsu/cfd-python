@@ -9,11 +9,37 @@ from cfd.address import AddressUtil
 from cfd.descriptor import parse_descriptor
 from cfd.script import HashType
 from cfd.key import SigHashType, SignParameter, Network
-from cfd.transaction import OutPoint, TxIn
+from cfd.transaction import OutPoint, TxIn, CODE_SEPARATOR_POSITION_FINAL
 from cfd.confidential_transaction import BlindData, ConfidentialTxOut,\
-    ConfidentialTransaction, ElementsUtxoData, IssuanceKeyPair,\
-    TargetAmountData, Issuance, UnblindData,\
+    ConfidentialTransaction, ConfidentialValue, ElementsUtxoData,\
+    IssuanceKeyPair, TargetAmountData, Issuance, UnblindData,\
     IssuanceAssetBlindData, IssuanceTokenBlindData
+
+
+def load_elements_utxo_list(request) -> List['ElementsUtxoData']:
+    result = []
+    utxos = request.get('utxos', [])
+    for utxo in utxos:
+        desc = utxo.get('descriptor', '')
+        if not desc:
+            if 'address' in utxo:
+                addr = utxo['address']
+                desc = f'addr({addr})'
+            if 'lockingScript' in utxo:
+                script = utxo['lockingScript']
+                desc = f'raw({script})'
+        asset = utxo.get('asset', '')
+        amount = utxo.get('amount', 0)
+        data = ElementsUtxoData(
+            txid=utxo['txid'], vout=utxo['vout'], amount=amount,
+            value=utxo.get(
+                'confidentialValueCommitment',
+                ConfidentialValue.create('', amount)),
+            asset=asset,
+            asset_commitment=utxo.get('assetCommitment', asset),
+            descriptor=desc)
+        result.append(data)
+    return result
 
 
 def test_ct_transaction_func1(obj, name, case, req, exp, error):
@@ -195,13 +221,20 @@ def test_ct_transaction_func2(obj, name, case, req, exp, error):
                 txin.get('sighashType', 'all'),
                 anyone_can_pay=txin.get('sighashAnyoneCanPay', False),
                 is_rangeproof=txin.get('sighashRangeproof', False))
+            utxos = load_elements_utxo_list(req)
+            if 'genesisBlockHash' in req:
+                resp.set_genesis_block_hash(req['genesisBlockHash'])
             resp.sign_with_privkey(
                 OutPoint(txin['txid'], txin['vout']),
                 txin['hashType'],
                 txin['privkey'],
                 value=txin.get('confidentialValueCommitment',
                                txin.get('amount', 0)),
-                sighashtype=_sighashtype)
+                sighashtype=_sighashtype,
+                grind_r=txin.get('isGrindR', True),
+                utxos=utxos,
+                aux_rand=txin.get('auxRand', None),
+                annex=txin.get('annex', None))
         elif name == 'ConfidentialTransaction.AddSign':
             resp, txin = get_tx()
             hash_type = HashType.P2SH
@@ -287,6 +320,9 @@ def test_ct_transaction_func2(obj, name, case, req, exp, error):
         elif name == 'ConfidentialTransaction.VerifySign':
             resp, txin = get_tx()
             err_list = []
+            utxos = load_elements_utxo_list(req)
+            if 'genesisBlockHash' in req:
+                resp.set_genesis_block_hash(req['genesisBlockHash'])
             for txin in req.get('txins', []):
                 hash_type = HashType.P2WPKH
                 addr = txin.get('address', '')
@@ -304,7 +340,8 @@ def test_ct_transaction_func2(obj, name, case, req, exp, error):
                         OutPoint(txin['txid'], txin['vout']),
                         addr, hash_type,
                         txin.get('confidentialValueCommitment',
-                                 txin.get('amount', 0)))
+                                 txin.get('amount', 0)),
+                        utxos=utxos)
                 except CfdError as err:
                     _dict = {'txid': txin['txid'], 'vout': txin['vout']}
                     _dict['reason'] = err.message
@@ -315,6 +352,9 @@ def test_ct_transaction_func2(obj, name, case, req, exp, error):
 
         elif name == 'ConfidentialTransaction.VerifySignature':
             resp, txin = get_tx()
+            utxos = load_elements_utxo_list(req)
+            if 'genesisBlockHash' in req:
+                resp.set_genesis_block_hash(req['genesisBlockHash'])
             resp = resp.verify_signature(
                 OutPoint(txin['txid'], txin['vout']),
                 signature=txin.get('signature', ''),
@@ -323,7 +363,8 @@ def test_ct_transaction_func2(obj, name, case, req, exp, error):
                 value=txin.get('confidentialValueCommitment',
                                txin.get('amount', 0)),
                 redeem_script=txin.get('redeemScript', ''),
-                sighashtype=txin.get('sighashType', 'all'))
+                sighashtype=txin.get('sighashType', 'all'),
+                utxos=utxos)
 
         else:
             return False
@@ -385,6 +426,32 @@ def test_ct_transaction_func3(obj, name, case, req, exp, error):
                 pubkey=pubkey,
                 redeem_script=script,
                 sighashtype=_sighashtype)
+        elif name == 'ConfidentialTransaction.GetSighash':
+            resp = ConfidentialTransaction.from_hex(req['tx'])
+            utxos = load_elements_utxo_list(req)
+            if 'genesisBlockHash' in req:
+                resp.set_genesis_block_hash(req['genesisBlockHash'])
+            txin = req['txin']
+            key_data = txin['keyData']
+            pubkey = key_data['hex'] if key_data['type'] == 'pubkey' else ''
+            script = key_data['hex'] if key_data['type'] != 'pubkey' else ''
+            _sighashtype = SigHashType.get(
+                txin.get('sighashType', 'all'),
+                anyone_can_pay=txin.get('sighashAnyoneCanPay', False),
+                is_rangeproof=txin.get('sighashRangeproof', False))
+            resp = resp.get_sighash(
+                OutPoint(txin['txid'], txin['vout']),
+                txin['hashType'],
+                value=txin.get('confidentialValueCommitment',
+                               txin.get('amount', 0)),
+                pubkey=pubkey,
+                redeem_script=script,
+                sighashtype=_sighashtype,
+                utxos=utxos,
+                tapleaf_hash=txin.get('', ''),
+                annex=txin.get('annex', None),
+                codeseparator_pos=txin.get('codeSeparatorPosition',
+                                           CODE_SEPARATOR_POSITION_FINAL))
         elif name == 'ConfidentialTransaction.GetWitnessStackNum':
             resp = ConfidentialTransaction.from_hex(req['tx'])
             txin = req['txin']

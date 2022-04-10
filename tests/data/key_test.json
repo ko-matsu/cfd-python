@@ -936,8 +936,7 @@
                 },
                 "error": {
                     "capi": "failed to verify message.",
-                    "json": "failed to verify message.",
-                    "python": "Error: failed to verify message."
+                    "json": "failed to verify message."
                 },
                 "exclude": ["python"]
             },
