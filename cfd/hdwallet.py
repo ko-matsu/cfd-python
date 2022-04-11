@@ -27,6 +27,58 @@ XPUB_TESTNET_VERSION = '043587cf'
 
 
 ##
+# @class Bip32FormatType
+# @brief Bip32 format type.
+class Bip32FormatType(Enum):
+    ##
+    # BIP32
+    BIP32 = 0
+    ##
+    # BIP32
+    NORMAL = 0
+    ##
+    # BIP49
+    BIP49 = 1
+    ##
+    # BIP84
+    BIP84 = 2
+
+    ##
+    # @brief get string.
+    # @return name.
+    def __str__(self) -> str:
+        return self.name.lower().replace('_', '')
+
+    ##
+    # @brief get string.
+    # @return name.
+    def as_str(self) -> str:
+        return self.name.lower().replace('_', '')
+
+    ##
+    # @brief get object.
+    # @param[in] format_type   format type
+    # @return object.
+    @classmethod
+    def get(cls, format_type) -> 'Bip32FormatType':
+        if (isinstance(format_type, Bip32FormatType)):
+            return format_type
+        elif (isinstance(format_type, int)):
+            _num = int(format_type)
+            for _type in Bip32FormatType:
+                if _num == _type.value:
+                    return _type
+        else:
+            _format_type = str(format_type).lower()
+            for _type in Bip32FormatType:
+                if _format_type == _type.name.lower():
+                    return _type
+        raise CfdError(
+            error_code=1,
+            message='Error: Invalid bip32 format type.')
+
+
+##
 # @class ExtKeyType
 # @brief ExtKey type.
 class ExtKeyType(Enum):
@@ -203,24 +255,25 @@ class Extkey(object):
     # @param[in] depth          depth
     # @param[in] number         number
     # @param[in] parent_key     parent key
+    # @param[in] format_type    bip32 format type
     # @return Extkey string
     @classmethod
     def _create(
             cls, key_type, network, fingerprint, key, chain_code,
-            depth, number, parent_key='') -> str:
+            depth, number, parent_key='',
+            format_type=Bip32FormatType.BIP32) -> str:
         _network = Network.get_mainchain(network)
-        _fingerprint = ''
-        _path, _num_list = cls._convert_path(number=number)
+        _format_type = Bip32FormatType.get(format_type)
+        _, _num_list = cls._convert_path(number=number)
         _number = _num_list[0] if len(_num_list) > 0 else number
-        if parent_key == '':
-            _fingerprint = str(fingerprint)
-        _network = Network.get_mainchain(network)
+        _fingerprint = str(fingerprint) if str(parent_key) == '' else ''
         util = get_util()
         with util.create_handle() as handle:
             _extkey = util.call_func(
-                'CfdCreateExtkey', handle.get_handle(),
+                'CfdCreateExtkeyByFormat', handle.get_handle(),
                 _network.value, key_type.value, str(parent_key),
-                _fingerprint, str(key), str(chain_code), depth, _number)
+                _fingerprint, str(key), str(chain_code), depth, _number,
+                _format_type.value)
         return _extkey
 
 
@@ -235,18 +288,22 @@ class ExtPrivkey(Extkey):
 
     ##
     # @brief create extkey from seed.
-    # @param[in] seed       seed
-    # @param[in] network    network
+    # @param[in] seed           seed
+    # @param[in] network        network
+    # @param[in] format_type    bip32 format type
     # @return ExtPrivkey
     @classmethod
-    def from_seed(cls, seed, network=Network.MAINNET) -> 'ExtPrivkey':
+    def from_seed(cls, seed, network=Network.MAINNET,
+                  format_type=Bip32FormatType.BIP32) -> 'ExtPrivkey':
         _seed = to_hex_string(seed)
         _network = Network.get_mainchain(network)
+        _format_type = Bip32FormatType.get(format_type)
         util = get_util()
         with util.create_handle() as handle:
             _extkey = util.call_func(
-                'CfdCreateExtkeyFromSeed', handle.get_handle(),
-                _seed, _network.value, ExtKeyType.EXT_PRIVKEY.value)
+                'CfdCreateExtkeyByFormatFromSeed', handle.get_handle(),
+                _seed, _network.value, ExtKeyType.EXT_PRIVKEY.value,
+                _format_type.value)
         return ExtPrivkey(_extkey)
 
     ##
@@ -258,14 +315,16 @@ class ExtPrivkey(Extkey):
     # @param[in] depth          depth
     # @param[in] number         number
     # @param[in] parent_key     parent key
+    # @param[in] format_type    bip32 format type
     # @return ExtPrivkey
     @classmethod
     def create(
             cls, network, fingerprint, key, chain_code,
-            depth: int, number: int, parent_key='') -> 'ExtPrivkey':
+            depth: int, number: int, parent_key='',
+            format_type=Bip32FormatType.BIP32) -> 'ExtPrivkey':
         _extkey = cls._create(
             ExtKeyType.EXT_PRIVKEY, network, fingerprint, key,
-            chain_code, depth, number, parent_key)
+            chain_code, depth, number, parent_key, format_type)
         return ExtPrivkey(_extkey)
 
     ##
@@ -373,14 +432,16 @@ class ExtPubkey(Extkey):
     # @param[in] depth          depth
     # @param[in] number         number
     # @param[in] parent_key     parent key
+    # @param[in] format_type    bip32 format type
     # @return ExtPubkey
     @classmethod
     def create(
             cls, network, fingerprint, key, chain_code,
-            depth: int, number: int, parent_key='') -> 'ExtPubkey':
+            depth: int, number: int, parent_key='',
+            format_type=Bip32FormatType.BIP32) -> 'ExtPubkey':
         _extkey = cls._create(
             ExtKeyType.EXT_PUBKEY, network, fingerprint, key,
-            chain_code, depth, number, parent_key)
+            chain_code, depth, number, parent_key, format_type)
         return ExtPubkey(_extkey)
 
     ##
@@ -573,10 +634,13 @@ class HDWallet:
     # @brief create extkey from seed.
     # @param[in] seed       seed
     # @param[in] network    network
+    # @param[in] format_type    bip32 format type
     # @return HDWallet
     @classmethod
-    def from_seed(cls, seed, network=Network.MAINNET) -> 'HDWallet':
-        return HDWallet(seed=seed, network=network)
+    def from_seed(cls, seed, network=Network.MAINNET,
+                  format_type=Bip32FormatType.BIP32) -> 'HDWallet':
+        return HDWallet(seed=seed, network=network,
+                        format_type=format_type)
 
     ##
     # @brief create extkey from mnemonic.
@@ -585,6 +649,7 @@ class HDWallet:
     # @param[in] passphrase     passphrase
     # @param[in] network        network
     # @param[in] strict_check   strict check
+    # @param[in] format_type    bip32 format type
     # @return HDWallet
     @classmethod
     def from_mnemonic(cls,
@@ -593,10 +658,12 @@ class HDWallet:
                       language='en',
                       passphrase: str = '',
                       network=Network.MAINNET,
-                      strict_check: bool = True) -> 'HDWallet':
+                      strict_check: bool = True,
+                      format_type=Bip32FormatType.BIP32) -> 'HDWallet':
         return HDWallet(
             mnemonic=mnemonic, language=language,
-            passphrase=passphrase, network=network, strict_check=strict_check)
+            passphrase=passphrase, network=network, strict_check=strict_check,
+            format_type=format_type)
 
     ##
     # @brief constructor.
@@ -606,12 +673,15 @@ class HDWallet:
     # @param[in] passphrase     passphrase
     # @param[in] network        network
     # @param[in] strict_check   strict check
+    # @param[in] format_type    bip32 format type
     def __init__(
             self, seed='', mnemonic: Union[str, List[str]] = '',
             language='en', passphrase: str = '',
-            network=Network.MAINNET, strict_check: bool = True):
+            network=Network.MAINNET, strict_check: bool = True,
+            format_type=Bip32FormatType.BIP32):
         self.seed = ByteData(seed)
         self.network = Network.get_mainchain(network)
+        _format_type = Bip32FormatType.get(format_type)
         _mnemonic = self._convert_mnemonic(mnemonic)
         _lang = MnemonicLanguage.get(language).value
         _mnemonic = unicodedata.normalize('NFKD', _mnemonic)
@@ -624,7 +694,8 @@ class HDWallet:
                     handle.get_handle(), _mnemonic, _passphrase,
                     strict_check, _lang, False)
                 self.seed = ByteData(_seed)
-        self.ext_privkey = ExtPrivkey.from_seed(self.seed, self.network)
+        self.ext_privkey = ExtPrivkey.from_seed(
+            self.seed, self.network, _format_type)
 
     ##
     # @brief get privkey.
@@ -754,6 +825,7 @@ class KeyData:
 # All import target.
 __all__ = [
     'ExtKeyType',
+    'Bip32FormatType',
     'Extkey',
     'ExtPrivkey',
     'ExtPubkey',

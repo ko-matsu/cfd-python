@@ -817,6 +817,8 @@
                     "lockingScript": "5120630f2d9ea4cbcc3f04b73fd56a1c7b51fd3192de8e26e7cd893124900033d3d1",
                     "hashType": "taproot",
                     "includeMultisig": false,
+                    "treeString": "",
+                    "tapTweak": "df8159c7ec7596d98f318c259af4549d361ae3727248ccfb681ca771a9ff9a64",
                     "keys": [
                         {
                             "keyType": "schnorrPubkey",
@@ -849,6 +851,8 @@
                     "lockingScript": "5120acb99cf4bb397c8aef2fca4f9201053526f5484174fef211ac6ac7fad0a38a48",
                     "hashType": "taproot",
                     "includeMultisig": false,
+                    "treeString": "",
+                    "tapTweak": "c0fada45d178ae3dbfa5ba87177e6f58e7cc6bb7fb52223793aba3db8cee7c4d",
                     "keys": [
                         {
                             "keyType": "extPubkey",
@@ -881,6 +885,7 @@
                     "hashType": "taproot",
                     "includeMultisig": false,
                     "treeString": "tl(208c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816ac)",
+                    "tapTweak": "d316651c9bf77077b47d7357ba865144f47e8349c0dc1a44f50b5bdf0bacf246",
                     "keys": [
                         {
                             "keyType": "schnorrPubkey",
@@ -914,6 +919,7 @@
                     "hashType": "taproot",
                     "includeMultisig": false,
                     "treeString": "{tl(208c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816ac),{tl(208c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816ac),tl(205cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bcac7c82012088a820e38990d0c7fc009880a9c07c23842e886c6bbdc964ce6bdd5817ad357335ee6f87936b82012088a914dd69735817e0e3f6f826a9238dc2e291184f0131876c935287)}}",
+                    "tapTweak": "cb61409c2e7570573f43c2d554a7484834116684a52e6175a1c9e7011e9a35f9",
                     "keys": [
                         {
                             "keyType": "schnorrPubkey",
@@ -946,6 +952,7 @@
                     "hashType": "taproot",
                     "includeMultisig": false,
                     "treeString": "{1717a480c2e3a474eed8dba83f684731243cff8ef384521936cf3a730dd0a286,{1717a480c2e3a474eed8dba83f684731243cff8ef384521936cf3a730dd0a286,80039cda864c4f2f1c87f161b0038e57fb7a4a59ff37517048696b85cdaaf911}}",
+                    "tapTweak": "cb61409c2e7570573f43c2d554a7484834116684a52e6175a1c9e7011e9a35f9",
                     "keys": [
                         {
                             "keyType": "schnorrPubkey",
@@ -1133,6 +1140,173 @@
                 }
             },
             {
+                "case": "Elements taproot schnorr",
+                "request": {
+                    "isElements": true,
+                    "descriptor": "tr(ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a)",
+                    "network": "regtest"
+                },
+                "expect": {
+                    "type": "taproot",
+                    "address": "ert1p5l62rfvlte3axg3aeu6p0zwnqr60adqc427jkz70sadzxtjdy7tshjlu6s",
+                    "lockingScript": "5120a7f4a1a59f5e63d3223dcf341789d300f4feb418aabd2b0bcf875a232e4d2797",
+                    "hashType": "taproot",
+                    "includeMultisig": false,
+                    "treeString": "",
+                    "tapTweak": "d17ac7ebc749f9df623cf4d2600cf5445af936c32dae2b87219bb3813eed8f25",
+                    "keys": [
+                        {
+                            "keyType": "schnorrPubkey",
+                            "key": "ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a"
+                        }
+                    ],
+                    "scripts": [
+                        {
+                            "depth": 0,
+                            "lockingScript": "5120a7f4a1a59f5e63d3223dcf341789d300f4feb418aabd2b0bcf875a232e4d2797",
+                            "address": "ert1p5l62rfvlte3axg3aeu6p0zwnqr60adqc427jkz70sadzxtjdy7tshjlu6s",
+                            "hashType": "taproot",
+                            "keyType": "schnorrPubkey",
+                            "key": "ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a"
+                        }
+                    ]
+                }
+            },
+            {
+                "case": "Elements taproot extpubkey",
+                "request": {
+                    "isElements": true,
+                    "descriptor": "tr([bd16bee5/0]xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/0/*)",
+                    "bip32DerivationPath": "1",
+                    "network": "liquidv1"
+                },
+                "expect": {
+                    "type": "taproot",
+                    "address": "ex1pvlc70lsxx8qkctcnwya8438k5nyjfywtc2zuenzw90qupfgrknmshdstld",
+                    "lockingScript": "512067f1e7fe0631c16c2f13713a7ac4f6a4c92491cbc285cccc4e2bc1c0a503b4f7",
+                    "hashType": "taproot",
+                    "includeMultisig": false,
+                    "treeString": "",
+                    "tapTweak": "4977ece7e46375f28ed56ae425851ad55fb217d5261c706ce0732745d05dc50f",
+                    "keys": [
+                        {
+                            "keyType": "extPubkey",
+                            "key": "xpub6EKMC2gSMfKgSwn7V9VZn7x1MvoeeVzSmmtSJ4z2L2d6R4WxvdQMouokypZHVp4fgKycrrQnGr6WJ5ED5jG9Q9FiA1q5gKYUc8u6JHJhdo8"
+                        }
+                    ],
+                    "scripts": [
+                        {
+                            "depth": 0,
+                            "lockingScript": "512067f1e7fe0631c16c2f13713a7ac4f6a4c92491cbc285cccc4e2bc1c0a503b4f7",
+                            "address": "ex1pvlc70lsxx8qkctcnwya8438k5nyjfywtc2zuenzw90qupfgrknmshdstld",
+                            "hashType": "taproot",
+                            "keyType": "extPubkey",
+                            "key": "xpub6EKMC2gSMfKgSwn7V9VZn7x1MvoeeVzSmmtSJ4z2L2d6R4WxvdQMouokypZHVp4fgKycrrQnGr6WJ5ED5jG9Q9FiA1q5gKYUc8u6JHJhdo8"
+                        }
+                    ]
+                }
+            },
+            {
+                "case": "Elements taproot tapscript single",
+                "request": {
+                    "isElements": true,
+                    "descriptor": "tr(ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a,c:pk_k(8c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816))",
+                    "network": "regtest"
+                },
+                "expect": {
+                    "type": "taproot",
+                    "address": "ert1plfg3y22ztx5kefchvzpnzwke0nr7ffd8hw88ydxdnh8sn8qhw58qqj8ln4",
+                    "lockingScript": "5120fa5112294259a96ca7176083313ad97cc7e4a5a7bb8e7234cd9dcf099c17750e",
+                    "hashType": "taproot",
+                    "includeMultisig": false,
+                    "treeString": "tl(208c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816ac)",
+                    "tapTweak": "df97f939dbcdc99caf85dd6c364f3333a18bafc2a36d70434489f5901ee82908",
+                    "keys": [
+                        {
+                            "keyType": "schnorrPubkey",
+                            "key": "ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a"
+                        }
+                    ],
+                    "scripts": [
+                        {
+                            "depth": 0,
+                            "lockingScript": "5120fa5112294259a96ca7176083313ad97cc7e4a5a7bb8e7234cd9dcf099c17750e",
+                            "address": "ert1plfg3y22ztx5kefchvzpnzwke0nr7ffd8hw88ydxdnh8sn8qhw58qqj8ln4",
+                            "hashType": "taproot",
+                            "keyType": "schnorrPubkey",
+                            "key": "ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a"
+                        }
+                    ]
+                }
+            },
+            {
+                "case": "Elements taproot tapscript tapbranch (uncheck)",
+                "request": {
+                    "isElements": true,
+                    "descriptor": "tr(ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a,{c:pk_k(8c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816),{c:pk_k([bd16bee5/0]xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/0/*),thresh(2,c:pk_k(5cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc),s:sha256(e38990d0c7fc009880a9c07c23842e886c6bbdc964ce6bdd5817ad357335ee6f),a:hash160(dd69735817e0e3f6f826a9238dc2e291184f0131))}})",
+                    "bip32DerivationPath": "1",
+                    "network": "regtest"
+                },
+                "expect": {
+                    "type": "taproot",
+                    "address": "ert1py0fr75sj7xeqzcdxcj20njjagqgyshrpjhupyzsfl3pktnmdym6qrgv7u6",
+                    "lockingScript": "512023d23f5212f1b20161a6c494f9ca5d4010485c6195f8120a09fc4365cf6d26f4",
+                    "hashType": "taproot",
+                    "includeMultisig": false,
+                    "treeString": "{tl(208c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816ac),{tl(205cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bcac7c82012088a820e38990d0c7fc009880a9c07c23842e886c6bbdc964ce6bdd5817ad357335ee6f87936b82012088a914dd69735817e0e3f6f826a9238dc2e291184f0131876c935287),tl(208c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816ac)}}",
+                    "tapTweak": "162362609a56cbcb7c4d6fe9d21339981173b2dd2e913f5e4c68fe84a58ed6ff",
+                    "keys": [
+                        {
+                            "keyType": "schnorrPubkey",
+                            "key": "ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a"
+                        }
+                    ],
+                    "scripts": [
+                        {
+                            "depth": 0,
+                            "lockingScript": "512023d23f5212f1b20161a6c494f9ca5d4010485c6195f8120a09fc4365cf6d26f4",
+                            "address": "ert1py0fr75sj7xeqzcdxcj20njjagqgyshrpjhupyzsfl3pktnmdym6qrgv7u6",
+                            "hashType": "taproot",
+                            "keyType": "schnorrPubkey",
+                            "key": "ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a"
+                        }
+                    ]
+                }
+            },
+            {
+                "case": "Elements taproot hash only tapbranch (uncheck)",
+                "request": {
+                    "isElements": true,
+                    "descriptor": "tr(ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a,{1717a480c2e3a474eed8dba83f684731243cff8ef384521936cf3a730dd0a286,{1717a480c2e3a474eed8dba83f684731243cff8ef384521936cf3a730dd0a286,80039cda864c4f2f1c87f161b0038e57fb7a4a59ff37517048696b85cdaaf911}})",
+                    "network": "regtest"
+                },
+                "expect": {
+                    "type": "taproot",
+                    "address": "ert1p8enqrnp3z4ln8u6d442xlhtk6c6y5y3h78vl09ws8dp2xyrka5aqll0v2e",
+                    "lockingScript": "51203e6601cc31157f33f34dad546fdd76d6344a1237f1d9f795d03b42a31076ed3a",
+                    "hashType": "taproot",
+                    "includeMultisig": false,
+                    "treeString": "{{1717a480c2e3a474eed8dba83f684731243cff8ef384521936cf3a730dd0a286,80039cda864c4f2f1c87f161b0038e57fb7a4a59ff37517048696b85cdaaf911},1717a480c2e3a474eed8dba83f684731243cff8ef384521936cf3a730dd0a286}",
+                    "tapTweak": "c57adc514c4266b7f0511d737329a9cb7e7ad38ae0c0e29cf728cd124b128974",
+                    "keys": [
+                        {
+                            "keyType": "schnorrPubkey",
+                            "key": "ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a"
+                        }
+                    ],
+                    "scripts": [
+                        {
+                            "depth": 0,
+                            "lockingScript": "51203e6601cc31157f33f34dad546fdd76d6344a1237f1d9f795d03b42a31076ed3a",
+                            "address": "ert1p8enqrnp3z4ln8u6d442xlhtk6c6y5y3h78vl09ws8dp2xyrka5aqll0v2e",
+                            "hashType": "taproot",
+                            "keyType": "schnorrPubkey",
+                            "key": "ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a"
+                        }
+                    ]
+                }
+            },
+            {
                 "case": "Error(network is invalid)",
                 "request": {
                     "isElements": false,
@@ -1274,7 +1448,7 @@
                 "error": {
                     "code": 1,
                     "type": "illegal_argument",
-                    "message": "ExtPubkey hardened derive error."
+                    "message": "hardened child_num can use privkey only."
                 }
             },
             {

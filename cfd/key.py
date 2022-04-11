@@ -4,7 +4,6 @@
 # @brief key function implements file.
 # @note Copyright 2020 CryptoGarage
 from typing import Optional, Tuple, Union
-import typing
 from .util import ByteData, get_util, CfdError,\
     to_hex_string, CfdErrorCode, JobHandle
 import hashlib
@@ -45,6 +44,15 @@ class Network(Enum):
     # @return name.
     def as_str(self) -> str:
         return self.name.lower().replace('_', '')
+
+    ##
+    # @brief check elements network type.
+    # @return true or false
+    def is_elements(self) -> bool:
+        if self in {Network.LIQUID_V1, Network.ELEMENTS_REGTEST,
+                    Network.CUSTOM_CHAIN}:
+            return True
+        return False
 
     ##
     # @brief get object.
@@ -252,12 +260,30 @@ class Privkey:
     pubkey: 'Pubkey'
 
     ##
+    # @brief sign message.
+    # @param[in] privkey            privkey
+    # @param[in] message            message
+    # @param[in] magic_word         message magic word
+    # @param[in] is_output_base64   base64 output mode
+    # @return signature (hex string or base64)
+    @classmethod
+    def sign_message(cls, privkey, message: str, magic_word: str,
+                     is_output_base64: bool) -> str:
+        util = get_util()
+        with util.create_handle() as handle:
+            signature = util.call_func(
+                'CfdSignMessage', handle.get_handle(),
+                str(privkey), message, magic_word, is_output_base64)
+            return signature
+
+    ##
     # @brief generate key pair.
     # @param[in] is_compressed  pubkey compressed
     # @param[in] network        network type
     # @return private key
     @classmethod
-    def generate(cls, is_compressed: bool = True, network=Network.MAINNET):
+    def generate(cls, is_compressed: bool = True,
+                 network=Network.MAINNET) -> 'Privkey':
         _network = Network.get_mainchain(network)
         util = get_util()
         with util.create_handle() as handle:
@@ -277,7 +303,7 @@ class Privkey:
             cls,
             hex,
             network=Network.MAINNET,
-            is_compressed: bool = True):
+            is_compressed: bool = True) -> 'Privkey':
         return Privkey(hex=hex, network=network,
                        is_compressed=is_compressed)
 
@@ -414,6 +440,34 @@ class Pubkey:
     # @var _hex
     # pubkey hex
     _hex: str
+
+    ##
+    # @brief verify message.
+    # @param[in] signature          signature
+    # @param[in] pubkey             pubkey
+    # @param[in] message            message
+    # @param[in] magic_word         message magic word
+    # @param[in] ignore_error       ignore error flag for recovered pubkey
+    # @retval [0] verify result (True or False)
+    # @retval [1] recovered pubkey (only 'ignore_error' is True)
+    @classmethod
+    def verify_message(cls, signature, pubkey, message: str, magic_word: str,
+                       ignore_error: bool) -> Tuple[bool, Optional['Pubkey']]:
+        util = get_util()
+        with util.create_handle() as handle:
+            ret, pk = util.call_func_no_except(
+                'CfdVerifyMessage', handle.get_handle(),
+                str(signature), str(pubkey), message, magic_word)
+            recovered_pk = None
+            if len(pk) > 0:
+                recovered_pk = Pubkey(pk)
+            if ret.error_code == 0:
+                return True, recovered_pk
+            elif ignore_error:
+                return False, recovered_pk
+            elif ret.error_code == CfdErrorCode.SIGN_VERIFICATION.value:
+                return False, None
+            raise ret
 
     ##
     # @brief combine pubkey.
@@ -659,16 +713,20 @@ class SignParameter:
 # @brief Ecdsa adaptor.
 class EcdsaAdaptor:
     ##
-    # @brief sign.
-    # @param[in] message        message (byte or string)
-    # @param[in] secret_key     secret key
-    # @param[in] adaptor        adaptor bytes
-    # @param[in] is_message_hashed      message is hashed byte.
-    # @retval result[0]   adaptor signature
-    # @retval result[1]   adaptor proof
+    # @var hex
+    # hex data
+    hex: str
+
+    ##
+    # @brief encrypt.
+    # @param[in] message            message (byte or string)
+    # @param[in] secret_key         secret key
+    # @param[in] encryption_key     encryption key
+    # @param[in] is_message_hashed  message is hashed byte.
+    # @return adaptor signature
     @classmethod
-    def sign(cls, message, secret_key, adaptor,
-             is_message_hashed=True) -> typing.Tuple['ByteData', 'ByteData']:
+    def encrypt(cls, message, secret_key, encryption_key,
+                is_message_hashed=True) -> 'EcdsaAdaptor':
         msg = message
         if (not is_message_hashed) and isinstance(message, str):
             m = hashlib.sha256()
@@ -676,63 +734,62 @@ class EcdsaAdaptor:
             msg = m.hexdigest()
         _msg = to_hex_string(msg)
         _sk = to_hex_string(secret_key)
-        _adaptor = to_hex_string(adaptor)
+        _adaptor = to_hex_string(encryption_key)
         util = get_util()
         with util.create_handle() as handle:
-            signature, proof = util.call_func(
-                'CfdSignEcdsaAdaptor', handle.get_handle(),
+            signature = util.call_func(
+                'CfdEncryptEcdsaAdaptor', handle.get_handle(),
                 _msg, _sk, _adaptor)
-        return ByteData(signature), ByteData(proof)
+        return EcdsaAdaptor(signature)
 
     ##
-    # @brief adapt.
-    # @param[in] adaptor_signature  adaptor signature
+    # @brief constructor.
+    # @param[in] data   adaptor signature data
+    def __init__(self, data):
+        self.hex = to_hex_string(data)
+
+    ##
+    # @brief get string.
+    # @return sing data hex.
+    def __str__(self) -> str:
+        return self.hex
+
+    ##
+    # @brief decrypt.
     # @param[in] adaptor_secret     adaptor secret key
     # @return adapted signature
-    @classmethod
-    def adapt(cls, adaptor_signature, adaptor_secret) -> 'ByteData':
-        _sig = to_hex_string(adaptor_signature)
+    def decrypt(self, adaptor_secret) -> 'ByteData':
         _sk = to_hex_string(adaptor_secret)
         util = get_util()
         with util.create_handle() as handle:
             signature = util.call_func(
-                'CfdAdaptEcdsaAdaptor', handle.get_handle(), _sig, _sk)
+                'CfdDecryptEcdsaAdaptor', handle.get_handle(), self.hex, _sk)
         return ByteData(signature)
 
     ##
-    # @brief extract secret.
-    # @param[in] adaptor_signature      adaptor signature
-    # @param[in] signature              signature
-    # @param[in] adaptor                adaptor bytes
+    # @brief recover.
+    # @param[in] signature          signature
+    # @param[in] encryption_key     encryption key
     # @return adaptor secret key
-    @classmethod
-    def extract_secret(
-            cls,
-            adaptor_signature,
-            signature,
-            adaptor) -> 'Privkey':
-        _adaptor_signature = to_hex_string(adaptor_signature)
+    def recover(self, signature, encryption_key) -> 'Privkey':
         _signature = to_hex_string(signature)
-        _adaptor = to_hex_string(adaptor)
+        _adaptor = to_hex_string(encryption_key)
         util = get_util()
         with util.create_handle() as handle:
             adaptor_secret = util.call_func(
-                'CfdExtractEcdsaAdaptorSecret', handle.get_handle(),
-                _adaptor_signature, _signature, _adaptor)
+                'CfdRecoverEcdsaAdaptor', handle.get_handle(),
+                self.hex, _signature, _adaptor)
         return Privkey(hex=adaptor_secret)
 
     ##
     # @brief verify.
-    # @param[in] adaptor_signature      adaptor signature
-    # @param[in] proof                  adaptor proof
-    # @param[in] adaptor                adaptor bytes
     # @param[in] message                message (byte or string)
     # @param[in] pubkey                 public key
+    # @param[in] encryption_key         encryption key
     # @param[in] is_message_hashed      message is hashed byte.
     # @retval True      Verify success.
     # @retval False     Verify fail.
-    @classmethod
-    def verify(cls, adaptor_signature, proof, adaptor, message, pubkey,
+    def verify(self, message, pubkey, encryption_key,
                is_message_hashed: bool = True) -> bool:
         msg = message
         if (not is_message_hashed) and isinstance(message, str):
@@ -740,16 +797,14 @@ class EcdsaAdaptor:
             m.update(message.encode('utf-8'))
             msg = m.hexdigest()
         _msg = to_hex_string(msg)
-        _adaptor_signature = to_hex_string(adaptor_signature)
-        _proof = to_hex_string(proof)
-        _adaptor = to_hex_string(adaptor)
+        _adaptor = to_hex_string(encryption_key)
         _pk = to_hex_string(pubkey)
         util = get_util()
         with util.create_handle() as handle:
             try:
                 util.call_func(
                     'CfdVerifyEcdsaAdaptor', handle.get_handle(),
-                    _adaptor_signature, _proof, _adaptor, _msg, _pk)
+                    self.hex, _msg, _pk, _adaptor)
                 return True
             except CfdError as err:
                 if err.error_code == CfdErrorCode.SIGN_VERIFICATION.value:

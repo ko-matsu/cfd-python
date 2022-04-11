@@ -42,6 +42,7 @@ echo "start elements node"
 
 # load or create wallet
 bitcoin-cli --regtest -datadir=${WORKDIR_PATH}/bitcoind_datadir createwallet wallet
+elements-cli -chain=liquidregtest -datadir=${WORKDIR_PATH}/elementsd_datadir createwallet wallet
 
 set -e
 

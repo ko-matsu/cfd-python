@@ -55,7 +55,7 @@ Useful when developing applications for cryptocurrencies.
 
 - Python(CPython) (3.6 or higher)
 - C/C++ Compiler
-  - can compile c++11
+  - can compile c++11
 - CMake (3.14.3 or higher)
 
 ### Windows
@@ -103,6 +103,12 @@ python3 -m pip install -U --user pip
 Then install the required packages:
 ```
 pip install --user wheel pipenv
+```
+
+#### If you get the message 'No module named pip'
+
+```
+python -m ensurepip
 ```
 
 ### setup pipenv

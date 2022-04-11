@@ -237,6 +237,38 @@
                 }
             },
             {
+                "case": "Elements HashType(Taproot) liquidv1",
+                "request": {
+                    "isElements": true,
+                    "keyData": {
+                        "hex": "1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb",
+                        "type": "pubkey"
+                    },
+                    "network": "liquidv1",
+                    "hashType": "taproot"
+                },
+                "expect": {
+                    "address": "ex1pzamhq9jglfxaj0r5ahvatr8uc77u973s5tm04yytdltsey5r8nasaw6rrn",
+                    "lockingScript": "51201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb"
+                }
+            },
+            {
+                "case": "Elements HashType(Taproot) regtest",
+                "request": {
+                    "isElements": true,
+                    "keyData": {
+                        "hex": "1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb",
+                        "type": "pubkey"
+                    },
+                    "network": "regtest",
+                    "hashType": "taproot"
+                },
+                "expect": {
+                    "address": "ert1pzamhq9jglfxaj0r5ahvatr8uc77u973s5tm04yytdltsey5r8nas2r9p9y",
+                    "lockingScript": "51201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb"
+                }
+            },
+            {
                 "case": "Elements HashType(P2PKH) liquidv1",
                 "request": {
                     "isElements": true,
@@ -978,6 +1010,34 @@
                     "network": "regtest",
                     "hashType": "p2sh",
                     "hash": "11aca2b63fbee2cdda856217a8863135b070978b"
+                }
+            },
+            {
+                "case": "Elements HashType(Taproot) liquidv1",
+                "request": {
+                    "isElements": true,
+                    "address": "ex1pzamhq9jglfxaj0r5ahvatr8uc77u973s5tm04yytdltsey5r8nasaw6rrn"
+                },
+                "expect": {
+                    "lockingScript": "51201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb",
+                    "network": "liquidv1",
+                    "hashType": "taproot",
+                    "witnessVersion": 1,
+                    "hash": "1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb"
+                }
+            },
+            {
+                "case": "Elements HashType(Taproot) regtest",
+                "request": {
+                    "isElements": true,
+                    "address": "ert1pzamhq9jglfxaj0r5ahvatr8uc77u973s5tm04yytdltsey5r8nas2r9p9y"
+                },
+                "expect": {
+                    "lockingScript": "51201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb",
+                    "network": "regtest",
+                    "hashType": "taproot",
+                    "witnessVersion": 1,
+                    "hash": "1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb"
                 }
             },
             {
@@ -2303,7 +2363,10 @@
                 "expect": {
                     "address": "1PMycacnJaSqwwJqjawXBErnLsZ7RkXUAs",
                     "hashType": "p2pkh"
-                }
+                },
+                "exclude": [
+                    "json"
+                ]
             },
             {
                 "case": "taproot regtest",
@@ -2314,7 +2377,10 @@
                 "expect": {
                     "address": "bcrt1pzamhq9jglfxaj0r5ahvatr8uc77u973s5tm04yytdltsey5r8nasmsdlvq",
                     "hashType": "taproot"
-                }
+                },
+                "exclude": [
+                    "json"
+                ]
             }
         ]
     },
@@ -2482,6 +2548,174 @@
                     ],
                     "treeString": "{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}"
                 }
+    },
+    {
+                "case": "simple network(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "internalPubkey": "1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb",
+                    "tree": [
+                        {
+                            "tapscript": "201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac"
+                        },
+                        {
+                            "branchHash": "4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d"
+                        },
+            {
+                            "branchHash": "dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54"
+                        }
+                    ]
+                },
+                "expect": {
+                    "tapLeafHash": "37aa146298e467d6a9dd4d8f9d0663fa5000cf7ccc05ede81d1f926a94e8a0d1",
+                    "topBranchHash": "aa7e81d11671ef43de75f18308f468c35fbb4a33e40b7a9e25340ca683a9a687",
+                    "tweakedPubkey": "e20d53da6b6357ba33e32ebd0a3bb74678f39ca27191fcbc53d2ed12a42f789c",
+                    "address": "ex1pugx48kntvdtm5vlr967s5wahgeu0889zwxgle0zn6tk39fp00zwquhezu5",
+                    "lockingScript": "5120e20d53da6b6357ba33e32ebd0a3bb74678f39ca27191fcbc53d2ed12a42f789c",
+                    "controlBlock": "c51777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6ddc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54",
+                    "tapscript": "201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac",
+                    "nodes": [
+                        "4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d",
+                        "dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54"
+                    ],
+                    "treeString": "{{tl(201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac),4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d},dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54}"
+                }
+            },
+            {
+                "case": "get privkey. network(elementsregtest)",
+                "request": {
+                    "network": "regtest",
+                    "isElements": true,
+                    "internalPubkey": "1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb",
+                    "internalPrivkey": "305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27",
+                    "tree": [
+                        {
+                            "tapscript": "201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac"
+                        },
+                        {
+                            "branchHash": "4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d"
+                        },
+                        {
+                            "branchHash": "dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54"
+                        }
+                    ]
+                },
+                "expect": {
+                    "tapLeafHash": "37aa146298e467d6a9dd4d8f9d0663fa5000cf7ccc05ede81d1f926a94e8a0d1",
+                    "topBranchHash": "aa7e81d11671ef43de75f18308f468c35fbb4a33e40b7a9e25340ca683a9a687",
+                    "tweakedPubkey": "e20d53da6b6357ba33e32ebd0a3bb74678f39ca27191fcbc53d2ed12a42f789c",
+                    "tweakedPrivkey": "537fa9f828116cfe9d78cfb8ca137e9a999556083823945318e5ba5b7ca1e350",
+                    "address": "ert1pugx48kntvdtm5vlr967s5wahgeu0889zwxgle0zn6tk39fp00zwqt6xq6r",
+                    "lockingScript": "5120e20d53da6b6357ba33e32ebd0a3bb74678f39ca27191fcbc53d2ed12a42f789c",
+                    "controlBlock": "c51777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6ddc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54",
+                    "tapscript": "201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac",
+                    "nodes": [
+                        "4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d",
+                        "dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54"
+                    ],
+                    "treeString": "{{tl(201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac),4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d},dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54}"
+                }
+            },
+            {
+                "case": "get privkey by hash only tree.(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "internalPubkey": "1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb",
+                    "internalPrivkey": "305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27",
+                    "tree": [
+                        {
+                            "branchHash": "dfc43ba9fc5f8a9e1b6d6a50600c704bb9e41b741d9ed6de6559a53d2f38e513"
+                        },
+                        {
+                            "branchHash": "4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d"
+                        },
+                        {
+                            "branchHash": "dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54"
+                        }
+                    ]
+                },
+                "expect": {
+                    "topBranchHash": "369d9eeab3dc4e72de74f45bd9c392c014a0ec8ca895ac49771d0e32a91db528",
+                    "tweakedPubkey": "9d7a278d049ab1e17d02fe94673d1b038cc75c4bd07c946729d26fcf562fdb9a",
+                    "tweakedPrivkey": "85295eefdab7c4f088ac02693e9d2112523c27bfee12e6046c2727435bd53282",
+                    "address": "ex1pn4az0rgyn2c7zlgzl62xw0gmqwxvwhzt6p7fgeef6fhu7430mwdqf77azy",
+                    "lockingScript": "51209d7a278d049ab1e17d02fe94673d1b038cc75c4bd07c946729d26fcf562fdb9a",
+                    "treeString": "{{4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d,dfc43ba9fc5f8a9e1b6d6a50600c704bb9e41b741d9ed6de6559a53d2f38e513},dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54}"
+                }
+            },
+            {
+                "case": "child branch.(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "tree": [
+                        {
+                            "tapscript": "20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac"
+                        },
+                        {
+                            "tapscript": "51"
+                        }
+                    ]
+                },
+                "expect": {
+                    "tapLeafHash": "4e6fe964c9dcdef0659936b3fceb4f79f8d764d979fe65452f4d55bf06fddc59",
+                    "topBranchHash": "ff556c786e5e3968e7e162a90a2afb042db4d342a453730c750ba0f0f578dbb4",
+                    "tapscript": "20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac",
+                    "nodes": [
+                        "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40"
+                    ],
+                    "treeString": "{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)}"
+                }
+            },
+            {
+                "case": "root branch. (use child branch)(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "tree": [
+                        {
+                            "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac"
+                        },
+                        {
+                            "branchHash": "af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4"
+                        }
+                    ]
+                },
+                "expect": {
+                    "tapLeafHash": "8a5c6e74080fe957d9140c7c063fc68b70b9972ccccf4b4a1372ab8272119567",
+                    "topBranchHash": "c5950e89c3f4768901fead11fe8289d33852c8554646fad94de47654d145433a",
+                    "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac",
+                    "nodes": [
+                        "af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4"
+                    ],
+                    "treeString": "{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac),af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4}"
+                }
+            },
+            {
+                "case": "root branch. (use child branch string)(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "tree": [
+                        {
+                            "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac"
+                        },
+                        {
+                            "treeString": "{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)}"
+                        }
+                    ]
+                },
+                "expect": {
+                    "tapLeafHash": "8a5c6e74080fe957d9140c7c063fc68b70b9972ccccf4b4a1372ab8272119567",
+                    "topBranchHash": "56df52b4c09031a69b140719685091063f4090a9327a61b19985fa5cf65a0c88",
+                    "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac",
+                    "nodes": [
+                        "ff556c786e5e3968e7e162a90a2afb042db4d342a453730c750ba0f0f578dbb4"
+                    ],
+                    "treeString": "{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac),{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)}}"
+                }
             }
         ]
     },
@@ -2534,6 +2768,54 @@
                         "dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54"
                     ],
                     "treeString": "{{4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d,tl(201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac)},dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54}"
+                }
+            },
+            {
+                "case": "simple network(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "tapscript": "201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac",
+                    "controlBlock": "c01777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6ddc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54"
+                },
+                "expect": {
+                    "tapLeafHash": "37aa146298e467d6a9dd4d8f9d0663fa5000cf7ccc05ede81d1f926a94e8a0d1",
+                    "topBranchHash": "aa7e81d11671ef43de75f18308f468c35fbb4a33e40b7a9e25340ca683a9a687",
+                    "tweakedPubkey": "e20d53da6b6357ba33e32ebd0a3bb74678f39ca27191fcbc53d2ed12a42f789c",
+                    "address": "ex1pugx48kntvdtm5vlr967s5wahgeu0889zwxgle0zn6tk39fp00zwquhezu5",
+                    "lockingScript": "5120e20d53da6b6357ba33e32ebd0a3bb74678f39ca27191fcbc53d2ed12a42f789c",
+                    "controlBlock": "c51777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6ddc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54",
+                    "tapscript": "201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac",
+                    "nodes": [
+                        "4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d",
+                        "dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54"
+                    ],
+                    "treeString": "{{tl(201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac),4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d},dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54}"
+                }
+            },
+            {
+                "case": "get privkey. network(elementsregtest)",
+                "request": {
+                    "network": "elementsregtest",
+                    "isElements": true,
+                    "tapscript": "201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac",
+                    "controlBlock": "c01777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6ddc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54",
+                    "internalPrivkey": "305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27"
+                },
+                "expect": {
+                    "tapLeafHash": "37aa146298e467d6a9dd4d8f9d0663fa5000cf7ccc05ede81d1f926a94e8a0d1",
+                    "topBranchHash": "aa7e81d11671ef43de75f18308f468c35fbb4a33e40b7a9e25340ca683a9a687",
+                    "tweakedPubkey": "e20d53da6b6357ba33e32ebd0a3bb74678f39ca27191fcbc53d2ed12a42f789c",
+                    "tweakedPrivkey": "537fa9f828116cfe9d78cfb8ca137e9a999556083823945318e5ba5b7ca1e350",
+                    "address": "ert1pugx48kntvdtm5vlr967s5wahgeu0889zwxgle0zn6tk39fp00zwqt6xq6r",
+                    "lockingScript": "5120e20d53da6b6357ba33e32ebd0a3bb74678f39ca27191fcbc53d2ed12a42f789c",
+                    "controlBlock": "c51777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6ddc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54",
+                    "tapscript": "201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac",
+                    "nodes": [
+                        "4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d",
+                        "dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54"
+                    ],
+                    "treeString": "{{tl(201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac),4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d},dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54}"
                 }
             }
         ]
@@ -2736,6 +3018,218 @@
                     ],
                     "treeString": "{{{tl(51),{tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac),tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac)}},{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)}},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}"
                 }
+            },
+            {
+                "case": "simple network(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d,tl(201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac)},dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54}",
+                    "tapscript": "201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac",
+                    "internalPubkey": "1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb"
+                },
+                "expect": {
+                    "tapLeafHash": "37aa146298e467d6a9dd4d8f9d0663fa5000cf7ccc05ede81d1f926a94e8a0d1",
+                    "topBranchHash": "aa7e81d11671ef43de75f18308f468c35fbb4a33e40b7a9e25340ca683a9a687",
+                    "tweakedPubkey": "e20d53da6b6357ba33e32ebd0a3bb74678f39ca27191fcbc53d2ed12a42f789c",
+                    "address": "ex1pugx48kntvdtm5vlr967s5wahgeu0889zwxgle0zn6tk39fp00zwquhezu5",
+                    "lockingScript": "5120e20d53da6b6357ba33e32ebd0a3bb74678f39ca27191fcbc53d2ed12a42f789c",
+                    "controlBlock": "c51777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6ddc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54",
+                    "tapscript": "201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac",
+                    "nodes": [
+                        "4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d",
+                        "dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54"
+                    ],
+                    "treeString": "{{tl(201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac),4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d},dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54}"
+                }
+            },
+            {
+                "case": "get privkey. network(elementsregtest)",
+                "request": {
+                    "network": "elementsregtest",
+                    "isElements": true,
+                    "treeString": "{{4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d,tl(201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac)},dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54}",
+                    "tapscript": "201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac",
+                    "internalPubkey": "1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb",
+                    "internalPrivkey": "305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27"
+                },
+                "expect": {
+                    "tapLeafHash": "37aa146298e467d6a9dd4d8f9d0663fa5000cf7ccc05ede81d1f926a94e8a0d1",
+                    "topBranchHash": "aa7e81d11671ef43de75f18308f468c35fbb4a33e40b7a9e25340ca683a9a687",
+                    "tweakedPubkey": "e20d53da6b6357ba33e32ebd0a3bb74678f39ca27191fcbc53d2ed12a42f789c",
+                    "tweakedPrivkey": "537fa9f828116cfe9d78cfb8ca137e9a999556083823945318e5ba5b7ca1e350",
+                    "address": "ert1pugx48kntvdtm5vlr967s5wahgeu0889zwxgle0zn6tk39fp00zwqt6xq6r",
+                    "lockingScript": "5120e20d53da6b6357ba33e32ebd0a3bb74678f39ca27191fcbc53d2ed12a42f789c",
+                    "controlBlock": "c51777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6ddc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54",
+                    "tapscript": "201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac",
+                    "nodes": [
+                        "4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d",
+                        "dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54"
+                    ],
+                    "treeString": "{{tl(201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac),4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d},dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54}"
+                }
+            },
+            {
+                "case": "get privkey on hash only tree. network(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d,dfc43ba9fc5f8a9e1b6d6a50600c704bb9e41b741d9ed6de6559a53d2f38e513},dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54}",
+                    "internalPubkey": "1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb",
+                    "internalPrivkey": "305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27"
+                },
+                "expect": {
+                    "topBranchHash": "369d9eeab3dc4e72de74f45bd9c392c014a0ec8ca895ac49771d0e32a91db528",
+                    "tweakedPubkey": "9d7a278d049ab1e17d02fe94673d1b038cc75c4bd07c946729d26fcf562fdb9a",
+                    "tweakedPrivkey": "85295eefdab7c4f088ac02693e9d2112523c27bfee12e6046c2727435bd53282",
+                    "address": "ex1pn4az0rgyn2c7zlgzl62xw0gmqwxvwhzt6p7fgeef6fhu7430mwdqf77azy",
+                    "lockingScript": "51209d7a278d049ab1e17d02fe94673d1b038cc75c4bd07c946729d26fcf562fdb9a",
+                    "treeString": "{{4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d,dfc43ba9fc5f8a9e1b6d6a50600c704bb9e41b741d9ed6de6559a53d2f38e513},dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54}"
+                }
+            },
+            {
+                "case": "child branch.(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)}",
+                    "tapscript": "20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac"
+                },
+                "expect": {
+                    "tapLeafHash": "4e6fe964c9dcdef0659936b3fceb4f79f8d764d979fe65452f4d55bf06fddc59",
+                    "topBranchHash": "ff556c786e5e3968e7e162a90a2afb042db4d342a453730c750ba0f0f578dbb4",
+                    "tapscript": "20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac",
+                    "nodes": [
+                        "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40"
+                    ],
+                    "treeString": "{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)}"
+                }
+            },
+            {
+                "case": "root branch. (use child branch)(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4,tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}",
+                    "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac"
+                },
+                "expect": {
+                    "tapLeafHash": "8a5c6e74080fe957d9140c7c063fc68b70b9972ccccf4b4a1372ab8272119567",
+                    "topBranchHash": "c5950e89c3f4768901fead11fe8289d33852c8554646fad94de47654d145433a",
+                    "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac",
+                    "nodes": [
+                        "af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4"
+                    ],
+                    "treeString": "{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac),af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4}"
+                }
+            },
+            {
+                "case": "root branch. (use child branch string)(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}",
+                    "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac"
+                },
+                "expect": {
+                    "tapLeafHash": "8a5c6e74080fe957d9140c7c063fc68b70b9972ccccf4b4a1372ab8272119567",
+                    "topBranchHash": "56df52b4c09031a69b140719685091063f4090a9327a61b19985fa5cf65a0c88",
+                    "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac",
+                    "nodes": [
+                        "ff556c786e5e3968e7e162a90a2afb042db4d342a453730c750ba0f0f578dbb4"
+                    ],
+                    "treeString": "{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac),{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)}}"
+                }
+            },
+            {
+                "case": "parse branch mode.(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}"
+                },
+                "expect": {
+                    "topBranchHash": "56df52b4c09031a69b140719685091063f4090a9327a61b19985fa5cf65a0c88",
+                    "treeString": "{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac),{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)}}"
+                }
+            },
+            {
+                "case": "parse branch mode. (single leaf)(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "tl(51)"
+                },
+                "expect": {
+                    "topBranchHash": "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40",
+                    "treeString": "tl(51)"
+                }
+            },
+            {
+                "case": "parse branch mode. (single branch hash)(liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4"
+                },
+                "expect": {
+                    "topBranchHash": "af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4",
+                    "treeString": "af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4"
+                }
+            },
+            {
+                "case": "tree search (contain multi script) 1 (liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{{tl(51),{tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac),tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac)}},{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)}},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}",
+                    "tapscript": "51",
+                    "nodes": [
+                        "91b503f398b8ac15b543074242161436f3d92051a23db1a376162dcde98e5762",
+                        "4e6fe964c9dcdef0659936b3fceb4f79f8d764d979fe65452f4d55bf06fddc59",
+                        "8a5c6e74080fe957d9140c7c063fc68b70b9972ccccf4b4a1372ab8272119567",
+                        "a3006a3dc2675d9faf93aa3636e5c2cfd5df070945af30cba134472d93673f1f",
+                        "a68004de62a29dd603d8cb9070a190df4fa1fc726b7cce846ea3f540c51ebc22"
+                    ]
+                },
+                "expect": {
+                    "tapLeafHash": "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40",
+                    "topBranchHash": "9f3ab3a6f3158c77a081a1e9f00c2854e8398eefefbfe937e4805998da98b412",
+                    "tapscript": "51",
+                    "nodes": [
+                        "91b503f398b8ac15b543074242161436f3d92051a23db1a376162dcde98e5762",
+                        "4e6fe964c9dcdef0659936b3fceb4f79f8d764d979fe65452f4d55bf06fddc59",
+                        "8a5c6e74080fe957d9140c7c063fc68b70b9972ccccf4b4a1372ab8272119567",
+                        "a3006a3dc2675d9faf93aa3636e5c2cfd5df070945af30cba134472d93673f1f",
+                        "a68004de62a29dd603d8cb9070a190df4fa1fc726b7cce846ea3f540c51ebc22"
+                    ],
+                    "treeString": "{{{tl(51),{tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac),tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac)}},{{{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)},tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac)},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}"
+                }
+            },
+            {
+                "case": "tree search (contain multi script) 2 (liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{{tl(51),{tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac),tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac)}},{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)}},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}",
+                    "tapscript": "51",
+                    "nodes": [
+                        "aec3ae4c22421c8e0cc7aeb4c34a247eae16772ab0ad7afaad92850a890af55c",
+                        "e027953fb3c0bfc45b32d5729b9b130113e40354b6bf7a41da74983e4dd67aec",
+                        "a68004de62a29dd603d8cb9070a190df4fa1fc726b7cce846ea3f540c51ebc22"
+                    ]
+                },
+                "expect": {
+                    "tapLeafHash": "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40",
+                    "topBranchHash": "9f3ab3a6f3158c77a081a1e9f00c2854e8398eefefbfe937e4805998da98b412",
+                    "tapscript": "51",
+                    "nodes": [
+                        "aec3ae4c22421c8e0cc7aeb4c34a247eae16772ab0ad7afaad92850a890af55c",
+                        "e027953fb3c0bfc45b32d5729b9b130113e40354b6bf7a41da74983e4dd67aec",
+                        "a68004de62a29dd603d8cb9070a190df4fa1fc726b7cce846ea3f540c51ebc22"
+                    ],
+                    "treeString": "{{{tl(51),{tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac),tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac)}},{{{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)},tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac)},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}"
+                }
             }
         ]
     },
@@ -2816,6 +3310,99 @@
             {
                 "case": "by tapbranch only hash",
                 "request": {
+                    "treeString": "{{4691fbb1196f4675241c8958a7ab6378a63aa0cc008ed03d216fd038357f52fd,a85b2107f791b26a84e7586c28cec7cb61202ed3d01944d832500f363782d675},e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb}",
+                    "index": 1
+                },
+                "expect": {
+                    "topBranchHash": "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb",
+                    "nodes": [],
+                    "treeString": "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb"
+                }
+            },
+            {
+                "case": "by tree search 1 (liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{{tl(51),{tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac),tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac)}},{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)}},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}",
+                    "tapscript": "51",
+                    "nodes": [
+                        "aec3ae4c22421c8e0cc7aeb4c34a247eae16772ab0ad7afaad92850a890af55c",
+                        "e027953fb3c0bfc45b32d5729b9b130113e40354b6bf7a41da74983e4dd67aec",
+                        "a68004de62a29dd603d8cb9070a190df4fa1fc726b7cce846ea3f540c51ebc22"
+                    ],
+                    "index": 0
+                },
+                "expect": {
+                    "topBranchHash": "aec3ae4c22421c8e0cc7aeb4c34a247eae16772ab0ad7afaad92850a890af55c",
+                    "nodes": [
+                        "4a12da59534c073d49c66d097ddfa3e0a9a3e8f5abfb4db0bbf8b30cd1723a72"
+                    ],
+                    "treeString": "{tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac),tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac)}"
+                }
+            },
+            {
+                "case": "by tree search 2 (liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{{tl(51),{tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac),tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac)}},{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)}},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}",
+                    "tapscript": "51",
+                    "nodes": [
+                        "aec3ae4c22421c8e0cc7aeb4c34a247eae16772ab0ad7afaad92850a890af55c",
+                        "e027953fb3c0bfc45b32d5729b9b130113e40354b6bf7a41da74983e4dd67aec",
+                        "a68004de62a29dd603d8cb9070a190df4fa1fc726b7cce846ea3f540c51ebc22"
+                    ],
+                    "index": 1
+                },
+                "expect": {
+                    "topBranchHash": "e027953fb3c0bfc45b32d5729b9b130113e40354b6bf7a41da74983e4dd67aec",
+                    "nodes": [
+                        "1b493a6f3185a4ad847dbdc2216e69212380b315f7191d946dcb153a60446f6c",
+                        "8a5c6e74080fe957d9140c7c063fc68b70b9972ccccf4b4a1372ab8272119567"
+                    ],
+                    "treeString": "{{{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)},tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac)},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}"
+                }
+            },
+            {
+                "case": "by tree search 3 (liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{{tl(51),{tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac),tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac)}},{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)}},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}",
+                    "tapscript": "51",
+                    "nodes": [
+                        "aec3ae4c22421c8e0cc7aeb4c34a247eae16772ab0ad7afaad92850a890af55c",
+                        "e027953fb3c0bfc45b32d5729b9b130113e40354b6bf7a41da74983e4dd67aec",
+                        "a68004de62a29dd603d8cb9070a190df4fa1fc726b7cce846ea3f540c51ebc22"
+                    ],
+                    "index": 2
+                },
+                "expect": {
+                    "topBranchHash": "a68004de62a29dd603d8cb9070a190df4fa1fc726b7cce846ea3f540c51ebc22",
+                    "nodes": [],
+                    "treeString": "tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)"
+                }
+            },
+            {
+                "case": "by tapbranch (liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}",
+                    "index": 1
+                },
+                "expect": {
+                    "topBranchHash": "8a5c6e74080fe957d9140c7c063fc68b70b9972ccccf4b4a1372ab8272119567",
+                    "nodes": [],
+                    "treeString": "tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)"
+                }
+            },
+            {
+                "case": "by tapbranch only hash (liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
                     "treeString": "{{4691fbb1196f4675241c8958a7ab6378a63aa0cc008ed03d216fd038357f52fd,a85b2107f791b26a84e7586c28cec7cb61202ed3d01944d832500f363782d675},e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb}",
                     "index": 1
                 },
@@ -3020,6 +3607,212 @@
                             "tapBranchHash": "a625d1251a1100263fa9a77b81e9e6f46c2eb8d44b9f27b629875cc102efb0ec",
                             "relatedBranchHash": [
                                 "af151388d3bfbebcdc87e4a0b4a97bbfa378f2e5a909eb38a6978cb2a71f39c4",
+                                "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb"
+                            ]
+                        },
+                        {
+                            "depth": 1,
+                            "tapBranchHash": "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb"
+                        }
+                    ]
+                }
+            },
+            {
+                "case": "multi branch tree (liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{{tl(51),{tl(204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac),tl(2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac)}},{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),{tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac),tl(51)}},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}},tl(2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac)}"
+                },
+                "expect": {
+                    "branches": [
+                        {
+                            "depth": 3,
+                            "tapBranchHash": "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40",
+                            "tapscript": "51",
+                            "leafVersion": 196
+                        },
+                        {
+                            "depth": 2,
+                            "tapBranchHash": "a3006a3dc2675d9faf93aa3636e5c2cfd5df070945af30cba134472d93673f1f",
+                            "relatedBranchHash": [
+                                "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40",
+                                "aec3ae4c22421c8e0cc7aeb4c34a247eae16772ab0ad7afaad92850a890af55c"
+                            ]
+                        },
+                        {
+                            "depth": 4,
+                            "tapBranchHash": "81c4b9d5759a7ec4433e98c0445357578adb0e4dc3d318d1ef39d8ea7cdb5b3b",
+                            "tapscript": "204a7af8660f2b0bdb92d2ce8b88ab30feb916343228d2e7bd15da02e1f6a31d47ac",
+                            "leafVersion": 196
+                        },
+                        {
+                            "depth": 3,
+                            "tapBranchHash": "aec3ae4c22421c8e0cc7aeb4c34a247eae16772ab0ad7afaad92850a890af55c",
+                            "relatedBranchHash": [
+                                "81c4b9d5759a7ec4433e98c0445357578adb0e4dc3d318d1ef39d8ea7cdb5b3b",
+                                "4a12da59534c073d49c66d097ddfa3e0a9a3e8f5abfb4db0bbf8b30cd1723a72"
+                            ]
+                        },
+                        {
+                            "depth": 4,
+                            "tapBranchHash": "4a12da59534c073d49c66d097ddfa3e0a9a3e8f5abfb4db0bbf8b30cd1723a72",
+                            "tapscript": "2000d134c42fd51c90fa82c6cfdaabd895474d979118525362c0cd236c857e29d9ac",
+                            "leafVersion": 196
+                        },
+                        {
+                            "depth": 1,
+                            "tapBranchHash": "9514dbf7e89be72026b5d53761e762edc760d9dd8fb4295af224ea282ff68f9a",
+                            "relatedBranchHash": [
+                                "a3006a3dc2675d9faf93aa3636e5c2cfd5df070945af30cba134472d93673f1f",
+                                "e027953fb3c0bfc45b32d5729b9b130113e40354b6bf7a41da74983e4dd67aec"
+                            ]
+                        },
+                        {
+                            "depth": 4,
+                            "tapBranchHash": "4e6fe964c9dcdef0659936b3fceb4f79f8d764d979fe65452f4d55bf06fddc59",
+                            "tapscript": "20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac",
+                            "leafVersion": 196
+                        },
+                        {
+                            "depth": 3,
+                            "tapBranchHash": "447dc5e687834a68faa5fc7a26a031dc649e5f9e474c87b892ba67ed8d356eef",
+                            "relatedBranchHash": [
+                                "4e6fe964c9dcdef0659936b3fceb4f79f8d764d979fe65452f4d55bf06fddc59",
+                                "1b493a6f3185a4ad847dbdc2216e69212380b315f7191d946dcb153a60446f6c"
+                            ]
+                        },
+                        {
+                            "depth": 5,
+                            "tapBranchHash": "91b503f398b8ac15b543074242161436f3d92051a23db1a376162dcde98e5762",
+                            "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aac",
+                            "leafVersion": 196
+                        },
+                        {
+                            "depth": 4,
+                            "tapBranchHash": "1b493a6f3185a4ad847dbdc2216e69212380b315f7191d946dcb153a60446f6c",
+                            "relatedBranchHash": [
+                                "91b503f398b8ac15b543074242161436f3d92051a23db1a376162dcde98e5762",
+                                "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40"
+                            ]
+                        },
+                        {
+                            "depth": 5,
+                            "tapBranchHash": "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40",
+                            "tapscript": "51",
+                            "leafVersion": 196
+                        },
+                        {
+                            "depth": 2,
+                            "tapBranchHash": "e027953fb3c0bfc45b32d5729b9b130113e40354b6bf7a41da74983e4dd67aec",
+                            "relatedBranchHash": [
+                                "447dc5e687834a68faa5fc7a26a031dc649e5f9e474c87b892ba67ed8d356eef",
+                                "8a5c6e74080fe957d9140c7c063fc68b70b9972ccccf4b4a1372ab8272119567"
+                            ]
+                        },
+                        {
+                            "depth": 3,
+                            "tapBranchHash": "8a5c6e74080fe957d9140c7c063fc68b70b9972ccccf4b4a1372ab8272119567",
+                            "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac",
+                            "leafVersion": 196
+                        },
+                        {
+                            "depth": 0,
+                            "tapBranchHash": "9f3ab3a6f3158c77a081a1e9f00c2854e8398eefefbfe937e4805998da98b412",
+                            "relatedBranchHash": [
+                                "9514dbf7e89be72026b5d53761e762edc760d9dd8fb4295af224ea282ff68f9a",
+                                "a68004de62a29dd603d8cb9070a190df4fa1fc726b7cce846ea3f540c51ebc22"
+                            ]
+                        },
+                        {
+                            "depth": 1,
+                            "tapBranchHash": "a68004de62a29dd603d8cb9070a190df4fa1fc726b7cce846ea3f540c51ebc22",
+                            "tapscript": "2008f8280d68e02e807ccffee141c4a6b7ac31d3c283ae0921892d95f691742c44ad20b0f8ce3e1df406514a773414b5d9e5779d8e68ce816e9db39b8e53255ac3b406ac",
+                            "leafVersion": 196
+                        }
+                    ]
+                }
+            },
+            {
+                "case": "simple branch (liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}"
+                },
+                "expect": {
+                    "branches": [
+                        {
+                            "depth": 2,
+                            "tapBranchHash": "4e6fe964c9dcdef0659936b3fceb4f79f8d764d979fe65452f4d55bf06fddc59",
+                            "tapscript": "20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac",
+                            "leafVersion": 196
+                        },
+                        {
+                            "depth": 1,
+                            "tapBranchHash": "ff556c786e5e3968e7e162a90a2afb042db4d342a453730c750ba0f0f578dbb4",
+                            "relatedBranchHash": [
+                                "4e6fe964c9dcdef0659936b3fceb4f79f8d764d979fe65452f4d55bf06fddc59",
+                                "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40"
+                            ]
+                        },
+                        {
+                            "depth": 2,
+                            "tapBranchHash": "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40",
+                            "tapscript": "51",
+                            "leafVersion": 196
+                        },
+                        {
+                            "depth": 0,
+                            "tapBranchHash": "56df52b4c09031a69b140719685091063f4090a9327a61b19985fa5cf65a0c88",
+                            "relatedBranchHash": [
+                                "ff556c786e5e3968e7e162a90a2afb042db4d342a453730c750ba0f0f578dbb4",
+                                "8a5c6e74080fe957d9140c7c063fc68b70b9972ccccf4b4a1372ab8272119567"
+                            ]
+                        },
+                        {
+                            "depth": 1,
+                            "tapBranchHash": "8a5c6e74080fe957d9140c7c063fc68b70b9972ccccf4b4a1372ab8272119567",
+                            "tapscript": "2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac",
+                            "leafVersion": 196
+                        }
+                    ]
+                }
+            },
+            {
+                "case": "hash branch (liquidv1)",
+                "request": {
+                    "network": "liquidv1",
+                    "isElements": true,
+                    "treeString": "{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)},e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb}"
+                },
+                "expect": {
+                    "branches": [
+                        {
+                            "depth": 2,
+                            "tapBranchHash": "4e6fe964c9dcdef0659936b3fceb4f79f8d764d979fe65452f4d55bf06fddc59",
+                            "tapscript": "20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac",
+                            "leafVersion": 196
+                        },
+                        {
+                            "depth": 1,
+                            "tapBranchHash": "ff556c786e5e3968e7e162a90a2afb042db4d342a453730c750ba0f0f578dbb4",
+                            "relatedBranchHash": [
+                                "4e6fe964c9dcdef0659936b3fceb4f79f8d764d979fe65452f4d55bf06fddc59",
+                                "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40"
+                            ]
+                        },
+                        {
+                            "depth": 2,
+                            "tapBranchHash": "a81c7f30802409528d2d0ac880b8072c97e96c303f4759707394af544fc3df40",
+                            "tapscript": "51",
+                            "leafVersion": 196
+                        },
+                        {
+                            "depth": 0,
+                            "tapBranchHash": "9337df63b61e27daaf19a4377d26cb4e0ccb634a9c73cd1569d660922242c099",
+                            "relatedBranchHash": [
+                                "ff556c786e5e3968e7e162a90a2afb042db4d342a453730c750ba0f0f578dbb4",
                                 "e47f58011f27e9046b8195d0ab6a2acbc68ce281437a8d5132dadf389b2a5ebb"
                             ]
                         },

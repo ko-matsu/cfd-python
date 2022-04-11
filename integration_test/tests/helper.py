@@ -1,4 +1,5 @@
 from bitcoinrpc.authproxy import AuthServiceProxy
+import time
 
 
 LISTUNSPENT_MAX = 9999999
@@ -19,3 +20,15 @@ class RpcWrapper:
 
 def get_utxo(conn, address_list=[]):
     return conn.listunspent(0, LISTUNSPENT_MAX, address_list)
+
+
+def long_sleep(btc_rpc, sleep_time):
+    count = int(sleep_time/10)
+    last_sleep = int(sleep_time % 10)
+    for i in range(count):
+        btc_rpc.ping()
+        time.sleep(10)
+
+    if last_sleep >= 1:
+        time.sleep(last_sleep)
+    return

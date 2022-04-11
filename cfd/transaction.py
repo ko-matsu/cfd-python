@@ -500,13 +500,36 @@ class _TransactionBase:
             return list
 
     ##
-    # @brief update witness stack.
+    # @brief update txin sequence.
     # @param[in] outpoint       outpoint
-    # @param[in] sequence       sequence number
+    # @param[in] sequence       sequence number (direct)
+    # @param[in] time_lock      time lock from confirmation (by second)
+    # @param[in] height_lock    height lock from confirmation
     # @return void
     def update_sequence(
-            self, outpoint: 'OutPoint', sequence: int) -> None:
+            self, outpoint: 'OutPoint', sequence: int = 0,
+            time_lock: int = -1, height_lock: int = -1) -> None:
         util = get_util()
+        if (time_lock > 0) and (height_lock > 0):
+            raise CfdError(
+                error_code=1, message='Error: multiple lock. Only one of '
+                'time_lock and height_lock can be set.')  # noqa: E501
+        if time_lock > 0:
+            SEQUENCE_LOCKTIME_TYPE_FLAG = 0x400000
+            seq_num = (int)(time_lock / 512)
+            seq_num += 1 if (time_lock % 512) else 0
+            if seq_num > 0xffff:
+                raise CfdError(
+                    error_code=1, message='Error: time_lock limit over. '
+                    'Use locktime, not sequence.')  # noqa: E501
+            sequence = seq_num | SEQUENCE_LOCKTIME_TYPE_FLAG
+        elif height_lock > 0:
+            if height_lock > 0xffff:
+                raise CfdError(
+                    error_code=1, message='Error: height_lock limit over. '
+                    'Use locktime, not sequence.')  # noqa: E501
+            sequence = height_lock
+
         with util.create_handle() as handle, self._get_handle(
                 handle, self.network) as tx_handle:
             self.hex = util.call_func(

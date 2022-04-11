@@ -299,7 +299,7 @@ class DescriptorScriptData:
             key_data: Optional['DescriptorKeyData'] = None,
             key_list: List['DescriptorKeyData'] = [],
             multisig_require_num: int = 0,
-            tree_string: str = ''):
+            tree_string: Optional[str] = None):
         self.script_type = script_type
         self.depth = depth
         self.hash_type = hash_type
@@ -310,7 +310,7 @@ class DescriptorScriptData:
         self.key_data = key_data
         self.key_list = key_list
         self.multisig_require_num = multisig_require_num
-        self.tree_string = tree_string
+        self.tree_string = '' if tree_string is None else tree_string
 
 
 ##

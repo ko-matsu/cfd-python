@@ -6,7 +6,7 @@
 from typing import List, Optional, Tuple, Union
 from .util import CfdError, CfdErrorCode, get_util, JobHandle, ByteData, \
     to_hex_string
-from .key import SchnorrPubkey, Privkey
+from .key import SchnorrPubkey, Privkey, Network
 from .script import Script
 
 
@@ -40,39 +40,47 @@ class TapBranch:
     # leaf version.
     leaf_version: int
     ##
-    # @var taget_node_str
+    # @var target_node_str
     # target node route string.
-    taget_node_str: str
+    target_node_str: str
+    ##
+    # @var network
+    # network type.
+    network: Network
 
     ##
     # @brief get tapbranch from string.
     # @param[in] tree_str           tree string.
+    # @param[in] network            network type. default is mainnet.
     # @return tapbranch object
     @classmethod
-    def from_string(cls, tree_str: str) -> 'TapBranch':
-        result = TapBranch()
+    def from_string(
+        cls, tree_str: str, network: Network = Network.MAINNET
+    ) -> "TapBranch":
+        result = TapBranch(network=network)
         util = get_util()
         with util.create_handle() as handle, TapBranch._get_handle(
-                util, handle) as tree_handle:
+                util, handle, result.network) as tree_handle:
             util.call_func(
                 'CfdSetScriptTreeFromString', handle.get_handle(),
                 tree_handle.get_handle(), tree_str, '', 0, '')
             result.tree_str = util.call_func(
                 'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
                 tree_handle.get_handle())
-            branch_data = TapBranch._load_tree(handle, tree_handle)
+            branch_data = TapBranch._load_tree(
+                handle, tree_handle, result.network)
             result.tree_str = branch_data.tree_str
             result.branches = branch_data.branches
             result.hash = branch_data.hash
             result.tapscript = branch_data.tapscript
             result.leaf_version = branch_data.leaf_version
-            result.taget_node_str = ''
+            result.target_node_str = ''
             for branch in result.branches:
                 if isinstance(branch, TapBranch):
-                    result.taget_node_str += to_hex_string(
+                    result.target_node_str += to_hex_string(
                         branch.get_current_hash())
                 else:
-                    result.taget_node_str += to_hex_string(branch)
+                    result.target_node_str += to_hex_string(branch)
             return result
 
     ##
@@ -81,10 +89,13 @@ class TapBranch:
     # @param[in] tapscript      tapscript
     # @param[in] tree_str       scripttree string
     # @param[in] leaf_version   leaf version
+    # @param[in] network        network type. default is mainnet.
     def __init__(self, hash: Union['ByteData', str] = '',
                  tapscript: Optional['Script'] = None,
                  tree_str: str = '',
-                 leaf_version: int = TAPSCRIPT_LEAF_VERSION):
+                 leaf_version: int = TAPSCRIPT_LEAF_VERSION,
+                 network: Network = Network.MAINNET):
+        _network = Network.get(network)
         self.branches = []
         if isinstance(hash, ByteData):
             self.hash = hash
@@ -94,7 +105,7 @@ class TapBranch:
             self.tapscript = tapscript
         else:
             self.tapscript = None
-        self.taget_node_str = ''
+        self.target_node_str = ''
         self.tree_str = ''
         self.leaf_version = leaf_version
 
@@ -106,7 +117,7 @@ class TapBranch:
             temp_tree_str = self.hash.hex
         else:
             temp_tree_str = ''
-        self._load(temp_tree_str)
+        self._load(temp_tree_str, _network)
 
     ##
     # @brief get string.
@@ -128,22 +139,22 @@ class TapBranch:
             self, branch: Union['TapBranch', 'Script', 'ByteData']) -> None:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
-                util, handle) as tree_handle:
+                util, handle, self.network) as tree_handle:
             tapscript = self.tapscript.hex if self.tapscript else ''
             util.call_func(
                 'CfdSetScriptTreeFromString', handle.get_handle(),
                 tree_handle.get_handle(), self.tree_str,
-                tapscript, self.leaf_version, self.taget_node_str)
+                tapscript, self.leaf_version, self.target_node_str)
             branch_data = self._add_branch(handle, tree_handle, branch)
             self.tree_str = util.call_func(
                 'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
                 tree_handle.get_handle())
             self.branches.append(branch_data)
             if isinstance(branch_data, TapBranch):
-                self.taget_node_str += to_hex_string(
+                self.target_node_str += to_hex_string(
                     branch_data.get_current_hash())
             else:
-                self.taget_node_str += to_hex_string(branch_data)
+                self.target_node_str += to_hex_string(branch_data)
 
     ##
     # @brief add branch list.
@@ -154,20 +165,20 @@ class TapBranch:
     ) -> None:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
-                util, handle) as tree_handle:
+                util, handle, self.network) as tree_handle:
             tapscript = self.tapscript.hex if self.tapscript else ''
             util.call_func(
                 'CfdSetScriptTreeFromString', handle.get_handle(),
                 tree_handle.get_handle(), self.tree_str,
-                tapscript, self.leaf_version, self.taget_node_str)
+                tapscript, self.leaf_version, self.target_node_str)
             for branch in branches:
                 branch_data = self._add_branch(handle, tree_handle, branch)
                 self.branches.append(branch_data)
                 if isinstance(branch_data, TapBranch):
-                    self.taget_node_str += to_hex_string(
+                    self.target_node_str += to_hex_string(
                         branch_data.get_current_hash())
                 else:
-                    self.taget_node_str += to_hex_string(branch_data)
+                    self.target_node_str += to_hex_string(branch_data)
             self.tree_str = util.call_func(
                 'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
                 tree_handle.get_handle())
@@ -198,7 +209,7 @@ class TapBranch:
     def get_current_hash(self) -> 'ByteData':
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
-                util, handle) as tree_handle:
+                util, handle, self.network) as tree_handle:
             tapscript = self.tapscript.hex if self.tapscript else ''
             util.call_func(
                 'CfdSetScriptTreeFromString', handle.get_handle(),
@@ -222,7 +233,7 @@ class TapBranch:
     def get_branch_hash(self, index: int) -> 'ByteData':
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
-                util, handle) as tree_handle:
+                util, handle, self.network) as tree_handle:
             tapscript = self.tapscript.hex if self.tapscript else ''
             util.call_func(
                 'CfdSetScriptTreeFromString', handle.get_handle(),
@@ -263,12 +274,12 @@ class TapBranch:
         _script = tapscript if isinstance(tapscript, Script) else Script('')
         util = get_util()
         with util.create_handle() as handle, TapBranch._get_handle(
-                util, handle) as tree_handle:
+                util, handle, self.network) as tree_handle:
             util.call_func(
                 'CfdSetScriptTreeFromString', handle.get_handle(),
                 tree_handle.get_handle(), self.tree_str,
                 to_hex_string(_script), self.leaf_version,
-                self.taget_node_str)
+                self.target_node_str)
             hash, tapleaf_hash, control_block = util.call_func(
                 'CfdGetTaprootScriptTreeHash', handle.get_handle(),
                 tree_handle.get_handle(), to_hex_string(internal_pubkey))
@@ -282,12 +293,12 @@ class TapBranch:
     def get_privkey(self, internal_privkey: 'Privkey') -> 'Privkey':
         util = get_util()
         with util.create_handle() as handle, TapBranch._get_handle(
-                util, handle) as tree_handle:
+                util, handle, self.network) as tree_handle:
             tapscript = self.tapscript.hex if self.tapscript else ''
             util.call_func(
                 'CfdSetScriptTreeFromString', handle.get_handle(),
                 tree_handle.get_handle(), self.tree_str,
-                tapscript, self.leaf_version, self.taget_node_str)
+                tapscript, self.leaf_version, self.target_node_str)
             tweaked_privkey = util.call_func(
                 'CfdGetTaprootTweakedPrivkey', handle.get_handle(),
                 tree_handle.get_handle(), to_hex_string(internal_privkey))
@@ -296,17 +307,18 @@ class TapBranch:
     ##
     # @brief load tree info.
     # @param[in] tree_str       tree string
+    # @param[in] network        network type. default is mainnet.
     # @return void
-    def _load(self, tree_str: str) -> None:
+    def _load(self, tree_str: str, network: Network) -> None:
         util = get_util()
         with util.create_handle() as handle, self._get_handle(
-                util, handle) as tree_handle:
+                util, handle, network) as tree_handle:
             if tree_str:
                 tapscript = self.tapscript.hex if self.tapscript else ''
                 util.call_func(
                     'CfdSetScriptTreeFromString', handle.get_handle(),
                     tree_handle.get_handle(), tree_str,
-                    tapscript, self.leaf_version, self.taget_node_str)
+                    tapscript, self.leaf_version, self.target_node_str)
             elif self.tapscript:
                 util.call_func(
                     'CfdSetInitialTapLeaf', handle.get_handle(),
@@ -327,26 +339,28 @@ class TapBranch:
             self.tree_str = util.call_func(
                 'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
                 tree_handle.get_handle())
+            self.network = network
 
     ##
     # @brief load tree info.
     # @param[in] handle         cfd handle
     # @param[in] tree_handle    script tree handle
+    # @param[in] network        network type
     # @return loaded tree/branch data.
     @classmethod
-    def _load_tree(cls, handle, tree_handle) -> 'TapBranch':
+    def _load_tree(cls, handle, tree_handle, network) -> 'TapBranch':
         util = get_util()
         count = util.call_func(
             'CfdGetTapBranchCount', handle.get_handle(),
             tree_handle.get_handle())
-        branch = TapBranch()
+        branch = TapBranch(network=network)
         for index in range(count):
             _, work_handle = util.call_func(
                 'CfdGetTapBranchHandle', handle.get_handle(),
                 tree_handle.get_handle(), index)
             with JobHandle(handle, work_handle,
                            'CfdFreeTaprootScriptTreeHandle') as br_hdl:
-                child = cls._load_tree(handle, br_hdl)
+                child = cls._load_tree(handle, br_hdl, network)
                 branch.branches.append(child)
         branch.leaf_version, tapscript, hash = util.call_func(
             'CfdGetBaseTapLeaf', handle.get_handle(),
@@ -363,11 +377,13 @@ class TapBranch:
     # @brief get scripttree handle.
     # @param[in] util       cfd util object
     # @param[in] handle     cfd handle
+    # @param[in] network    network type
     # @return scripttree job handle
     @classmethod
-    def _get_handle(cls, util, handle) -> 'JobHandle':
+    def _get_handle(cls, util, handle, network: Network) -> 'JobHandle':
         work_handle = util.call_func(
-            'CfdInitializeTaprootScriptTree', handle.get_handle())
+            'CfdInitializeTaprootScriptTreeWithNetwork',
+            handle.get_handle(), network.value)
         return JobHandle(handle, work_handle, 'CfdFreeTaprootScriptTreeHandle')
 
     ##
@@ -376,15 +392,16 @@ class TapBranch:
     # @param[in] tree_handle    tree job handle
     # @param[in] branch         branch
     # @return added branch data.
-    @classmethod
     def _add_branch(
-            cls, handle, tree_handle,
+            self, handle, tree_handle,
             branch: Union['TapBranch', 'ByteData', 'Script'],
     ) -> Union['TapBranch', 'Script', 'ByteData']:
         util = get_util()
         branch_data = branch
         hash = ''
         if isinstance(branch, TapBranch):
+            branch.network = self.network
+            branch_data = branch
             if branch.tree_str:
                 util.call_func(
                     'CfdAddTapBranchByScriptTreeString',
@@ -393,7 +410,7 @@ class TapBranch:
             else:
                 hash = str(branch.hash)
         elif isinstance(branch, Script):
-            branch_data = TapBranch(tapscript=branch)
+            branch_data = TapBranch(tapscript=branch, network=self.network)
             util.call_func(
                 'CfdAddTapBranchByTapLeaf', handle.get_handle(),
                 tree_handle.get_handle(), branch.hex, TAPSCRIPT_LEAF_VERSION)
@@ -422,6 +439,7 @@ class TaprootScriptTree(TapBranch):
     # @param[in] tapscript          tapscript
     # @param[in] branches           append branch list.
     # @param[in] internal_pubkey    internal pubkey
+    # @param[in] network            network type. default is mainnet.
     # @return script tree object
     @classmethod
     def create(
@@ -429,8 +447,9 @@ class TaprootScriptTree(TapBranch):
             tapscript: 'Script',
             branches: List[Union['TapBranch', 'ByteData', 'Script']] = [],
             internal_pubkey: Optional['SchnorrPubkey'] = None,
+            network: Network = Network.MAINNET,
     ) -> 'TaprootScriptTree':
-        result = TaprootScriptTree(tapscript)
+        result = TaprootScriptTree(tapscript, network)
         result.add_branches(branches)
         if isinstance(internal_pubkey, SchnorrPubkey):
             result.internal_pubkey = internal_pubkey
@@ -440,29 +459,33 @@ class TaprootScriptTree(TapBranch):
     # @brief get script tree from control block.
     # @param[in] control_block      control block.
     # @param[in] tapscript          tapscript
+    # @param[in] network            network type. default is mainnet.
     # @return script tree object
     @classmethod
     def from_control_block(
-            cls, control_block, tapscript: 'Script') -> 'TaprootScriptTree':
+            cls, control_block, tapscript: 'Script',
+            network: Network = Network.MAINNET) -> 'TaprootScriptTree':
         result = TaprootScriptTree(Script('51'))  # dummy
+        _network = Network.get(network)
         util = get_util()
         with util.create_handle() as handle, TapBranch._get_handle(
-                util, handle) as tree_handle:
+                util, handle, _network) as tree_handle:
             _internal_pubkey = util.call_func(
                 'CfdSetTapScriptByWitnessStack', handle.get_handle(),
                 tree_handle.get_handle(), to_hex_string(control_block),
                 tapscript.hex)
-            branch_data = TapBranch._load_tree(handle, tree_handle)
+            branch_data = TapBranch._load_tree(handle, tree_handle, network)
             result.tree_str = branch_data.tree_str
             result.branches = branch_data.branches
             result.tapscript = tapscript
+            result.network = _network
             result.internal_pubkey = SchnorrPubkey(_internal_pubkey)
             for branch in result.branches:
                 if isinstance(branch, TapBranch):
-                    result.taget_node_str += to_hex_string(
+                    result.target_node_str += to_hex_string(
                         branch.get_current_hash())
                 else:
-                    result.taget_node_str += to_hex_string(branch)
+                    result.target_node_str += to_hex_string(branch)
             return result
 
     ##
@@ -471,17 +494,20 @@ class TaprootScriptTree(TapBranch):
     # @param[in] tapscript          tapscript
     # @param[in] target_nodes       target tapbranch hash list.
     # @param[in] internal_pubkey    internal pubkey
+    # @param[in] network            network type. default is mainnet.
     # @return script tree object
     @classmethod
     def from_string_and_key(
             cls, tree_str: str, tapscript: 'Script',
             target_nodes: List[Union['ByteData', str]] = [],
             internal_pubkey: Optional['SchnorrPubkey'] = None,
+            network: Network = Network.MAINNET,
     ) -> 'TaprootScriptTree':
         result = TaprootScriptTree(Script('51'))  # dummy
+        _network = Network.get(network)
         util = get_util()
         with util.create_handle() as handle, TapBranch._get_handle(
-                util, handle) as tree_handle:
+                util, handle, _network) as tree_handle:
             target_nodes_str = ''
             for node in target_nodes:
                 target_nodes_str += to_hex_string(node)
@@ -492,18 +518,19 @@ class TaprootScriptTree(TapBranch):
             result.tree_str = util.call_func(
                 'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
                 tree_handle.get_handle())
-            branch_data = TapBranch._load_tree(handle, tree_handle)
+            branch_data = TapBranch._load_tree(handle, tree_handle, _network)
             result.tree_str = branch_data.tree_str
             result.branches = branch_data.branches
             result.hash = branch_data.hash
-            result.taget_node_str = target_nodes_str
+            result.target_node_str = target_nodes_str
+            result.network = _network
             if not target_nodes_str:
                 for branch in result.branches:
                     if isinstance(branch, TapBranch):
-                        result.taget_node_str += to_hex_string(
+                        result.target_node_str += to_hex_string(
                             branch.get_current_hash())
                     else:
-                        result.taget_node_str += to_hex_string(branch)
+                        result.target_node_str += to_hex_string(branch)
             result.tapscript = branch_data.tapscript
             if isinstance(internal_pubkey, SchnorrPubkey):
                 result.internal_pubkey = internal_pubkey
@@ -512,8 +539,10 @@ class TaprootScriptTree(TapBranch):
     ##
     # @brief constructor.
     # @param[in] tapscript     tapscript
-    def __init__(self, tapscript: 'Script'):
-        super().__init__('', tapscript)
+    # @param[in] network       network type. default is mainnet.
+    def __init__(self, tapscript: 'Script',
+                 network: Network = Network.MAINNET):
+        super().__init__('', tapscript, network=network)
         self.internal_pubkey = None
 
     ##

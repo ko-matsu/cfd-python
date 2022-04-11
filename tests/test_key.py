@@ -43,6 +43,13 @@ def test_privkey_func(obj, name, case, req, exp, error):
             resp = Privkey(wif=_wif, hex=_hex,
                            is_compressed=req['isCompressed'])
             resp = resp.pubkey
+        elif name == 'Privkey.SignMessage':
+            pass  # FIXME
+            sig = Privkey.sign_message(req['privkey'], req['message'],
+                                       req.get('magic', ''), False)
+            b64 = Privkey.sign_message(req['privkey'], req['message'],
+                                       req.get('magic', ''), True)
+            resp = {'signature': sig, 'base64': b64}
         else:
             raise Exception('unknown name: ' + name)
         assert_error(obj, name, case, error)
@@ -53,6 +60,9 @@ def test_privkey_func(obj, name, case, req, exp, error):
                          resp.network.as_str(), 'network')
             assert_equal(obj, name, case, exp,
                          resp.is_compressed, 'is_compressed')
+        elif name == 'Privkey.SignMessage':
+            assert_equal(obj, name, case, exp, resp['signature'], 'signature')
+            assert_equal(obj, name, case, exp, resp['base64'], 'base64')
         elif isinstance(resp, Privkey):
             assert_equal(obj, name, case, exp, str(resp), 'privkey')
             assert_equal(obj, name, case, exp, resp.wif, 'wif')
@@ -98,11 +108,22 @@ def test_pubkey_func(obj, name, case, req, exp, error):
                 req['sighash'], req['signature'])
         elif name == 'Pubkey.Combine':
             resp = Pubkey.combine(req['keyList'])
+        elif name == 'Pubkey.VerifyMessage':
+            ret, pk = Pubkey.verify_message(
+                req['signature'], req['pubkey'],
+                req['message'], req.get('magic', ''),
+                req.get('ignoreError', False))
+            resp = {'success': ret, 'pubkey': pk}
         else:
             raise Exception('unknown name: ' + name)
         assert_error(obj, name, case, error)
 
-        if isinstance(resp, Pubkey):
+        if name == 'Pubkey.VerifyMessage':
+            assert_equal(obj, name, case, exp, resp['success'], 'success')
+            if resp['pubkey'] is not None:
+                assert_equal(obj, name, case, exp,
+                             str(resp['pubkey']), 'pubkey')
+        elif isinstance(resp, Pubkey):
             assert_equal(obj, name, case, exp, str(resp), 'hex')
         elif isinstance(resp, bool):
             assert_equal(obj, name, case, exp, resp, 'bool')
@@ -153,24 +174,24 @@ def test_signature_func(obj, name, case, req, exp, error):
 
 def test_ecdsa_adaptor_func(obj, name, case, req, exp, error):
     try:
-        _proof = ''
-        if name == 'EcdsaAdaptor.Adapt':
-            resp = EcdsaAdaptor.adapt(req['signature'], req['secret'])
+        if name == 'EcdsaAdaptor.Decrypt':
+            sig = EcdsaAdaptor(req['signature'])
+            resp = sig.decrypt(req['secret'])
 
-        elif name == 'EcdsaAdaptor.ExtractSecret':
-            resp = EcdsaAdaptor.extract_secret(
-                req['adaptorSignature'], req['signature'], req['adaptor'])
+        elif name == 'EcdsaAdaptor.Recover':
+            sig = EcdsaAdaptor(req['adaptorSignature'])
+            resp = sig.recover(req['signature'], req['encryptionKey'])
 
-        elif name == 'EcdsaAdaptor.Sign':
-            resp, _proof = EcdsaAdaptor.sign(req['message'], req['privkey'],
-                                             req['adaptor'],
-                                             is_message_hashed=req['isHashed'])
+        elif name == 'EcdsaAdaptor.Encrypt':
+            resp = EcdsaAdaptor.encrypt(req['message'], req['privkey'],
+                                        req['encryptionKey'],
+                                        is_message_hashed=req['isHashed'])
 
         elif name == 'EcdsaAdaptor.Verify':
-            resp = EcdsaAdaptor.verify(req['signature'], req['proof'],
-                                       req['adaptor'], req['message'],
-                                       req['pubkey'],
-                                       is_message_hashed=req['isHashed'])
+            sig = EcdsaAdaptor(req['signature'])
+            resp = sig.verify(req['message'], req['pubkey'],
+                              req['encryptionKey'],
+                              is_message_hashed=req['isHashed'])
         else:
             raise Exception('unknown name: ' + name)
         assert_error(obj, name, case, error)
@@ -178,7 +199,6 @@ def test_ecdsa_adaptor_func(obj, name, case, req, exp, error):
         assert_equal(obj, name, case, exp, str(resp), 'signature')
         assert_equal(obj, name, case, exp, str(resp), 'secret')
         assert_equal(obj, name, case, exp, resp, 'valid')
-        assert_equal(obj, name, case, exp, _proof, 'proof')
 
     except CfdError as err:
         if not error:
