@@ -2548,8 +2548,8 @@
                     ],
                     "treeString": "{{tl(20ac52f50b28cdd4d3bcb7f0d5cb533f232e4c4ef12fbf3e718420b84d4e3c3440ac),tl(51)},tl(2057bf643684f6c5c75e1cdf45990036502a0d897394013210858cdabcbb95a05aad205bec1a08fa3443176edd0a08e2a64642f45e57543b62bffe43ec350edc33dc22ac)}"
                 }
-    },
-    {
+            },
+            {
                 "case": "simple network(liquidv1)",
                 "request": {
                     "network": "liquidv1",
