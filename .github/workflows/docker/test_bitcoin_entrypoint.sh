@@ -28,11 +28,14 @@ done
 echo "start bitcoin node"
 
 # load or create wallet
-bitcoin-cli --regtest -datadir=${WORKDIR_PATH}/bitcoind_datadir createwallet wallet
+bitcoin-cli --regtest -datadir=${WORKDIR_PATH}/bitcoind_datadir createwallet wallet false false "" false false
 
 set -e
 
 python3 --version
+
+# build
+pip3 wheel .
 
 pip3 install *.whl
 pip3 install python-bitcoinrpc

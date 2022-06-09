@@ -41,12 +41,15 @@ done
 echo "start elements node"
 
 # load or create wallet
-bitcoin-cli --regtest -datadir=${WORKDIR_PATH}/bitcoind_datadir createwallet wallet
+bitcoin-cli --regtest -datadir=${WORKDIR_PATH}/bitcoind_datadir createwallet wallet false false "" false false
 elements-cli -chain=liquidregtest -datadir=${WORKDIR_PATH}/elementsd_datadir createwallet wallet
 
 set -e
 
 python3 --version
+
+# build
+pip3 wheel .
 
 pip3 install *.whl
 pip3 install python-bitcoinrpc
