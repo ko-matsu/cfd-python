@@ -711,6 +711,7 @@ class CfdUtil:
         ("CfdGetTaprootScriptTreeHash", c_int, [c_void_p, c_void_p, c_char_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdGetTaprootTweakedPrivkey", c_int, [c_void_p, c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdGetTaprootScriptTreeSrting", c_int, [c_void_p, c_void_p, c_char_p_p]),  # noqa: E501
+        ("CfdGetTaprootScriptTreeString", c_int, [c_void_p, c_void_p, c_char_p_p]),  # noqa: E501
         ("CfdFreeTaprootScriptTreeHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
         ("CfdInitializeTransaction", c_int, [c_void_p, c_int, c_uint32, c_uint32, c_char_p, c_void_p_p]),  # noqa: E501
         ("CfdAddTransactionInput", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_uint32]),  # noqa: E501
