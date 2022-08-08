@@ -113,7 +113,7 @@ jobs:
         include:
           - os: macos-11
             py-ver: 3.7
-            pl-name: macosx_11_x86_64
+            pl-name: macosx_11_0_x86_64
           - os: ubuntu-20.04
             py-ver: 3.7
             pl-name: linux_x86_64
