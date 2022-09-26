@@ -1,7 +1,7 @@
 #!/bin/bash -u
 
 # while :; do sleep 10; done
-export WORKDIR_ROOT=root
+export WORKDIR_ROOT=private/cfd-python
 export WORK_DIR=integration_test
 export WORKDIR_PATH=/${WORKDIR_ROOT}/${WORK_DIR}
 
@@ -41,7 +41,8 @@ done
 echo "start elements node"
 
 # load or create wallet
-bitcoin-cli --regtest -datadir=${WORKDIR_PATH}/bitcoind_datadir createwallet wallet
+bitcoin-cli --regtest -datadir=${WORKDIR_PATH}/bitcoind_datadir createwallet wallet false false "" false false
+elements-cli -chain=liquidregtest -datadir=${WORKDIR_PATH}/elementsd_datadir createwallet wallet
 
 set -e
 

@@ -65,7 +65,7 @@ class TapBranch:
                 'CfdSetScriptTreeFromString', handle.get_handle(),
                 tree_handle.get_handle(), tree_str, '', 0, '')
             result.tree_str = util.call_func(
-                'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
+                'CfdGetTaprootScriptTreeString', handle.get_handle(),
                 tree_handle.get_handle())
             branch_data = TapBranch._load_tree(
                 handle, tree_handle, result.network)
@@ -147,7 +147,7 @@ class TapBranch:
                 tapscript, self.leaf_version, self.target_node_str)
             branch_data = self._add_branch(handle, tree_handle, branch)
             self.tree_str = util.call_func(
-                'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
+                'CfdGetTaprootScriptTreeString', handle.get_handle(),
                 tree_handle.get_handle())
             self.branches.append(branch_data)
             if isinstance(branch_data, TapBranch):
@@ -180,7 +180,7 @@ class TapBranch:
                 else:
                     self.target_node_str += to_hex_string(branch_data)
             self.tree_str = util.call_func(
-                'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
+                'CfdGetTaprootScriptTreeString', handle.get_handle(),
                 tree_handle.get_handle())
 
     ##
@@ -337,7 +337,7 @@ class TapBranch:
                 self.tapscript = Script(script)
             self.hash = ByteData(hash)
             self.tree_str = util.call_func(
-                'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
+                'CfdGetTaprootScriptTreeString', handle.get_handle(),
                 tree_handle.get_handle())
             self.network = network
 
@@ -369,7 +369,7 @@ class TapBranch:
             branch.tapscript = Script(tapscript)
         branch.hash = ByteData(hash)
         branch.tree_str = util.call_func(
-            'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
+            'CfdGetTaprootScriptTreeString', handle.get_handle(),
             tree_handle.get_handle())
         return branch
 
@@ -516,7 +516,7 @@ class TaprootScriptTree(TapBranch):
                 tree_handle.get_handle(), tree_str,
                 tapscript.hex, result.leaf_version, target_nodes_str)
             result.tree_str = util.call_func(
-                'CfdGetTaprootScriptTreeSrting', handle.get_handle(),
+                'CfdGetTaprootScriptTreeString', handle.get_handle(),
                 tree_handle.get_handle())
             branch_data = TapBranch._load_tree(handle, tree_handle, _network)
             result.tree_str = branch_data.tree_str

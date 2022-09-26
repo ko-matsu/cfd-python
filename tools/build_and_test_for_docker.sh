@@ -54,7 +54,7 @@ fi
 
 echo "configure start."
 
-PATH=$PATH:/usr/local/bin
+PATH=$PATH:/usr/local/bin:~/.local/bin
 
 pip3 install wheel pipenv
 if [ $? -gt 0 ]; then

@@ -1,8 +1,8 @@
 #!/bin/bash -u
 
 # while :; do sleep 10; done
-export WORKDIR_ROOT=github
-export WORK_DIR=workspace
+export WORKDIR_ROOT=private/cfd-python
+export WORK_DIR=integration_test
 export WORKDIR_PATH=/${WORKDIR_ROOT}/${WORK_DIR}
 
 cd /${WORKDIR_ROOT}
@@ -16,7 +16,7 @@ rm -rf bitcoind_datadir
 mkdir bitcoind_datadir
 chmod 777 bitcoind_datadir
 # cp /root/.bitcoin/bitcoin.conf bitcoind_datadir/
-cp ./integration_test/bitcoin.conf bitcoind_datadir/
+cp ./bitcoin.conf bitcoind_datadir/
 
 # boot daemon
 bitcoind --regtest -datadir=${WORKDIR_PATH}/bitcoind_datadir
@@ -34,13 +34,10 @@ set -e
 
 python3 --version
 
-# build
-pip3 wheel .
-
 pip3 install *.whl
 pip3 install python-bitcoinrpc
 
-cd integration_test
+# cd integration_test
 
 python3 tests/test_bitcoin.py -v
 if [ $? -gt 0 ]; then

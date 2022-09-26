@@ -62,6 +62,7 @@ fi
 
 VER=`cat VERSION`
 
-mv ./*.whl $BASEDIR/cfd-$VER-py3-none-linux_x86_64.whl
+rm -rf $BASEDIR/cfd-$VER-*.whl
+mv ./*.whl $BASEDIR/
 rm -rf $BASEDIR/integration_test/*.whl
-cp $BASEDIR/cfd-$VER-py3-none-linux_x86_64.whl $BASEDIR/integration_test/cfd-$VER-py3-none-linux_x86_64.whl
+cp $BASEDIR/cfd-$VER-*.whl $BASEDIR/integration_test/
