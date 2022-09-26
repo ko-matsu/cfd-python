@@ -37,6 +37,7 @@ cp setup.* $WORKDIR/
 cp *.toml $WORKDIR/
 cp *.in $WORKDIR/
 cp *.md $WORKDIR/
+cp Pipfile $WORKDIR/
 cp -rp cmake $WORKDIR/cmake
 cp -rp external/CMakeLists.txt $WORKDIR/external
 cp -rp external/template_CMakeLists.txt.in $WORKDIR/external
@@ -55,6 +56,8 @@ fi
 echo "configure start."
 
 PATH=$PATH:/usr/local/bin:~/.local/bin
+
+python3 --version
 
 pip3 install wheel pipenv
 if [ $? -gt 0 ]; then

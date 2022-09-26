@@ -18,7 +18,6 @@ from .transaction import UtxoData, OutPoint, Txid, TxIn, TxOut, _FundTxOpt,\
 from .confidential_address import ConfidentialAddress
 from enum import Enum
 import copy
-import ctypes
 
 
 ##
@@ -2146,11 +2145,10 @@ class ConfidentialTransaction(_TransactionBase):
                 int(i_val), float(f_val), b_val)
 
         with util.create_handle() as handle:
-            work_handle = ctypes.c_void_p()
-            util.call_func(
-                'CfdInitializeEstimateFee', handle.get_handle(),
-                ctypes.byref(work_handle), True)
-            with JobHandle(handle, work_handle.value,
+            work_handle = util.call_func(
+                'CfdInitializeEstimateFeeWithNetwork', handle.get_handle(),
+                Network.LIQUID_V1.value)
+            with JobHandle(handle, work_handle,
                            'CfdFreeEstimateFeeHandle') as tx_handle:
                 for utxo in utxo_list:
                     util.call_func(
@@ -2168,14 +2166,10 @@ class ConfidentialTransaction(_TransactionBase):
                 set_opt(handle, tx_handle, _FeeOpt.MINIMUM_BITS,
                         i_val=minimum_bits)
 
-                _txout_fee = ctypes.c_int64()
-                _utxo_fee = ctypes.c_int64()
-                util.call_func(
-                    'CfdFinalizeEstimateFee',
+                txout_fee, utxo_fee = util.call_func(
+                    'CfdGetEstimateFee',
                     handle.get_handle(), tx_handle.get_handle(),
-                    self.hex, str(_fee_asset), ctypes.byref(_txout_fee),
-                    ctypes.byref(_utxo_fee), is_blind, fee_rate)
-                txout_fee, utxo_fee = _txout_fee.value, _utxo_fee.value
+                    self.hex, str(_fee_asset), is_blind, fee_rate)
                 return (txout_fee + utxo_fee), txout_fee, utxo_fee
 
     ##
