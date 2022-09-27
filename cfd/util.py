@@ -485,11 +485,13 @@ class CfdUtil:
         ("CfdGetSelectedCoinAssetAmount", c_int, [c_void_p, c_void_p, c_uint32, c_int64_p]),  # noqa: E501
         ("CfdFreeCoinSelectionHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
         ("CfdInitializeEstimateFee", c_int, [c_void_p, c_void_p_p, c_bool]),  # noqa: E501
+        ("CfdInitializeEstimateFeeWithNetwork", c_int, [c_void_p, c_int, c_void_p_p]),  # noqa: E501
         ("CfdAddTxInForEstimateFee", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_uint32, c_char_p]),  # noqa: E501
         ("CfdAddTxInTemplateForEstimateFee", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_uint32, c_char_p, c_char_p]),  # noqa: E501
         ("CfdAddTxInputForEstimateFee", c_int, [c_void_p, c_void_p, c_char_p, c_uint32, c_char_p, c_char_p, c_bool, c_bool, c_bool, c_char_p, c_uint32, c_uint32, c_char_p]),  # noqa: E501
         ("CfdSetOptionEstimateFee", c_int, [c_void_p, c_void_p, c_int, c_int64, c_double, c_bool]),  # noqa: E501
         ("CfdFinalizeEstimateFee", c_int, [c_void_p, c_void_p, c_char_p, c_char_p, c_int64_p, c_int64_p, c_bool, c_double]),  # noqa: E501
+        ("CfdGetEstimateFee", c_int, [c_void_p, c_void_p, c_char_p, c_char_p, c_bool, c_double, c_int64_p, c_int64_p]),  # noqa: E501
         ("CfdFreeEstimateFeeHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
         ("CfdGetSupportedFunction", c_int, [c_uint64_p]),  # noqa: E501
         ("CfdInitialize", c_int, []),  # noqa: E501
@@ -685,6 +687,7 @@ class CfdUtil:
         ("CfdFinalizeFundPsbt", c_int, [c_void_p, c_void_p, c_void_p, c_char_p, c_int64_p, c_uint32_p]),  # noqa: E501
         ("CfdGetFundPsbtUsedUtxo", c_int, [c_void_p, c_void_p, c_uint32, c_uint32_p, c_char_p_p, c_uint32_p, c_int64_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdFreeFundPsbt", c_int, [c_void_p, c_void_p]),  # noqa: E501
+        ("CfdParseScriptAll", c_int, [c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
         ("CfdParseScript", c_int, [c_void_p, c_char_p, c_void_p_p, c_uint32_p]),  # noqa: E501
         ("CfdGetScriptItem", c_int, [c_void_p, c_void_p, c_uint32, c_char_p_p]),  # noqa: E501
         ("CfdFreeScriptItemHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
@@ -710,7 +713,6 @@ class CfdUtil:
         ("CfdGetTapBranchHandle", c_int, [c_void_p, c_void_p, c_uint8, c_char_p_p, c_void_p_p]),  # noqa: E501
         ("CfdGetTaprootScriptTreeHash", c_int, [c_void_p, c_void_p, c_char_p, c_char_p_p, c_char_p_p, c_char_p_p]),  # noqa: E501
         ("CfdGetTaprootTweakedPrivkey", c_int, [c_void_p, c_void_p, c_char_p, c_char_p_p]),  # noqa: E501
-        ("CfdGetTaprootScriptTreeSrting", c_int, [c_void_p, c_void_p, c_char_p_p]),  # noqa: E501
         ("CfdGetTaprootScriptTreeString", c_int, [c_void_p, c_void_p, c_char_p_p]),  # noqa: E501
         ("CfdFreeTaprootScriptTreeHandle", c_int, [c_void_p, c_void_p]),  # noqa: E501
         ("CfdInitializeTransaction", c_int, [c_void_p, c_int, c_uint32, c_uint32, c_char_p, c_void_p_p]),  # noqa: E501

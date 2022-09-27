@@ -13,7 +13,6 @@ from .script import HashType, Script
 from .descriptor import Descriptor
 from .taproot import TaprootScriptTree
 from enum import Enum
-import ctypes
 import copy
 
 
@@ -1478,11 +1477,10 @@ class Transaction(_TransactionBase):
                 error_code=1, message='Error: Invalid utxo_list.')
         util = get_util()
         with util.create_handle() as handle:
-            work_handle = ctypes.c_void_p()
-            util.call_func(
-                'CfdInitializeEstimateFee', handle.get_handle(),
-                ctypes.byref(work_handle), False)
-            with JobHandle(handle, work_handle.value,
+            work_handle = util.call_func(
+                'CfdInitializeEstimateFeeWithNetwork', handle.get_handle(),
+                Network.MAINNET.value)
+            with JobHandle(handle, work_handle,
                            'CfdFreeEstimateFeeHandle') as tx_handle:
                 for utxo in utxo_list:
                     util.call_func(
@@ -1492,14 +1490,10 @@ class Transaction(_TransactionBase):
                         str(utxo.descriptor), '', False, False, False,
                         '', 0, 0, to_hex_string(utxo.scriptsig_template))
 
-                _txout_fee = ctypes.c_int64()
-                _utxo_fee = ctypes.c_int64()
-                util.call_func(
-                    'CfdFinalizeEstimateFee',
+                txout_fee, utxo_fee = util.call_func(
+                    'CfdGetEstimateFee',
                     handle.get_handle(), tx_handle.get_handle(),
-                    self.hex, '', ctypes.byref(_txout_fee),
-                    ctypes.byref(_utxo_fee), False, float(fee_rate))
-                txout_fee, utxo_fee = _txout_fee.value, _utxo_fee.value
+                    self.hex, '', False, float(fee_rate))
                 return (txout_fee + utxo_fee), txout_fee, utxo_fee
 
     ##

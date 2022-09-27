@@ -36,3 +36,16 @@ services:
       - .:/private/cfd-python
     working_dir: /private/cfd-python
     command: /bin/bash -c "./tools/build_and_test_for_docker.sh"
+
+  cfd-py-ubuntu2204-test:
+    build:
+      context: .
+      dockerfile: ./docker/ubuntu2204.dockerfile
+    environment:
+      CFD_SRC: /private/cfd-python
+      CFD_WORK: /workspace
+    working_dir: /private/cfd-python
+    volumes:
+      - .:/private/cfd-python
+    working_dir: /private/cfd-python
+    command: /bin/bash -c "./tools/build_and_test_for_docker.sh"
