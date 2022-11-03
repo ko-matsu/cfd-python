@@ -28,7 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-11.0, windows-2019, windows-2022, ubuntu-20.04, ubuntu-22.04]
-        py-ver: ['3.7', '3.8', '3.9', '3.10', 'pypy-3.7', 'pypy-3.8', 'pypy-3.9']
+        py-ver: ['3.7', '3.8', '3.9', '3.10', '3.11', 'pypy-3.7', 'pypy-3.8', 'pypy-3.9']
         exclude:
           - os: macos-11.0
             py-ver: '3.7'
