@@ -91,6 +91,8 @@ def generatetoaddress_dynafed(test_obj, count):
     # bitcoin ping (for disconnect 60 sec empty)
     btc_rpc = test_obj.btcConn.get_rpc()
     btc_rpc.ping()
+    elm_tr_rpc = test_obj.elmTrConn.get_rpc()
+    elm_tr_rpc.ping()
 
 
 def create_bitcoin_address(test_obj):
@@ -257,6 +259,7 @@ def create_bitcoin_address(test_obj):
 def test_import_address(test_obj):
     btc_rpc = test_obj.btcConn.get_rpc()
     elm_rpc = test_obj.elmConn.get_rpc()
+    elm_tr_rpc = test_obj.elmTrConn.get_rpc()
 
     # get btc address from bitcoin-cli (for fee)
     btc_addr = btc_rpc.getnewaddress('', 'bech32')
@@ -309,8 +312,10 @@ def test_import_address(test_obj):
         str(test_obj.blind_key_dic[addr].hex))
     # tr addr
     addr = str(test_obj.addr_dic['mains'])
-    elm_rpc.importaddress(str(test_obj.ct_addr_dic[addr]), 'test_mains', False)
-    elm_rpc.importblindingkey(
+    desc = str(test_obj.desc_dic[str(addr)])
+    #elm_rpc.importaddress(str(test_obj.ct_addr_dic[addr]), 'test_mains', False)
+    elm_tr_rpc.importdescriptors([{'desc': desc, 'timestamp': 'now'}])
+    elm_tr_rpc.importblindingkey(
         str(test_obj.ct_addr_dic[addr]),
         str(test_obj.blind_key_dic[addr].hex))
 
@@ -348,8 +353,9 @@ def create_pegin_tx(test_obj, btc_tx: 'Transaction', pegin_address,
     fee_addr = test_obj.addr_dic['fee']
     main_addr = test_obj.addr_dic['main']
     if is_taproot:
-        main_pk, _ = SchnorrPubkey.from_pubkey(str(main_addr.pubkey))
-        main_addr = AddressUtil.taproot(main_pk, network=NETWORK)
+        # main_pk, _ = SchnorrPubkey.from_pubkey(str(main_addr.pubkey))
+        # main_addr = AddressUtil.taproot(main_pk, network=NETWORK)
+        main_addr = test_obj.addr_dic['mains']
     if is_blind:
         fee_addr = test_obj.ct_addr_dic[str(fee_addr)]
         main_addr = test_obj.ct_addr_dic[str(main_addr)]
@@ -677,6 +683,9 @@ def test_pegin_unblind_taproot(test_obj):
     elm_rpc.generatetoaddress(5, addr)
     time.sleep(2)
     fee_addr = test_obj.addr_dic['fee']
+    utxos = get_utxo(elm_rpc, [str(fee_addr)])
+    # utxos = get_utxo(elm_rpc, [])
+    print('UTXO: {}'.format(utxos))
     utxos = get_utxo(elm_rpc, [str(fee_addr)])
     # utxos = get_utxo(elm_rpc, [])
     print('UTXO: {}'.format(utxos))
@@ -1167,13 +1176,19 @@ def search_vout(tx_hex, address) -> OutPoint:
 def test_elements_taproot_unblind(test_obj):
     # btc_rpc = test_obj.btcConn.get_rpc()
     elm_rpc = test_obj.elmConn.get_rpc()
+    elm_tr_rpc = test_obj.elmTrConn.get_rpc()
+    elm_tr_rpc.rescanblockchain()
 
     genesis_block_hash = elm_rpc.getblockhash(0)
     ConfidentialTransaction.set_default_genesis_block_hash(genesis_block_hash)
 
     main_addr = test_obj.addr_dic['main']
-    main_pk, _ = SchnorrPubkey.from_pubkey(str(main_addr.pubkey))
-    tr_addr1 = AddressUtil.taproot(main_pk, network=NETWORK)
+    #main_pk, _ = SchnorrPubkey.from_pubkey(str(main_addr.pubkey))
+    path = '{}/0/0'.format(ROOT_PATH)
+    pk = str(test_obj.hdwallet.get_pubkey(path=path).pubkey)
+    main_pk, _ = SchnorrPubkey.from_pubkey(str(pk))
+    # tr_addr1 = AddressUtil.taproot(main_pk, network=NETWORK)
+    tr_addr1 = test_obj.addr_dic['mains']
     main_path = str(test_obj.path_dic[str(main_addr)])
     main_sk = test_obj.hdwallet.get_privkey(path=main_path).privkey
 
@@ -1192,7 +1207,7 @@ def test_elements_taproot_unblind(test_obj):
 
     # 1. unblind tx by taproot (sighash default)
     # collect pegin utxo
-    utxos = get_utxo(elm_rpc, [str(tr_addr1)])
+    utxos = get_utxo(elm_tr_rpc, [str(tr_addr1)])
     utxo_list0 = convert_elements_utxos(test_obj, utxos, is_blind_only=False)
     txin_utxo_list = []
     txin_list = []
@@ -1209,6 +1224,8 @@ def test_elements_taproot_unblind(test_obj):
     # fee_desc = test_obj.desc_dic[fee_addr]
     # fee_ct_addr = test_obj.ct_addr_dic[fee_addr]
     # fee_sk = test_obj.hdwallet.get_privkey(path=FEE_PATH).privkey
+    if total_amount < 400002000:
+        raise Exception(f'amount is low: {total_amount}')
 
     # create tx (output wpkh only, input tx1-3)
     txout_list = [
@@ -1944,10 +1961,17 @@ class TestElements(unittest.TestCase):
         self.btcConn = RpcWrapper(
             port=18443, rpc_user='bitcoinrpc', rpc_password='password')
         self.elmConn = RpcWrapper(
-            port=18447, rpc_user='elementsrpc', rpc_password='password')
+            port=18447, rpc_user='elementsrpc', rpc_password='password', wallet_name='wallet')
+        self.elmTrConn = RpcWrapper(
+            port=18447, rpc_user='elementsrpc', rpc_password='password', wallet_name='tr_wallet')
         # init command
         btc_rpc = self.btcConn.get_rpc()
         btc_rpc.settxfee(0.00001)
+
+    def after_test(self):
+        self.btcConn.get_rpc().ping()
+        self.elmConn.get_rpc().ping()
+        self.elmTrConn.get_rpc().ping()
 
     def test_elements(self):
         '''
@@ -1955,21 +1979,33 @@ class TestElements(unittest.TestCase):
         and call the test function in it.
         '''
         get_elements_config(self)
+        self.after_test()
         test_import_address(self)
+        self.after_test()
         test_generate_btc(self)
+        self.after_test()
         test_pegin(self)
+        self.after_test()
         test_pegin_unblind_taproot(self)
+        self.after_test()
         test_elements_pkh(self)
+        self.after_test()
         test_elements_multisig(self)
+        self.after_test()
         # issue on RPC
         # reissue
         # send multi asset
         # destroy amount
         test_elements_dynafed(self)
+        self.after_test()
         test_elements_taproot_unblind(self)
+        self.after_test()
         test_elements_taproot_blind(self)
+        self.after_test()
         test_elements_taproot_issue_reissue(self)
+        self.after_test()
         test_elements_taproot_pegin(self)
+        self.after_test()
 
 
 if __name__ == "__main__":

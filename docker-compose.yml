@@ -2,7 +2,7 @@ version: '3.5'
 
 services:
   cfd-py-build:
-    image: ghcr.io/cryptogarageinc/elements-testing:v0.2.2
+    image: ghcr.io/cryptogarageinc/elements-testing:v0.2.3
     environment:
       CFD_SRC: /private/cfd-python
       CFD_WORK: /workspace/workdir
@@ -13,21 +13,21 @@ services:
     command: /bin/bash -c "./tools/build_for_docker.sh"
 
   cfd-py-integration-test:
-    image: ghcr.io/cryptogarageinc/elements-testing:v0.2.2
+    image: ghcr.io/cryptogarageinc/elements-testing:v0.2.3
     volumes:
       - ./integration_test:/private/cfd-python/integration_test
     working_dir: /private/cfd-python/integration_test
     entrypoint: /bin/bash -c "./test_entrypoint.sh"
 
   cfd-py-bitcoin-integration-test:
-    image: ghcr.io/cryptogarageinc/elements-testing:v0.2.2
+    image: ghcr.io/cryptogarageinc/elements-testing:v0.2.3
     volumes:
       - ./integration_test:/private/cfd-python/integration_test
     working_dir: /private/cfd-python/integration_test
     entrypoint: /bin/bash -c "./test_bitcoin_entrypoint.sh"
 
   cfd-py-test:
-    image: ghcr.io/cryptogarageinc/elements-testing:v0.2.2
+    image: ghcr.io/cryptogarageinc/elements-testing:v0.2.3
     environment:
       CFD_SRC: /private/cfd-python
       CFD_WORK: /workspace

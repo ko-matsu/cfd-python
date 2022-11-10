@@ -10,6 +10,9 @@ if [ ! -d ${WORK_DIR} ]; then
   mkdir ${WORK_DIR}
 fi
 
+uname -a
+uname -m
+
 cd ${WORKDIR_PATH}
 rm -rf bitcoind_datadir
 rm -rf elementsd_datadir
@@ -42,7 +45,8 @@ echo "start elements node"
 
 # load or create wallet
 bitcoin-cli --regtest -datadir=${WORKDIR_PATH}/bitcoind_datadir createwallet wallet false false "" false false
-elements-cli -chain=liquidregtest -datadir=${WORKDIR_PATH}/elementsd_datadir createwallet wallet
+elements-cli -chain=liquidregtest -datadir=${WORKDIR_PATH}/elementsd_datadir createwallet wallet false false "" false false
+elements-cli -chain=liquidregtest -datadir=${WORKDIR_PATH}/elementsd_datadir createwallet tr_wallet true false "" false true
 
 set -e
 

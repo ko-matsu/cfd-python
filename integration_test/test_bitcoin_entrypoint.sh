@@ -10,6 +10,9 @@ if [ ! -d ${WORK_DIR} ]; then
   mkdir ${WORK_DIR}
 fi
 
+uname -a
+uname -m
+
 cd ${WORKDIR_PATH}
 rm -rf bitcoind_datadir
 
