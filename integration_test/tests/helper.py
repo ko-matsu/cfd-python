@@ -7,9 +7,13 @@ LISTUNSPENT_MAX = 9999999
 
 class RpcWrapper:
     def __init__(self, host='127.0.0.1', port=8432,
-                 rpc_user='', rpc_password=''):
-        self.rpc_connection = AuthServiceProxy('http://{}:{}@{}:{}'.format(
-            rpc_user, rpc_password, host, port))
+                 rpc_user='', rpc_password='', wallet_name=''):
+        if wallet_name != '':
+            self.rpc_connection = AuthServiceProxy('http://{}:{}@{}:{}/wallet/{}'.format(
+                rpc_user, rpc_password, host, port, wallet_name))
+        else:
+            self.rpc_connection = AuthServiceProxy('http://{}:{}@{}:{}'.format(
+                rpc_user, rpc_password, host, port))
 
     def command(self, command, *args):
         return self.rpc_connection.command(args)

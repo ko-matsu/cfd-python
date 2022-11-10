@@ -9,15 +9,13 @@ jobs:
   create_releases:
     name: create-releases
     runs-on: ubuntu-20.04
-    outputs:
-      release_url: ${{ steps.output_url.outputs.upload_url }}
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
       shell: bash
     - name: check package.json version
       env:
@@ -25,29 +23,15 @@ jobs:
       run: python ./tools/version_checker.py ${version}
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        name: Release ${{ steps.get_version.outputs.VERSION }}
         body: |
           Changes in this Release
           - First Change
           - Second Change
-        draft: false
         prerelease: true
       continue-on-error: true
-    - name: Get release
-      if: steps.create_release.outcome == 'failure'
-      id: get_release
-      uses: bruceadams/get-release@v1.2.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: output url
-      id: output_url
-      run: |
-        echo "::set-output name=upload_url::${{steps.get_release.outputs.upload_url}}${{steps.create_release.outputs.upload_url}}"
 
   upload-sdist:
     name: upload-sdist
@@ -57,49 +41,20 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
-    - name: output url
-      id: get_url
-      run: echo "::set-output name=upload_url::${{ needs.create_releases.outputs.release_url }}"
-    - name: Get the version
-      id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-      shell: bash
-    - name: dump version
-      env:
-        version: ${{ steps.get_version.outputs.VERSION }}
-      run: echo "version=${version}"
     - name: create sdist
       id: create_sdist
-      run: |
-        python setup.py sdist --formats=gztar,zip
-        cd dist
-        echo "::set-output name=sdist_tgz::$(ls *.tar.gz)"
-        echo "::set-output name=sdist_zip::$(ls *.zip)"
-    - name: Upload sdist for tgz
-      id: upload-sdist-tgz
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: python setup.py sdist --formats=gztar,zip
+    - name: Upload sdist
+      uses: softprops/action-gh-release@v1
       with:
-        upload_url: ${{ steps.get_url.outputs.upload_url }}
-        asset_path: ./dist/${{ steps.create_sdist.outputs.sdist_tgz }}
-        asset_name: ${{ steps.create_sdist.outputs.sdist_tgz }}
-        asset_content_type: application/zip
-    - name: Upload sdist for zip
-      id: upload-sdist-zip
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_url.outputs.upload_url }}
-        asset_path: ./dist/${{ steps.create_sdist.outputs.sdist_zip }}
-        asset_name: ${{ steps.create_sdist.outputs.sdist_zip }}
-        asset_content_type: application/zip
+        files: |
+          ./dist/*.tar.gz
+          ./dist/*.zip
 
   upload-wheel:
     name: upload-wheel
@@ -123,22 +78,18 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.py-ver }}
-    - name: output url
-      id: get_url
-      run: echo "::set-output name=upload_url::${{ needs.create_releases.outputs.release_url }}"
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/v/}
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
       shell: bash
-    - name: dump version
-      env:
-        version: ${{ steps.get_version.outputs.VERSION }}
-      run: echo "version=${version}"
+    - name: Get the asset name
+      id: asset_name
+      run: echo "ASSET_NAME=cfd-${{ steps.get_version.outputs.VERSION }}-py3-none-${{ matrix.pl-name }}.whl" >> $GITHUB_OUTPUT
       shell: bash
     - name: install pip & wheel
       run: |
@@ -148,15 +99,10 @@ jobs:
       id: create_wheel
       run: |
         pip wheel .
-        echo "::set-output name=wheel::$(ls *.whl)"
+        WHEEL_NAME=$(ls *.whl)
+        mv $WHEEL_NAME ${{ steps.asset_name.outputs.ASSET_NAME }}
       shell: bash
-    - name: Upload sdist for tgz
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload wheel
+      uses: softprops/action-gh-release@v1
       with:
-        upload_url: ${{ steps.get_url.outputs.upload_url }}
-        asset_path: ./${{ steps.create_wheel.outputs.wheel }}
-        asset_name: cfd-${{ steps.get_version.outputs.VERSION }}-py3-none-${{ matrix.pl-name }}.whl
-        asset_content_type: application/zip
+        files: ${{ steps.asset_name.outputs.ASSET_NAME }}

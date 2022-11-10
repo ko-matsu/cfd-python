@@ -15,8 +15,8 @@ on:
     - stable_v*
 
 env:
-  GITHUB_VERSION: v0.2.2
-  GITHUB_BITCOIN_VERSION: v0.2.2
+  GITHUB_VERSION: v0.2.3
+  GITHUB_BITCOIN_VERSION: v0.2.3
   GITHUB_DOCKER_IMAGE: ghcr.io/cryptogarageinc/elements-testing
   ENTRYPOINT_PATH: /github/workspace/.github/workflows/docker/test_entrypoint.sh
   BITCOIN_ENTRYPOINT_PATH: /github/workspace/.github/workflows/docker/test_bitcoin_entrypoint.sh
@@ -33,9 +33,9 @@ jobs:
         py-ver: ['3.7', '3.8', '3.9', '3.10', '3.11', 'pypy-3.7', 'pypy-3.8', 'pypy-3.9']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.py-ver }}
     - name: Display Python version
@@ -88,9 +88,9 @@ jobs:
             package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy39\site-packages'
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.py-ver }}
     - name: Display Python version
@@ -141,7 +141,7 @@ jobs:
     name: doxygen-ubuntu
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: install_doxygen
       run: sudo apt install doxygen graphviz
     - name: doxygen_check
