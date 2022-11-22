@@ -41,8 +41,8 @@ def test_decode_psbt_func(obj, name, case, req, exp, error):
         if 'unknown' in exp:
             unknown_keys = psbt.get_global_unknown_keys()
             key_len = len(unknown_keys)
-            if req.get('hasDetail', False):
-                key_len = key_len - len(xpubkeys)
+            if not req.get('hasDetail', False):
+                key_len = key_len + len(xpubkeys)
             assert_match(obj, name, case, len(exp['unknown']), key_len,
                          'global:unknown:num')
             for unknown_data in exp.get('unknown', []):

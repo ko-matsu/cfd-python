@@ -1,16 +1,16 @@
-name: sprint pre-merge check
+name: features pre-merge check
 
 on: 
   push:
     branches:
-    - features/sprint*
+    - features/*
     paths-ignore:
     - '.github/workflows/create_release-and-upload.yml'
     - '.github/workflows/code_scanner.yml'
     - 'README.md'
   pull_request:
     branches:
-    - features/sprint*
+    - features/*
 
 env:
   GITHUB_VERSION: v0.2.3

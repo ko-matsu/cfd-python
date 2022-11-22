@@ -161,14 +161,14 @@ use python:
 ```
 python setup.py build
   or
-(ubuntu 18.04) python3 setup.py build
+(ubuntu) python3 setup.py build
 ```
 
 use pipenv:
 ```
 pipenv run build
   or
-(ubuntu 18.04) pipenv run build3
+(ubuntu) pipenv run build3
 ```
 
 ### cleanup
@@ -210,14 +210,14 @@ use python:
 ```
 python -m unittest discover -v tests
   or
-(ubuntu 18.04) python3 -m unittest discover -v tests
+(ubuntu) python3 -m unittest discover -v tests
 ```
 
 use pipenv:
 ```
 pipenv run test
   or
-(ubuntu 18.04) pipenv run test3
+(ubuntu) pipenv run test3
 ```
 
 ---
