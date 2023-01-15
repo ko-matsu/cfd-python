@@ -6,7 +6,6 @@ services:
     environment:
       CFD_SRC: /private/cfd-python
       CFD_WORK: /workspace/workdir
-    working_dir: /private/cfd-python
     volumes:
       - .:/private/cfd-python
     working_dir: /private/cfd-python
@@ -31,7 +30,6 @@ services:
     environment:
       CFD_SRC: /private/cfd-python
       CFD_WORK: /workspace
-    working_dir: /private/cfd-python
     volumes:
       - .:/private/cfd-python
     working_dir: /private/cfd-python
@@ -44,7 +42,6 @@ services:
     environment:
       CFD_SRC: /private/cfd-python
       CFD_WORK: /workspace
-    working_dir: /private/cfd-python
     volumes:
       - .:/private/cfd-python
     working_dir: /private/cfd-python
