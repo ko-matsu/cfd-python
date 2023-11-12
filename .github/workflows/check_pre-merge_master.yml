@@ -5,6 +5,7 @@ on:
     branches:
     - master
     - stable_v*
+    - test/CI-*
     paths-ignore:
     - '.github/workflows/create_release-and-upload.yml'
     - '.github/workflows/code_scanner.yml'
@@ -29,8 +30,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11.0, windows-2019, windows-2022, ubuntu-20.04, ubuntu-22.04]
-        py-ver: ['3.7', '3.8', '3.9', '3.10', '3.11', 'pypy-3.7', 'pypy-3.8', 'pypy-3.9']
+        os: ['macos-11', 'macos-12', 'macos-13', 'windows-2019', 'windows-2022', 'ubuntu-20.04', 'ubuntu-22.04']
+        py-ver: ['3.8', '3.9', '3.10', '3.11', '3.12', 'pypy-3.8', 'pypy-3.9', 'pypy-3.10']
 
     steps:
     - uses: actions/checkout@v3
@@ -40,6 +41,9 @@ jobs:
         python-version: ${{ matrix.py-ver }}
     - name: Display Python version
       run: python -c "import sys; print(sys.version)"
+    - name: Install setuptools
+      if: ${{ matrix.py-ver == '3.12' }}
+      run: pip install --user setuptools
     - name: build
       run: python setup.py build
     - name: copy dll
@@ -59,33 +63,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11.0, windows-2019, windows-2022, ubuntu-22.04, ubuntu-20.04]
-        py-ver: ['3.7', '3.8', '3.9', '3.10', '3.11', 'pypy-3.7', 'pypy-3.8', 'pypy-3.9']
+        os: ['macos-11', 'macos-12', 'macos-13', 'windows-2019', 'windows-2022', 'ubuntu-20.04', 'ubuntu-22.04']
+#        py-ver: ['3.8', '3.9', '3.10', '3.11', '3.12', 'pypy-3.8', 'pypy-3.9', 'pypy-3.10']
+        py-ver: ['3.8', '3.9', '3.10', '3.11', '3.12', 'pypy-3.8', 'pypy-3.9']
         include:
           - os: windows-2019
-            py-ver: '3.7'
-            package-path: 'c:\users\runneradmin\appdata\roaming\python\python37\site-packages'
-          - os: windows-2019
-            py-ver: 'pypy-3.7'
-            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy37\site-packages'
-          - os: windows-2019
             py-ver: 'pypy-3.8'
             package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy38\site-packages'
           - os: windows-2019
             py-ver: 'pypy-3.9'
             package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy39\site-packages'
-          - os: windows-2022
-            py-ver: '3.7'
-            package-path: 'c:\users\runneradmin\appdata\roaming\python\python37\site-packages'
-          - os: windows-2022
-            py-ver: 'pypy-3.7'
-            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy37\site-packages'
+#          - os: windows-2019
+#            py-ver: 'pypy-3.10'
+#            package-path: 'c:\users\runneradmin\appdata\roaming\Python\PyPy310\site-packages'
           - os: windows-2022
             py-ver: 'pypy-3.8'
             package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy38\site-packages'
           - os: windows-2022
             py-ver: 'pypy-3.9'
             package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy39\site-packages'
+#          - os: windows-2022
+#            py-ver: 'pypy-3.10'
+#            package-path: 'c:\users\runneradmin\appdata\roaming\Python\PyPy310\site-packages'
 
     steps:
     - uses: actions/checkout@v3
@@ -97,6 +96,9 @@ jobs:
       run: python -c "import sys; print(sys.version)"
     - name: install pip
       run: python -m pip install -U pip
+    - name: Install setuptools
+      if: ${{ matrix.py-ver == '3.12' }}
+      run: pip install --user setuptools
     - name: install
       run: pip install --user .
     - name: dump info

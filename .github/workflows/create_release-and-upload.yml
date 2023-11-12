@@ -67,10 +67,10 @@ jobs:
         os: [macos-11, windows-2019, ubuntu-20.04]
         include:
           - os: macos-11
-            py-ver: 3.7
+            py-ver: 3.8
             pl-name: macosx_11_0_x86_64
           - os: ubuntu-20.04
-            py-ver: 3.7
+            py-ver: 3.8
             pl-name: linux_x86_64
           - os: windows-2019
             py-ver: 3.8

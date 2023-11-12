@@ -13,8 +13,8 @@ on:
     - features/sprint*
 
 env:
-  GITHUB_VERSION: v0.2.3
-  GITHUB_BITCOIN_VERSION: v0.2.3
+  GITHUB_VERSION: v0.2.5
+  GITHUB_BITCOIN_VERSION: v0.2.5
   GITHUB_DOCKER_IMAGE: ghcr.io/cryptogarageinc/elements-testing
   ENTRYPOINT_PATH: /github/workspace/.github/workflows/docker/test_entrypoint.sh
   BITCOIN_ENTRYPOINT_PATH: /github/workspace/.github/workflows/docker/test_bitcoin_entrypoint.sh
@@ -27,19 +27,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11.0, windows-2019, windows-2022, ubuntu-20.04, ubuntu-22.04]
-        py-ver: ['3.7', '3.8', '3.9', '3.10', '3.11', 'pypy-3.7', 'pypy-3.8', 'pypy-3.9']
+        os: ['macos-11', 'macos-12', 'macos-13', 'windows-2019', 'windows-2022', 'ubuntu-20.04', 'ubuntu-22.04']
+        py-ver: ['3.8', '3.9', '3.10', '3.11', '3.12', 'pypy-3.8', 'pypy-3.9', 'pypy-3.10']
         exclude:
-          - os: macos-11.0
-            py-ver: '3.7'
-          - os: macos-11.0
-            py-ver: '3.8'
+          - os: macos-11
+            py-ver: '3.9'
+          - os: macos-11
+            py-ver: '3.10'
           - os: windows-2019
-            py-ver: '3.8'
+            py-ver: '3.9'
           - os: windows-2019
-            py-ver: 'pypy-3.8'
+            py-ver: 'pypy-3.9'
           - os: windows-2022
-            py-ver: '3.8'
+            py-ver: '3.9'
 
     steps:
     - uses: actions/checkout@v3
@@ -49,6 +49,9 @@ jobs:
         python-version: ${{ matrix.py-ver }}
     - name: Display Python version
       run: python -c "import sys; print(sys.version)"
+    - name: Install setuptools
+      if: ${{ matrix.py-ver == '3.12' }}
+      run: pip install --user setuptools
     - name: build
       run: python setup.py build
     - name: copy dll
