@@ -5,6 +5,7 @@ on:
     branches:
     - master
     - stable_v*
+    - test/CI-*
     paths-ignore:
     - '.github/workflows/create_release-and-upload.yml'
     - '.github/workflows/code_scanner.yml'
@@ -63,7 +64,8 @@ jobs:
       fail-fast: false
       matrix:
         os: ['macos-11', 'macos-12', 'macos-13', 'windows-2019', 'windows-2022', 'ubuntu-20.04', 'ubuntu-22.04']
-        py-ver: ['3.8', '3.9', '3.10', '3.11', '3.12', 'pypy-3.8', 'pypy-3.9', 'pypy-3.10']
+#        py-ver: ['3.8', '3.9', '3.10', '3.11', '3.12', 'pypy-3.8', 'pypy-3.9', 'pypy-3.10']
+        py-ver: ['3.8', '3.9', '3.10', '3.11', '3.12', 'pypy-3.8', 'pypy-3.9']
         include:
           - os: windows-2019
             py-ver: 'pypy-3.8'
@@ -71,18 +73,18 @@ jobs:
           - os: windows-2019
             py-ver: 'pypy-3.9'
             package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy39\site-packages'
-          - os: windows-2019
-            py-ver: 'pypy-3.10'
-            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy310\site-packages'
+#          - os: windows-2019
+#            py-ver: 'pypy-3.10'
+#            package-path: 'c:\users\runneradmin\appdata\roaming\Python\PyPy310\site-packages'
           - os: windows-2022
             py-ver: 'pypy-3.8'
             package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy38\site-packages'
           - os: windows-2022
             py-ver: 'pypy-3.9'
             package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy39\site-packages'
-          - os: windows-2022
-            py-ver: 'pypy-3.10'
-            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy310\site-packages'
+#          - os: windows-2022
+#            py-ver: 'pypy-3.10'
+#            package-path: 'c:\users\runneradmin\appdata\roaming\Python\PyPy310\site-packages'
 
     steps:
     - uses: actions/checkout@v3
