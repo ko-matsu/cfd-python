@@ -8,11 +8,11 @@ on:
 jobs:
   create_releases:
     name: create-releases
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Get the version
       id: get_version
       run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
@@ -23,7 +23,7 @@ jobs:
       run: python ./tools/version_checker.py ${version}
     - name: Create Release
       id: create_release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         name: Release ${{ steps.get_version.outputs.VERSION }}
         body: |
@@ -37,20 +37,20 @@ jobs:
     name: upload-sdist
     needs: create_releases
     timeout-minutes: 20
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: 3.8
+        python-version: 3.9
     - name: create sdist
       id: create_sdist
       run: python setup.py sdist --formats=gztar,zip
     - name: Upload sdist
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: |
           ./dist/*.tar.gz
@@ -64,23 +64,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-11, windows-2019, ubuntu-20.04]
+        os: [macos-13, macos-14, windows-2019, ubuntu-20.04]
         include:
-          - os: macos-11
-            py-ver: 3.8
-            pl-name: macosx_11_0_x86_64
+          - os: macos-13
+            py-ver: 3.9
+            pl-name: macosx_13_0_x86_64
+          - os: macos-14
+            py-ver: 3.9
+            pl-name: macosx_14_0_arm64
           - os: ubuntu-20.04
-            py-ver: 3.8
+            py-ver: 3.9
             pl-name: linux_x86_64
           - os: windows-2019
-            py-ver: 3.8
+            py-ver: 3.9
             pl-name: win_amd64
 
     steps:
     - name: checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.py-ver }}
     - name: Get the version
@@ -103,6 +106,6 @@ jobs:
         mv $WHEEL_NAME ${{ steps.asset_name.outputs.ASSET_NAME }}
       shell: bash
     - name: Upload wheel
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: ${{ steps.asset_name.outputs.ASSET_NAME }}

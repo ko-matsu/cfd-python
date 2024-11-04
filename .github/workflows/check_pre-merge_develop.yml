@@ -15,8 +15,8 @@ on:
     - test_ci
 
 env:
-  GITHUB_VERSION: v0.2.3
-  GITHUB_BITCOIN_VERSION: v0.2.3
+  GITHUB_VERSION: v0.2.5
+  GITHUB_BITCOIN_VERSION: v0.2.5
   GITHUB_DOCKER_IMAGE: ghcr.io/cryptogarageinc/elements-testing
   ENTRYPOINT_PATH: /github/workspace/.github/workflows/docker/test_entrypoint.sh
   BITCOIN_ENTRYPOINT_PATH: /github/workspace/.github/workflows/docker/test_bitcoin_entrypoint.sh
@@ -29,19 +29,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['macos-11', 'macos-12', 'macos-13', 'windows-2019', 'windows-2022', 'ubuntu-20.04', 'ubuntu-22.04']
-        py-ver: ['3.8', '3.9', '3.10', '3.11', '3.12', 'pypy-3.8', 'pypy-3.9', 'pypy-3.10']
+        os: ['macos-13', 'macos-14', 'macos-15', 'windows-2019', 'windows-2022', 'ubuntu-20.04', 'ubuntu-22.04', 'ubuntu-24.04']
+        py-ver: ['3.9', '3.10', '3.11', '3.12', '3.13', 'pypy-3.9', 'pypy-3.10']
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.py-ver }}
     - name: Display Python version
       run: python -c "import sys; print(sys.version)"
     - name: Install setuptools
-      if: ${{ matrix.py-ver == '3.12' }}
+      if: ${{ matrix.py-ver == '3.12' || matrix.py-ver == '3.13' }}
       run: pip install --user setuptools
     - name: build
       run: python setup.py build
@@ -62,32 +62,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['macos-11', 'macos-12', 'macos-13', 'windows-2019', 'windows-2022', 'ubuntu-20.04', 'ubuntu-22.04']
-        py-ver: ['3.8', '3.9', '3.10', '3.11', '3.12', 'pypy-3.8', 'pypy-3.9', 'pypy-3.10']
+        os: ['macos-13', 'macos-14', 'macos-15', 'windows-2019', 'windows-2022', 'ubuntu-20.04', 'ubuntu-22.04', 'ubuntu-24.04']
+#        py-ver: ['3.9', '3.10', '3.11', '3.12', '3.13', 'pypy-3.9', 'pypy-3.10']
+        py-ver: ['3.9', '3.10', '3.11', '3.12', '3.13', 'pypy-3.9']
         include:
           - os: windows-2019
-            py-ver: 'pypy-3.8'
-            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy38\site-packages'
-          - os: windows-2019
             py-ver: 'pypy-3.9'
             package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy39\site-packages'
-          - os: windows-2019
-            py-ver: 'pypy-3.10'
-            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy310\site-packages'
-          - os: windows-2022
-            py-ver: 'pypy-3.8'
-            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy38\site-packages'
+#          - os: windows-2019
+#            py-ver: 'pypy-3.10'
+#            package-path: 'c:\users\runneradmin\appdata\roaming\Python\PyPy310\site-packages'
           - os: windows-2022
             py-ver: 'pypy-3.9'
             package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy39\site-packages'
-          - os: windows-2022
-            py-ver: 'pypy-3.10'
-            package-path: 'c:\users\runneradmin\appdata\roaming\pypy\pypy310\site-packages'
+#          - os: windows-2022
+#            py-ver: 'pypy-3.10'
+#            package-path: 'c:\users\runneradmin\appdata\roaming\Python\PyPy310\site-packages'
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.py-ver }}
     - name: Display Python version
@@ -95,7 +90,7 @@ jobs:
     - name: install pip
       run: python -m pip install -U pip
     - name: Install setuptools
-      if: ${{ matrix.py-ver == '3.12' }}
+      if: ${{ matrix.py-ver == '3.12' || matrix.py-ver == '3.13' }}
       run: pip install --user setuptools
     - name: install
       run: pip install --user .
@@ -114,10 +109,10 @@ jobs:
   elements-e2e-test:
     timeout-minutes: 40
     name: elements e2e test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: e2e-test
       run: |
         docker login docker.pkg.github.com -u owner -p ${{ secrets.GITHUB_TOKEN }}
@@ -127,10 +122,10 @@ jobs:
   bitcoin-e2e-test:
     timeout-minutes: 20
     name: bitcoin e2e test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: e2e-test
       run: |
         docker login docker.pkg.github.com -u owner -p ${{ secrets.GITHUB_TOKEN }}
@@ -141,7 +136,7 @@ jobs:
     name: doxygen-ubuntu
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: install_doxygen
       run: sudo apt install doxygen graphviz
     - name: doxygen_check

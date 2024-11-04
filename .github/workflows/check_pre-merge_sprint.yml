@@ -27,30 +27,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['macos-11', 'macos-12', 'macos-13', 'windows-2019', 'windows-2022', 'ubuntu-20.04', 'ubuntu-22.04']
-        py-ver: ['3.8', '3.9', '3.10', '3.11', '3.12', 'pypy-3.8', 'pypy-3.9', 'pypy-3.10']
+        os: ['macos-13', 'macos-14', 'macos-15', 'windows-2019', 'windows-2022', 'ubuntu-20.04', 'ubuntu-22.04', 'ubuntu-24.04']
+        py-ver: ['3.9', '3.10', '3.11', '3.12', '3.13', 'pypy-3.9', 'pypy-3.10']
         exclude:
-          - os: macos-11
-            py-ver: '3.9'
-          - os: macos-11
+          - os: macos-14
             py-ver: '3.10'
+          - os: macos-14
+            py-ver: '3.11'
+          - os: macos-14
+            py-ver: '3.12'
           - os: windows-2019
-            py-ver: '3.9'
+            py-ver: '3.10'
           - os: windows-2019
             py-ver: 'pypy-3.9'
           - os: windows-2022
-            py-ver: '3.9'
+            py-ver: '3.10'
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.py-ver }}
     - name: Display Python version
       run: python -c "import sys; print(sys.version)"
     - name: Install setuptools
-      if: ${{ matrix.py-ver == '3.12' }}
+      if: ${{ matrix.py-ver == '3.12' || matrix.py-ver == '3.13' }}
       run: pip install --user setuptools
     - name: build
       run: python setup.py build
@@ -67,10 +69,10 @@ jobs:
   elements-e2e-test:
     timeout-minutes: 40
     name: elements e2e test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: e2e-test
       run: |
         docker login docker.pkg.github.com -u owner -p ${{ secrets.GITHUB_TOKEN }}
@@ -80,10 +82,10 @@ jobs:
   bitcoin-e2e-test:
     timeout-minutes: 20
     name: bitcoin e2e test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: e2e-test
       run: |
         docker login docker.pkg.github.com -u owner -p ${{ secrets.GITHUB_TOKEN }}
@@ -94,7 +96,7 @@ jobs:
     name: doxygen-ubuntu
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: install_doxygen
       run: sudo apt install doxygen graphviz
     - name: doxygen_check
